@@ -27,9 +27,3 @@ A text-based adventure game with an old-internet MUD aesthetic.
 Movement: `north`, `south`, `east`, `west`, `up`, `down` (or `n`, `s`, `e`, `w`, `u`, `d`)
 
 Type `help` in-game for the full command list.
-
-## Lore
-
-> The Hollowed Keep appeared on the moors of Ashenvale one moonless night in 993 A.D.
-> At its heart, the Scepter of Aethon—a relic of shadow and flame—calls to those
-> bold enough to claim it. Many have entered. Few have returned. The Keep endures.
