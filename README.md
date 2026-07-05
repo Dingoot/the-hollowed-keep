@@ -17,7 +17,6 @@ A text-based adventure game with an old-internet MUD aesthetic.
 - Save/load via localStorage
 - Adventurer's Chronicle: simulated live activity from other "players"
 - Rune Wall: leave persistent messages for future visits
-- CRT terminal aesthetic with ASCII art castle
 - Mobile-responsive with tabbed panels
 
 ## Commands
