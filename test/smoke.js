@@ -173,6 +173,45 @@ const driver = `
   });
   step("restart cmd (reload stub)", () => parseCommand("restart"));
 
+  // --- New races + meta unlocks ---
+  step("gate lineup: 9 bloods, vesseling locked", () => {
+    assert(RACE_ORDER.length === 9, "gate lineup: " + RACE_ORDER.length);
+    assert(!availableRaces().includes("vesseling"), "vesseling should start locked");
+  });
+  step("elf stats", () => {
+    GS = defaultState();
+    applyRaceToState("elf");
+    assert(GS.stats.dex === 12 && GS.stats.wis === 11 && GS.stats.con === 9, "elf mods: " + JSON.stringify(GS.stats));
+  });
+  step("tiefling fiend's bargain", () => {
+    GS = defaultState();
+    applyRaceToState("tiefling");
+    applyDerivedStats();
+    GS.gold = 50;
+    playerDeath("bargain test");
+    assert(GS.hp === 1, "bargain hp: " + GS.hp);
+    assert(GS.gold === 50, "bargain must skip the toll, gold: " + GS.gold);
+    assert(GS.perks.bargainUsed === true, "bargainUsed flag missing");
+  });
+  step("orc blood roar", () => {
+    GS = defaultState();
+    applyRaceToState("orc");
+    applyDerivedStats();
+    GS.hp = 20;
+    GS.currentEnemy = { name: "Test Poker", attack: 1, attackMsg: "It pokes you." };
+    enemyTurn();
+    assert(GS.perks.roarUsed === true && GS.tempAttackBonus >= 4, "roar did not trigger: bonus " + GS.tempAttackBonus);
+  });
+  step("meta unlock: vesseling at 5 deaths", () => {
+    GS = defaultState();
+    GS.race = "dwarf";
+    META.totalDeaths = 4;
+    META.unlocks = {};
+    playerDeath("meta test");
+    assert(META.unlocks.vesseling === true, "vesseling not unlocked at 5 lifetime deaths");
+    assert(availableRaces().includes("vesseling"), "unlocked blood missing from the gate");
+  });
+
   log.forEach(function (l) { console.log(l); });
   console.log("SMOKE_OK");
 })();

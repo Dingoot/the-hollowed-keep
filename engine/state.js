@@ -47,6 +47,24 @@ const defaultState = () => ({
 let GS = defaultState();
 let roomStates = {};
 
+// === META SAVE ===
+// Persists across characters and restarts: race unlocks, lifetime tallies.
+const META_KEY = 'hollowkeep_meta';
+let META = { totalDeaths: 0, unlocks: {} };
+
+function loadMeta() {
+  try {
+    const m = JSON.parse(localStorage.getItem(META_KEY));
+    if (m) META = { totalDeaths: m.totalDeaths || 0, unlocks: m.unlocks || {} };
+  } catch (e) { /* fresh meta */ }
+}
+
+function saveMeta() {
+  localStorage.setItem(META_KEY, JSON.stringify(META));
+}
+
+loadMeta();
+
 function initRoomStates() {
   roomStates = {};
   for (const [id, room] of Object.entries(ROOMS)) {

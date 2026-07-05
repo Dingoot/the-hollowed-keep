@@ -136,9 +136,25 @@ function handleCombatCommand(input) {
 
 function enemyTurn() {
   const enemy = GS.currentEnemy;
+
+  // Underfoot Luck: one blow in ten parts the air instead. (Halfling)
+  if (GS.race === 'halfling' && rng(1, 10) === 1) {
+    print(enemy.attackMsg, 'combat-hit');
+    print('The blow parts the air where you almost were. Underfoot luck.', 'text-cyan');
+    return;
+  }
+
   const enemyDmg = Math.max(1, enemy.attack - getDefense() + rng(-2, 2));
   GS.hp -= enemyDmg;
   print(enemy.attackMsg + ' (' + enemyDmg + ' damage)', 'combat-hit');
+
+  // Blood Roar: below a quarter health, the ancestors answer. (Orc)
+  if (GS.hp > 0 && GS.race === 'orc' && GS.hp <= Math.floor(GS.maxHp * 0.25) && !GS.perks.roarUsed) {
+    GS.perks.roarUsed = true;
+    GS.tempAttackBonus += 4;
+    GS.tempAttackTurns = Math.max(GS.tempAttackTurns, 3);
+    print('Your ancestors ROAR in the blood. Your next blows carry all of them. (+4 ATK, 3 turns)', 'text-red');
+  }
 
   if (enemy.poisonous && !GS.poisoned && rng(1, 3) === 1) {
     GS.poisoned = true;
@@ -221,9 +237,29 @@ const DEATH_TOLL_LINES = [
 ];
 
 function playerDeath(cause) {
+  // Fiend's Bargain: once per life, the blood refuses. (Tiefling)
+  if (GS.race === 'tiefling' && !GS.perks.bargainUsed) {
+    GS.perks.bargainUsed = true;
+    GS.hp = 1;
+    GS.poisoned = false;
+    GS.poisonTurns = 0;
+    print('');
+    print('Your heart stops. Something older than your heart declines to accept this.', 'text-red');
+    keepSays("Something in your blood pays the difference. It does not say what it bought.");
+    return;
+  }
+
   GS.inCombat = false;
   GS.currentEnemy = null;
   GS.deaths++;
+  META.totalDeaths++;
+  if (META.totalDeaths >= 5 && !META.unlocks.vesseling) {
+    META.unlocks.vesseling = true;
+    print('');
+    keepSays('Five times, now. The Keep has decided you understand emptiness well enough to be born to it.');
+    keepSays('New blood available at the gate: VESSELING.');
+  }
+  saveMeta();
   printLine();
   print('', '');
   print('  Y O U   H A V E   D I E D', 'combat-death');

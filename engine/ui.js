@@ -34,7 +34,11 @@ function printRoom(roomId) {
 
   if (room.dark && !hasLight()) {
     print('');
-    print('It is pitch dark. You can barely see your hand in front of your face. You need a light source.', 'text-red');
+    if (GS.race === 'elf') {
+      print('Darkness pools here, but your eyes drink what little light exists. Shapes and ways out — not details. Searching needs flame.', 'text-dim');
+    } else {
+      print('It is pitch dark. You can barely see your hand in front of your face. You need a light source.', 'text-red');
+    }
   }
 
   const items = rs.items.filter(id => ITEMS[id]);

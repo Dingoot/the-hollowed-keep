@@ -49,6 +49,8 @@ No caps early; sprawl freely. From mid-game, total skill capacity is soft-capped
 
 Balance goal: a min/maxer should stare at any two races and think *"damn, they're both pretty good."* Every race has real pluses, real minuses (except Humans, whose identity is having neither), floor interactions, and one exclusive class.
 
+**The gate lineup (9):** Human, Elf, Dwarf, Halfling, Gnome, Orc, Tiefling — the classics, Keep-twisted — plus two moor-born originals, Ashborn and Gravekin. **Unlockable bloods** exist beyond these: earned through play, stored in the meta save, persistent across characters. Vesseling is the first (see below). Deeper floors add more as *taken peoples* — the Keep swallowed whole populations, and meeting them below unlocks their blood at the gate.
+
 ### Human *(classic)*
 - **Stats:** +1 to any two stats (your pick)
 - **Skills:** +10% XP to *all* player skills
@@ -56,6 +58,14 @@ Balance goal: a min/maxer should stare at any two races and think *"damn, they'r
 - **Drawbacks:** none — and no standout gifts either. The human gamble is breadth.
 - **Exclusive class:** **Journeyman** — the only way to hold two classes at once (each at reduced power)
 - *"The Keep finds humans... productive."*
+
+### Elf *(classic)* — four centuries, taken at the gate
+- **Stats:** +2 DEX, +1 WIS, −1 CON
+- **Skills:** +25% XP Bows, Stealth, Foraging; −25% XP Intimidation (serenity reads poorly here)
+- **Twilight Eyes:** dark rooms show shapes and exits without a light — details still need flame
+- **Stolen Centuries:** the Toll took four hundred years of memory; fragments surface unbidden in the Takings *(stored — fires when deep floors exist)*
+- **Exclusive class:** **Vigil** — wardens of what was lost
+- *"The Keep took an elf's centuries like a fee. Elves have been coming back angry ever since."*
 
 ### Dwarf *(classic)*
 - **Stats:** +2 CON, +1 STR, −1 DEX
@@ -65,6 +75,35 @@ Balance goal: a min/maxer should stare at any two races and think *"damn, they'r
 - **Drawbacks:** heavy-footed (the Stealth/Swim penalty is real), can't fit through some squeezes (alternate routes exist — see Multiple Solutions)
 - **Exclusive class:** **Stonesinger** — sings to the Keep's bones; reshapes stone, opens walls
 - *"The Keep respects things that endure. It has eaten very few dwarves it didn't have to chew."*
+
+### Halfling *(classic)* — filed under "miscellaneous"
+- **Stats:** +2 DEX, +1 CHA, −1 STR
+- **Skills:** +25% XP Stealth, Cooking, Haggling; −25% XP Greatswords, Hammers (the heaviest weapons come slow)
+- **Underfoot Luck:** one blow in ten simply misses. Nobody can explain it. Stop asking.
+- **Exclusive class:** **The Unnoticed** — the Keep loses track of them entirely
+- *"The Porter's ledger lists halflings under 'miscellaneous.' They have never once complained. This unsettles the Keep more than armies did."*
+
+### Gnome *(classic)* — the Keep is a machine, and machines talk
+- **Stats:** +2 INT, +1 DEX, −1 STR
+- **Skills:** +25% XP Alchemy, Lockpicking, Appraisal; −25% XP Intimidation (hard to loom)
+- **Gearsense:** locks, traps, and mechanisms confide in them — hints the others never hear
+- **Exclusive class:** **Wallspeaker** — talks to the building itself
+- *"Gnomes ask the Keep how it works. The Keep, flattered despite itself, occasionally answers."*
+
+### Orc *(classic)* — the ancestors ride the blood
+- **Stats:** +2 STR, +1 CON, −1 WIS
+- **Skills:** +25% XP Axes, Unarmed, Intimidation; −25% XP Lockpicking (big hands)
+- **Blood Roar:** below a quarter health, the ancestors roar — +4 attack for 3 turns, once per rest
+- **Exclusive class:** **Old Blood** — channels the lineage in battle (yours, unlike Echo's borrowed strangers)
+- *"Orc dead do not go below. They stay in the blood. The Keep finds this untidy, and has stopped trying to collect."*
+
+### Tiefling *(classic)* — there is history in the blood, and it isn't yours
+- **Stats:** +2 CHA, +1 INT, −1 WIS (the whispers mislead)
+- **Skills:** +25% XP Silver Tongue, Ritual, Firecraft
+- **Fiend's Bargain:** once per life, the blood refuses to let them die — back up at 1 HP, toll unpaid
+- **Marked Blood:** things of shadow notice them first *(stored — fires when aggro systems exist)*; ghost merchants round up
+- **Exclusive class:** **Covenant** — contract magic with the thing in their own blood
+- *"The Keep met whatever lives in tiefling blood a long time ago. There is history. Neither party discusses it."*
 
 ### Ashborn *(original)* — moor-pyre folk, fire in the blood
 - **Stats:** +1 DEX, +1 INT, −1 CON (burned thin)
@@ -83,7 +122,8 @@ Balance goal: a min/maxer should stare at any two races and think *"damn, they'r
 - **Exclusive class:** **Deathward** — the dead guard them in return
 - *"The Keep is fond of Gravekin. Nobody has ever asked it why, and it has never volunteered."*
 
-### Vesseling *(original, advanced)* — born hollow
+### Vesseling *(original, UNLOCKABLE)* — born hollow
+- **How it unlocks:** die five times, lifetime, across all characters. The Keep decides you understand emptiness well enough to be born to it. (First meta-unlock; announced at the moment it happens.)
 - **Stats:** −1 CON, −1 CHA, **Hollow starts at 3** (everyone else starts 0–1)
 - **Capacity:** +1 skill capacity band; crystallization milestones arrive ~25% sooner
 - **Blank Remnant:** no past hook, no starting whisper. Their vault-reveal is the strangest one in the game.

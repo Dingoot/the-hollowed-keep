@@ -13,6 +13,15 @@ function bootPrint(text, cls) {
   bootEl.scrollTop = bootEl.scrollHeight;
 }
 
+// The bloods on offer: the gate lineup plus anything this player has unlocked.
+function availableRaces() {
+  const list = RACE_ORDER.slice();
+  for (const id of Object.keys(LOCKED_RACES)) {
+    if (META.unlocks[id] && RACES[id]) list.push(id);
+  }
+  return list;
+}
+
 function startCreation() {
   CREATION.stage = 'race';
   CREATION.race = null;
@@ -32,9 +41,15 @@ function startCreation() {
   bootPrint('');
   bootPrint('What does your blood remember?', 'line-bright');
   bootPrint('');
-  RACE_ORDER.forEach((id, i) => {
-    bootPrint('  ' + (i + 1) + '. ' + RACES[id].name.padEnd(12) + ' — ' + RACES[id].tagline, 'line-white');
+  const races = availableRaces();
+  races.forEach((id, i) => {
+    bootPrint('  ' + String(i + 1).padStart(2) + '. ' + RACES[id].name.padEnd(12) + ' — ' + RACES[id].tagline, 'line-white');
   });
+  const lockedLeft = Object.keys(LOCKED_RACES).filter(id => !META.unlocks[id]);
+  if (lockedLeft.length > 0) {
+    bootPrint('');
+    bootPrint('  ...and ' + lockedLeft.length + ' blood' + (lockedLeft.length > 1 ? 's' : '') + ' the Keep has not yet shown you.', 'line-dim');
+  }
   bootPrint('');
   bootPrint("Type a name or number to look closer.", 'line-dim');
 }
@@ -55,9 +70,10 @@ function raceCard(id) {
 }
 
 function matchRace(input) {
+  const races = availableRaces();
   const n = parseInt(input, 10);
-  if (!isNaN(n) && RACE_ORDER[n - 1]) return RACE_ORDER[n - 1];
-  return RACE_ORDER.find(id => id.startsWith(input) || RACES[id].name.toLowerCase().startsWith(input)) || null;
+  if (!isNaN(n) && races[n - 1]) return races[n - 1];
+  return races.find(id => id.startsWith(input) || RACES[id].name.toLowerCase().startsWith(input)) || null;
 }
 
 function showRemnantList() {

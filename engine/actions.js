@@ -303,6 +303,7 @@ function doRest() {
   }
   const atHearth = GS.litHearths.includes(GS.currentRoom);
   if (atHearth) GS.lastHearth = GS.currentRoom;
+  GS.perks.roarUsed = false; // the ancestors catch their breath
   const heal = atHearth ? GS.maxHp - GS.hp : rng(10, 20);
   GS.hp = Math.min(GS.maxHp, GS.hp + heal);
   if (atHearth) {
@@ -448,14 +449,18 @@ function doTrade(args) {
 
 function doBuy(item) {
   const merchant = NPCS.merchant_ghost;
-  for (const [id, price] of Object.entries(merchant.inventory)) {
+  for (const [id, basePrice] of Object.entries(merchant.inventory)) {
     if (matchItem(id, item)) {
+      let price = basePrice;
+      let note = '';
+      if (GS.race === 'gravekin') { price = Math.max(1, Math.round(price * 0.9)); note = " 'Kin rates, of course.'"; }
+      if (GS.race === 'tiefling') { price = Math.round(price * 1.1); note = ' He eyes your horns and rounds up.'; }
       if (GS.gold >= price) {
         GS.gold -= price;
         GS.inventory.push(id);
-        print("'Pleasure doing business!' You receive: " + ITEMS[id].name, 'success-msg');
+        print("'Pleasure doing business!' You receive: " + ITEMS[id].name + ' (' + price + ' gold)' + note, 'success-msg');
       } else {
-        print("'You haven't got the gold for that, friend.' (Need " + price + ', have ' + GS.gold + ')', 'text-amber');
+        print("'You haven't got the gold for that, friend.' (Need " + price + ', have ' + GS.gold + ')' + note, 'text-amber');
       }
       return;
     }
@@ -564,6 +569,9 @@ function doOpen(args) {
       }
     } else {
       print("It's locked. You need a key or lockpicks.", 'error-msg');
+      if (GS.race === 'gnome') {
+        print('You press an ear to the plate. The tumblers gossip: iron, three wards, guard-issue. Its key hangs where a bored guard would wait — or slender tools could fool it.', 'text-dim');
+      }
     }
     return;
   }
