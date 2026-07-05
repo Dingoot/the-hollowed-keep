@@ -6,8 +6,6 @@ A text-based adventure game with an old-internet MUD aesthetic.
 
 **Play it:** Open `index.html` in any browser. No server required.
 
-**Structure:** world content lives in `data/`, game logic in `engine/`, design docs in `docs/` — see `docs/architecture.md`. Test with `node test/smoke.js`. The original single-file prototype is preserved in `legacy/`.
-
 ## Features
 
 - 41 rooms across 6 regions (The Approach, Courtyard, Ground Floor, Upper Floors, The Dungeons, The Deep)
