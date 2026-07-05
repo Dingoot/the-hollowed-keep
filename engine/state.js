@@ -12,6 +12,8 @@ const defaultState = () => ({
   gold: 0,
   race: null,
   remnant: null,
+  class: null,
+  crystalAnnounced: false,
   stats: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10, hollow: 0 },
   skills: {},
   perks: {},

@@ -18,6 +18,8 @@ function doAttack(args) {
 }
 
 function startCombat(enemyId) {
+  GS.perks.firstStrikeDone = false;
+  GS.perks.undeadHesitated = false;
   const template = ENEMIES[enemyId];
   GS.inCombat = true;
   GS.currentEnemy = { ...template, id: enemyId, hp: template.hp };
@@ -44,6 +46,7 @@ function handleCombatCommand(input) {
       const wpn = ITEMS[GS.equipped.weapon];
       if (wpn && wpn.undeadBonus) bonusDmg += wpn.undeadBonus;
     }
+    if (enemy.undead && GS.class === 'cleric') bonusDmg += 3; // radiant edge
 
     if (enemy.physicalResist && !(GS.equipped.weapon && ITEMS[GS.equipped.weapon] && ITEMS[GS.equipped.weapon].undeadBonus)) {
       playerAtk = Math.floor(playerAtk / 3);
@@ -55,7 +58,12 @@ function handleCombatCommand(input) {
       playerAtk = Math.floor(playerAtk / 2);
     }
 
-    const dmg = Math.max(1, playerAtk + bonusDmg - enemy.defense + rng(-2, 2));
+    let dmg = Math.max(1, playerAtk + bonusDmg - enemy.defense + rng(-2, 2));
+    if (GS.class === 'rogue' && !GS.perks.firstStrikeDone) {
+      dmg *= 2;
+      print("Opening strike — you were already where the guard wasn't.", 'text-cyan');
+    }
+    GS.perks.firstStrikeDone = true;
     enemy.hp -= dmg;
     print('You strike the ' + enemy.name + ' for ' + dmg + ' damage!', 'combat-hit');
     gainSkillXP(equippedWeaponSkill(), 5);
@@ -89,7 +97,8 @@ function handleCombatCommand(input) {
       print(enemy.name + ' HP: ' + enemy.hp + '/' + enemy.maxHp, 'combat-info');
     } else if (itemId === 'crude_bomb') {
       GS.inventory.splice(itemIdx, 1);
-      const dmg = (item.damage || 25) + rng(0, 10);
+      let dmg = (item.damage || 25) + rng(0, 10);
+      if (GS.class === 'sapper') dmg = Math.floor(dmg * 1.5); // good wadding
       enemy.hp -= dmg;
       print('You hurl the crude bomb! The blast tears through the ' + enemy.name + ' — and a fair amount of masonry. (' + dmg + ' damage)', 'combat-hit');
       gainSkillXP('demolitions', 20);
@@ -117,7 +126,8 @@ function handleCombatCommand(input) {
     }
     if ((args || 'sunder') === 'sunder') {
       if (enemy.shadowBeing || enemy.undead) {
-        const dmg = 25 + rng(0, 10);
+        let dmg = 25 + rng(0, 10);
+        if (GS.class === 'wizard') dmg = Math.floor(dmg * 1.5); // arcane edge
         enemy.hp -= dmg;
         print('You speak the Word of Sundering! Reality ripples and the ' + enemy.name + '\'s form tears apart! (' + dmg + ' damage)', 'text-cyan');
         if (enemy.hp <= 0) { endCombat(true); return; }
@@ -128,6 +138,12 @@ function handleCombatCommand(input) {
       enemyTurn();
     }
 
+  } else if (cmd === 'rally') {
+    doRally(); return;
+  } else if (cmd === 'pray') {
+    doPray(); return;
+  } else if (cmd === 'invoke') {
+    doInvokeToll(); return;
   } else if (cmd === 'flee' || cmd === 'run') {
     doFlee();
 
@@ -149,6 +165,12 @@ function enemyTurn() {
   if (GS.race === 'halfling' && rng(1, 10) === 1) {
     print(enemy.attackMsg, 'combat-hit');
     print('The blow parts the air where you almost were. Underfoot luck.', 'text-cyan');
+    return;
+  }
+
+  if (GS.class === 'grave_speaker' && enemy.undead && !GS.perks.undeadHesitated) {
+    GS.perks.undeadHesitated = true;
+    print('The ' + enemy.name + ' hesitates. The dead do not strike a Speaker first.', 'text-cyan');
     return;
   }
 
@@ -176,6 +198,10 @@ function enemyTurn() {
 }
 
 function endCombat(victory) {
+  if (victory && GS.class === 'reaver') {
+    GS.perks.reaverStacks = Math.min(5, (GS.perks.reaverStacks || 0) + 1);
+    print('You take something from the fallen — a sliver of what it was. (+' + GS.perks.reaverStacks + ' ATK until you rest)', 'text-cyan');
+  }
   const enemy = GS.currentEnemy;
   if (victory) {
     printLine();
@@ -281,7 +307,8 @@ function playerDeath(cause) {
   keepSays('The Keep accepts your offering.');
   // Death toll, tier 1: gold. Deeper tiers arrive with deeper floors.
   if (GS.gold > 0) {
-    const taken = Math.min(GS.gold, 5 + Math.floor(GS.gold * 0.3));
+    let taken = Math.min(GS.gold, 5 + Math.floor(GS.gold * 0.3));
+    if (GS.class === 'tollwright') taken = Math.floor(taken / 2); // adjusted terms
     GS.gold -= taken;
     keepSays('Taken: ' + taken + ' gold. ' + pick(DEATH_TOLL_LINES));
   } else {
@@ -316,6 +343,7 @@ function checkLevelUp() {
     print('LEVEL UP! You are now level ' + GS.level + '!', 'text-bright');
     print('  HP: ' + GS.maxHp + ' | ATK: ' + GS.attack + ' | DEF: ' + GS.defense, 'text-cyan');
   }
+  announceCrystallization();
 }
 
 // === SPELLS ===
@@ -335,8 +363,8 @@ function doCast(args) {
       if (enemy && (enemy.shadowBeing || enemy.undead)) {
         print('The ' + enemy.name + ' shudders as the word tears at its essence!', 'text-amber');
         startCombat(rs.enemies[0]);
-        GS.currentEnemy.hp -= 25;
-        print('The Word of Sundering dealt 25 damage!', 'combat-hit');
+        GS.currentEnemy.hp -= (GS.class === 'wizard' ? 37 : 25);
+        print('The Word of Sundering dealt ' + (GS.class === 'wizard' ? 37 : 25) + ' damage!', 'combat-hit');
         if (GS.currentEnemy.hp <= 0) { endCombat(true); }
       }
     }

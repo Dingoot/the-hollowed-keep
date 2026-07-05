@@ -235,6 +235,7 @@ function doCombine(args) {
   if (hasItem('saltpeter') && hasItem('lamp_oil') && (args.includes('salt') || args.includes('oil') || args.includes('bomb') || args.includes('powder') || !args)) {
     GS.inventory = GS.inventory.filter(i => i !== 'saltpeter' && i !== 'lamp_oil');
     GS.inventory.push('crude_bomb');
+    if (GS.class === 'sapper') { GS.inventory.push('crude_bomb'); print('Good wadding: the batch makes two.', 'text-cyan'); }
     GS.itemsFound++;
     print('You pack the saltpeter and oil-soaked wadding into the flask, working from an instinct your hands seem to have kept off the books.', 'text-white');
     print('Obtained: Crude Bomb', 'text-amber');
@@ -288,6 +289,7 @@ function doLightHearth() {
   if (!canLight) { print('You have nothing to light it with.', 'error-msg'); return; }
   GS.litHearths.push(GS.currentRoom);
   GS.lastHearth = GS.currentRoom;
+  resetPerRestAbilities();
   if (GS.race === 'ashborn') {
     print('You touch the cold ash with one bright fingertip. The hearth takes the flame like a secret it was owed.', 'text-amber');
     gainSkillXP('firecraft', 10);
@@ -313,7 +315,7 @@ function doRest() {
   }
   const atHearth = GS.litHearths.includes(GS.currentRoom);
   if (atHearth) GS.lastHearth = GS.currentRoom;
-  GS.perks.roarUsed = false; // the ancestors catch their breath
+  resetPerRestAbilities();
   const heal = atHearth ? GS.maxHp - GS.hp : rng(10, 20);
   GS.hp = Math.min(GS.maxHp, GS.hp + heal);
   if (atHearth) {
@@ -465,6 +467,7 @@ function doBuy(item) {
       let note = '';
       if (GS.race === 'gravekin') { price = Math.max(1, Math.round(price * 0.9)); note = " 'Kin rates, of course.'"; }
       if (GS.race === 'tiefling') { price = Math.round(price * 1.1); note = ' He eyes your horns and rounds up.'; }
+      if (GS.class === 'tollwright') { price = Math.max(1, Math.round(price * 0.9)); note += " 'For a fellow professional? Adjusted terms.'"; }
       if (GS.gold >= price) {
         GS.gold -= price;
         GS.inventory.push(id);
@@ -518,6 +521,8 @@ function doHelp() {
   print('  skills           — What the hollow holds', 'text-green');
   print('  stats            — The vessel: blood, remnant, stats', 'text-green');
   print('  light hearth     — Light a cold hearth (rest point · you wake here)', 'text-green');
+  print('  crystallize      — Open the Ledger of Paths (once the Keep proposes)', 'text-green');
+  print('  rally/pray/invoke — Class abilities, for those who are written', 'text-green');
   print('  push [thing]     — Push something', 'text-green');
   print('');
   print('ITEMS', 'text-amber');

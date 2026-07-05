@@ -3,7 +3,7 @@
 // Topics visible to this player (Gravekin hear more from the dead).
 function npcTopics(npc) {
   const t = Object.assign({}, npc.topics || {});
-  if (GS.race === 'gravekin' && npc.gravekinTopics) Object.assign(t, npc.gravekinTopics);
+  if ((GS.race === 'gravekin' || GS.class === 'grave_speaker') && npc.gravekinTopics) Object.assign(t, npc.gravekinTopics);
   return t;
 }
 

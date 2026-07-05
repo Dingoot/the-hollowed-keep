@@ -175,7 +175,7 @@ Authoring rule for every puzzle/obstacle: write the intended solution, then two 
 - **Original classes** — native to the premise. Each must pass the uniqueness bar: if its identity can be summarized as "like [classic] but," it gets redesigned or cut.
 - **Race-exclusives** — one per race (listed in §2).
 
-**Launch Set** (fully built first, everything else designed-but-later): Fighter, Rogue, Cleric, Wizard + Reaver, Sapper, Grave-Speaker, Tollwright. Eight polished lanes covering melee/stealth/faith/arcane/premise-native. The rest unlock in waves as floors release.
+**Launch Set** *(LIVE — v1 implemented)*: Fighter, Rogue, Cleric, Wizard + Reaver, Sapper, Grave-Speaker, Tollwright. Eight polished lanes covering melee/stealth/faith/arcane/premise-native. Each ships with XP affinities, a key-stat bump, and one real ability (Rally, Opening Strike, Benediction, Arcane Edge, Take From the Dead, Good Wadding, The Dead Speak First, Adjusted Terms + Invoke the Toll). First crystallization triggers at level 4 (3 for Vesselings) or at the Hollow Steward's fall; `crystallize` opens the Ledger of Paths any time after. The rest of the roster unlocks in waves as floors release.
 
 ### The classic thirteen
 | Class | Keep-native twist |

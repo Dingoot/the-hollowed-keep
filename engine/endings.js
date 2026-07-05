@@ -23,6 +23,7 @@ function handleShadowLordDefeat() {
 
   ROOMS.throne_of_shadows.exits.east = 'sanctum';
   GS.flags.shadowLordDefeated = true;
+  if (!GS.class) announceCrystallization();
 }
 
 // Add restart and ending commands to parser

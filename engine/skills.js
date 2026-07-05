@@ -19,6 +19,11 @@ function skillXpRate(skillId) {
   if (rem && rem.affinities && rem.affinities[skillId]) {
     rate += rem.affinities[skillId];
   }
+  const cls = GS.class ? CLASSES[GS.class] : null;
+  if (cls) {
+    if (cls.affinities && cls.affinities[skillId]) rate += cls.affinities[skillId];
+    if (cls.familyAffinity && SKILLS[skillId] && SKILLS[skillId].family === cls.familyAffinity.family) rate += cls.familyAffinity.amount;
+  }
   return Math.max(0.25, rate);
 }
 
@@ -90,6 +95,11 @@ function doStatsCmd() {
   const rem = REMNANTS[GS.remnant];
   print('=== THE VESSEL ===', 'text-amber');
   print('  Blood: ' + (race ? race.name : 'Unremembered'), 'text-white');
+  if (GS.class && CLASSES[GS.class]) {
+    print('  Path: ' + CLASSES[GS.class].name, 'text-white');
+  } else if (GS.flags && GS.flags.refusals) {
+    print('  Path: Unwritten — by choice, ' + GS.flags.refusals + ' refusal' + (GS.flags.refusals > 1 ? 's' : '') + ' and counting', 'keep-voice');
+  }
   if (GS.race === 'vesseling') {
     print('  Remnant: none. The Toll found nothing to miss.', 'text-dim');
   } else if (rem) {

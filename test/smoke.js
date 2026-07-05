@@ -19,9 +19,11 @@ const LOAD_ORDER = [
   "data/races.js",
   "data/remnants.js",
   "data/skills.js",
+  "data/classes.js",
   "engine/utils.js",
   "engine/state.js",
   "engine/skills.js",
+  "engine/classes.js",
   "engine/ui.js",
   "engine/chronicle.js",
   "engine/parser.js",
@@ -228,6 +230,78 @@ const driver = `
     initRoomStates();
     parseCommand("talk porter");
     parseCommand("ask toll");
+  });
+
+  // --- Crystallization ---
+  step("crystallize: recommendations follow play", () => {
+    GS = defaultState();
+    GS.race = "human";
+    GS.level = 4;
+    gainSkillXP("stealth", 400);
+    gainSkillXP("lockpicking", 400);
+    const recs = recommendedClasses();
+    assert(recs.length === 4, "human should get 4 offers, got " + recs.length);
+    assert(recs[0] === "rogue", "sneaky play should top-rank rogue, got " + recs[0]);
+  });
+  step("crystallize: ledger + accept", () => {
+    doCrystallize("");
+    doCrystallize("rogue");
+    assert(GS.flags.pendingClass === "rogue", "proposal not pending");
+    const dexBefore = GS.stats.dex;
+    doAcceptClass();
+    assert(GS.class === "rogue", "class not applied");
+    assert(GS.stats.dex === dexBefore + 1, "key stat bump missing");
+  });
+  step("class affinity feeds XP rate", () => {
+    assert(Math.abs(skillXpRate("daggers") - 1.35) < 0.001, "rogue+human daggers rate: " + skillXpRate("daggers"));
+  });
+  step("rogue opening strike flag", () => {
+    initRoomStates();
+    GS.currentRoom = "great_hall";
+    startCombat("giant_rats");
+    assert(GS.perks.firstStrikeDone === false, "flag not reset on combat start");
+    handleCombatCommand("attack");
+    assert(GS.perks.firstStrikeDone === true, "flag not set after strike");
+    GS.inCombat = false; GS.currentEnemy = null;
+  });
+  step("tollwright: adjusted death terms", () => {
+    GS = defaultState();
+    GS.race = "dwarf";
+    GS.class = "tollwright";
+    GS.gold = 50;
+    playerDeath("terms test");
+    assert(GS.gold === 40, "tollwright toll should halve to 10, gold: " + GS.gold);
+  });
+  step("fighter rally", () => {
+    GS = defaultState();
+    GS.class = "fighter";
+    GS.maxHp = 100; GS.hp = 10;
+    doRally();
+    assert(GS.hp === 40, "rally heal wrong: " + GS.hp);
+    doRally();
+    assert(GS.hp === 40, "rally must be once per rest");
+    resetPerRestAbilities();
+    GS.hp = 10;
+    doRally();
+    assert(GS.hp === 40, "rally should reset after rest");
+  });
+  step("reaver takes from the dead", () => {
+    GS = defaultState();
+    GS.class = "reaver";
+    GS.currentRoom = "great_hall";
+    initRoomStates();
+    GS.currentEnemy = { name: "Test", xp: 0, gold: 0, loot: null, hp: 0, maxHp: 10 };
+    GS.inCombat = true;
+    endCombat(true);
+    assert(GS.perks.reaverStacks === 1, "reaver stack missing: " + GS.perks.reaverStacks);
+    assert(getAttack() >= GS.attack + 1, "stack not in attack");
+  });
+  step("announce at level milestone", () => {
+    GS = defaultState();
+    GS.level = 4;
+    GS.crystalAnnounced = false;
+    announceCrystallization();
+    assert(GS.crystalAnnounced === true, "announcement did not fire");
   });
 
   step("meta unlock: vesseling at 5 deaths", () => {

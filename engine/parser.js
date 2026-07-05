@@ -58,6 +58,12 @@ function parseCommand(raw) {
     case 'answer': doAnswer(args); break;
     case 'search': case 'investigate': doSearch(); break;
     case 'skills': case 'skill': doSkillsCmd(); break;
+    case 'crystallize': case 'crystalize': case 'ledger': doCrystallize(args); break;
+    case 'accept': doAcceptClass(); break;
+    case 'unwritten': case 'refuse': doUnwritten(); break;
+    case 'rally': doRally(); break;
+    case 'pray': doPray(); break;
+    case 'invoke': doInvokeToll(); break;
     case 'stats': case 'self': case 'vessel': doStatsCmd(); break;
     case 'light': if (!args || args.includes('hearth') || args.includes('fire')) { doLightHearth(); } else { doUse(args); } break;
     case 'open': case 'unlock': doOpen(args); break;

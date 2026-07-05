@@ -24,9 +24,3 @@ A text-based adventure game with an old-internet MUD aesthetic.
 Movement: `north`, `south`, `east`, `west`, `up`, `down` (or `n`, `s`, `e`, `w`, `u`, `d`)
 
 Type `help` in-game for the full command list.
-
-## Lore
-
-> The Hollowed Keep surfaces where it pleases. At its threshold it takes the Toll:
-> name, past, trade, loves. Everything it has ever taken settles downward, floor
-> upon floor. Somewhere at the bottom is everything you were. The gates stand open.
