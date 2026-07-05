@@ -499,3 +499,8 @@ body {
   #output { padding: 10px 12px; }
   #input-area { padding: 8px 12px; }
 }
+
+/* === The Keep's voice + skills (character systems update) === */
+.keep-voice { color: var(--amber); font-style: italic; }
+.empty-note { color: #6b6b5a; font-style: italic; font-size: 0.85rem; }
+.line-bright { color: #fff; text-shadow: 0 0 6px rgba(255, 255, 255, 0.35); }

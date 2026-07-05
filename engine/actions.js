@@ -217,8 +217,13 @@ function doRead(args) {
   if (!args) { print('Read what?', 'error-msg'); return; }
   const idx = GS.inventory.findIndex(id => matchItem(id, args));
   if (idx !== -1) {
-    const item = ITEMS[GS.inventory[idx]];
+    const itemId = GS.inventory[idx];
+    const item = ITEMS[itemId];
     print(item.desc, 'text-white');
+    if (item.type === 'lore' && !GS.perks['read_' + itemId]) {
+      GS.perks['read_' + itemId] = true;
+      gainSkillXP('lore', 8);
+    }
     return;
   }
   print("You don't have anything like that to read.", 'error-msg');
@@ -261,6 +266,30 @@ function doPlay(args) {
 
 // === MISC COMMANDS ===
 
+function doLightHearth() {
+  const room = ROOMS[GS.currentRoom];
+  if (!room.hearth) { print('There is no hearth here worth the name.', 'error-msg'); return; }
+  if (GS.litHearths.includes(GS.currentRoom)) {
+    GS.lastHearth = GS.currentRoom;
+    print('The hearth already burns low and steady. Its warmth knows you.', 'text-amber');
+    return;
+  }
+  const canLight = GS.race === 'ashborn' || hasItem('torch') || hasItem('lantern') || isEquipped('torch') || isEquipped('lantern');
+  if (!canLight) { print('You have nothing to light it with.', 'error-msg'); return; }
+  GS.litHearths.push(GS.currentRoom);
+  GS.lastHearth = GS.currentRoom;
+  if (GS.race === 'ashborn') {
+    print('You touch the cold ash with one bright fingertip. The hearth takes the flame like a secret it was owed.', 'text-amber');
+    gainSkillXP('firecraft', 10);
+  } else {
+    print('You coax flame into the cold hearth. It catches slowly, then all at once.', 'text-amber');
+  }
+  print('Warmth spreads through the room. The stones remember what they were for.', 'text-white');
+  print('');
+  keepSays('For once, the Keep says nothing at all.');
+  saveGame();
+}
+
 function doRest() {
   const room = ROOMS[GS.currentRoom];
   const rs = roomStates[GS.currentRoom];
@@ -272,9 +301,15 @@ function doRest() {
     print("You're already at full health.", 'text-dim');
     return;
   }
-  const heal = rng(10, 20);
+  const atHearth = GS.litHearths.includes(GS.currentRoom);
+  if (atHearth) GS.lastHearth = GS.currentRoom;
+  const heal = atHearth ? GS.maxHp - GS.hp : rng(10, 20);
   GS.hp = Math.min(GS.maxHp, GS.hp + heal);
-  print('You rest for a while, tending your wounds. (+' + heal + ' HP)', 'combat-heal');
+  if (atHearth) {
+    print('You rest by the lit hearth. Sleep comes easily here — the only place it does. (fully healed)', 'combat-heal');
+  } else {
+    print('You rest for a while, tending your wounds. (+' + heal + ' HP)', 'combat-heal');
+  }
 }
 
 function doMap() {
@@ -440,12 +475,14 @@ function doBrew() {
     GS.itemsFound++;
     print("The alchemist combines the moonpetal and holy water with practiced hands. The mixture fizzes, turns green, then settles. 'An Antidote of Warding. Cures shadow corruption. You'll want that where you're going.'", 'npc-speech');
     print('Obtained: Antidote', 'text-amber');
+    gainSkillXP('brewing', 15);
   } else if (hasItem('healing_herb') && hasItem('empty_vial')) {
     GS.inventory = GS.inventory.filter(i => i !== 'healing_herb' && i !== 'empty_vial');
     GS.inventory.push('healing_potion');
     GS.itemsFound++;
     print("The alchemist crushes the moonpetal into the vial and adds a catalyst. 'Simple but effective. A healing draught.'", 'npc-speech');
     print('Obtained: Healing Potion', 'text-amber');
+    gainSkillXP('brewing', 12);
   } else {
     print("'Bring me ingredients! Moonpetal and holy water for an antidote. Moonpetal and an empty vial for a healing potion.'", 'npc-speech');
   }
@@ -463,6 +500,9 @@ function doHelp() {
   print('  examine (x) [thing] — Examine something closely', 'text-green');
   print('  search           — Search the room thoroughly', 'text-green');
   print('  map (m)          — Show explored areas', 'text-green');
+  print('  skills           — What the hollow holds', 'text-green');
+  print('  stats            — The vessel: blood, remnant, stats', 'text-green');
+  print('  light hearth     — Light a cold hearth (rest point · you wake here)', 'text-green');
   print('  push [thing]     — Push something', 'text-green');
   print('');
   print('ITEMS', 'text-amber');
@@ -518,6 +558,7 @@ function doOpen(args) {
     } else if (hasItem('lockpicks')) {
       rs.unlocked = true;
       print('You work the lockpicks with care. After a tense minute, the mechanism yields.', 'success-msg');
+      gainSkillXP('lockpicking', 12);
       if (NPCS.imprisoned_thief.quest && !NPCS.imprisoned_thief.quest.completed) {
         doGive('');
       }

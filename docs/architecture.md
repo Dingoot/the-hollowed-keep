@@ -14,10 +14,15 @@ data/               WORLD CONTENT — pure data, no logic
   npcs.js           every NPC, dialogue, quests
   enemies.js        every enemy
   chronicle.js      fake-multiplayer flavor data
+  races.js          the five races (stats, affinities, perks)
+  remnants.js       the fifteen remnants
+  skills.js         player skill definitions + XP curve
 engine/             GAME LOGIC — no content
   utils.js          rng, pick, helpers
   state.js          game state, save/load
-  ui.js             output rendering + side panels
+  skills.js         skill XP/carving, stat helpers, vessel sheet
+  creation.js       boot-screen character creation (the Toll)
+  ui.js             output rendering + side panels, the Keep's voice
   chronicle.js      chronicle/rune wall systems
   parser.js         command parsing + dispatch
   world.js          movement, look, examine

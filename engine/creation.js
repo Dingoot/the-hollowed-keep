@@ -1,0 +1,205 @@
+// === CHARACTER CREATION ===
+// Runs on the boot screen, after 'begin'. Two choices: blood, and what
+// the Toll missed. Everything else is carved by play.
+
+const CREATION = { stage: null, race: null, remnant: null, statPicks: [] };
+
+function bootPrint(text, cls) {
+  const bootEl = document.getElementById('boot-text');
+  const div = document.createElement('div');
+  div.className = 'line ' + (cls || 'line-white');
+  div.innerHTML = text;
+  bootEl.appendChild(div);
+  bootEl.scrollTop = bootEl.scrollHeight;
+}
+
+function startCreation() {
+  CREATION.stage = 'race';
+  CREATION.race = null;
+  CREATION.remnant = null;
+  CREATION.statPicks = [];
+  bootPrint('');
+  bootPrint('You remember the moor. You remember the gate.', 'line-white');
+  bootPrint('You remember beginning to step through it.', 'line-white');
+  bootPrint('');
+  bootPrint('[ The Keep acknowledges receipt of: one self. ]', 'line-amber');
+  bootPrint('');
+  bootPrint('Name, past, trade, loves, the reason you came — taken.', 'line-dim');
+  bootPrint('The Toll is not negotiable. It was written on the gate.', 'line-dim');
+  bootPrint('It was written in a language you knew, before.', 'line-dim');
+  bootPrint('');
+  bootPrint('But blood is not memory. Blood keeps its own records.', 'line-white');
+  bootPrint('');
+  bootPrint('What does your blood remember?', 'line-bright');
+  bootPrint('');
+  RACE_ORDER.forEach((id, i) => {
+    bootPrint('  ' + (i + 1) + '. ' + RACES[id].name.padEnd(12) + ' — ' + RACES[id].tagline, 'line-white');
+  });
+  bootPrint('');
+  bootPrint("Type a name or number to look closer.", 'line-dim');
+}
+
+function raceCard(id) {
+  const r = RACES[id];
+  bootPrint('');
+  bootPrint('  ═══ ' + r.name.toUpperCase() + ' ═══', 'line-amber');
+  const mods = Object.entries(r.stats).map(([k, v]) => k.toUpperCase() + (v > 0 ? ' +' : ' ') + v);
+  if (r.freeStatPoints) mods.push('+1 to any two stats');
+  if (mods.length) bootPrint('  ' + mods.join('  ·  '), 'line-white');
+  r.perkText.forEach(t => bootPrint('  + ' + t, 'line-white'));
+  r.drawbackText.forEach(t => bootPrint('  - ' + t, 'line-dim'));
+  bootPrint('  Exclusive class, someday: ' + r.exclusiveClass, 'line-dim');
+  bootPrint('  "' + r.flavor + '"', 'line-amber');
+  bootPrint('');
+  bootPrint("Keep this blood? ('yes', or another name/number)", 'line-bright');
+}
+
+function matchRace(input) {
+  const n = parseInt(input, 10);
+  if (!isNaN(n) && RACE_ORDER[n - 1]) return RACE_ORDER[n - 1];
+  return RACE_ORDER.find(id => id.startsWith(input) || RACES[id].name.toLowerCase().startsWith(input)) || null;
+}
+
+function showRemnantList() {
+  CREATION.stage = 'remnant';
+  bootPrint('');
+  bootPrint('The Porter pats you down with something that is not hands.', 'line-white');
+  bootPrint('');
+  bootPrint('[ Inventory of the taken: complete. Discrepancy found. ]', 'line-amber');
+  bootPrint('');
+  bootPrint('One thing survived the Toll. Missed, or left. Nobody will say.', 'line-white');
+  bootPrint('It is your only clue to who you were.', 'line-white');
+  bootPrint('');
+  REMNANT_ORDER.forEach((id, i) => {
+    bootPrint('  ' + String(i + 1).padStart(2) + '. ' + REMNANTS[id].name, 'line-white');
+  });
+  bootPrint('');
+  bootPrint('What do you find in your pocket? (number or a few words)', 'line-bright');
+}
+
+function matchRemnant(input) {
+  const n = parseInt(input, 10);
+  if (!isNaN(n) && REMNANT_ORDER[n - 1]) return REMNANT_ORDER[n - 1];
+  return REMNANT_ORDER.find(id =>
+    REMNANTS[id].name.toLowerCase().includes(input) || id.replace('_', ' ').includes(input)) || null;
+}
+
+function remnantCard(id) {
+  const r = REMNANTS[id];
+  bootPrint('');
+  bootPrint('  ═══ ' + r.name.toUpperCase() + ' ═══', 'line-amber');
+  bootPrint('  "' + r.whisper + '"', 'line-amber');
+  const aff = Object.entries(r.affinities || {}).map(([k, v]) =>
+    '+' + Math.round(v * 100) + '% ' + (SKILLS[k] ? SKILLS[k].name : k) + ' XP');
+  if (r.bonusAttack) aff.push('+' + r.bonusAttack + ' attack');
+  if (r.bonusCon) aff.push('+' + r.bonusCon + ' CON');
+  if (aff.length) bootPrint('  ' + aff.join('  ·  '), 'line-white');
+  if (r.perks.length) bootPrint('  Something more sleeps in it. You will find out what.', 'line-dim');
+  bootPrint('');
+  bootPrint("Keep it? ('yes', or another number)", 'line-bright');
+}
+
+// Pure state application — also used by tests.
+function applyRaceToState(raceId) {
+  GS.race = raceId;
+  const r = RACES[raceId];
+  for (const [stat, mod] of Object.entries(r.stats)) {
+    GS.stats[stat] += mod;
+  }
+}
+
+function applyRemnantToState(remId) {
+  GS.remnant = remId;
+  const r = REMNANTS[remId];
+  if (r.bonusCon) GS.stats.con += r.bonusCon;
+  for (const p of r.perks) GS.perks[p] = true;
+}
+
+// Derived numbers, computed once when creation completes.
+// (When stats become raisable mid-game, this moves into getAttack/getDefense.)
+function applyDerivedStats() {
+  GS.maxHp = 100 + (GS.stats.con - 10) * 5;
+  GS.hp = GS.maxHp;
+  GS.attack = 5 + statMod(GS.stats.str);
+  GS.defense = 3 + statMod(GS.stats.dex);
+  const rem = REMNANTS[GS.remnant];
+  if (rem && rem.bonusAttack) GS.attack += rem.bonusAttack;
+}
+
+function handleCreationInput(raw) {
+  const input = raw.trim().toLowerCase();
+  if (!input) return;
+
+  if (CREATION.stage === 'race') {
+    const id = matchRace(input);
+    if (id) { CREATION.race = id; CREATION.stage = 'race_confirm'; raceCard(id); }
+    else bootPrint('  Your blood does not remember that. Try a name or number from the list.', 'line-dim');
+    return;
+  }
+
+  if (CREATION.stage === 'race_confirm') {
+    if (input === 'yes' || input === 'y' || input === 'keep') {
+      applyRaceToState(CREATION.race);
+      const r = RACES[CREATION.race];
+      if (r.freeStatPoints > 0) {
+        CREATION.stage = 'stats';
+        bootPrint('');
+        bootPrint('Human blood remembers a little of everything. Choose where it runs strongest.', 'line-white');
+        bootPrint('Raise two, one at a time: str, dex, con, int, wis, cha (the same one twice is allowed)', 'line-bright');
+      } else if (CREATION.race === 'vesseling') {
+        finishCreation();
+      } else {
+        showRemnantList();
+      }
+    } else {
+      const id = matchRace(input);
+      if (id) { CREATION.race = id; raceCard(id); }
+      else bootPrint("  'yes' to keep this blood, or another name/number.", 'line-dim');
+    }
+    return;
+  }
+
+  if (CREATION.stage === 'stats') {
+    const valid = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
+    const pick = valid.find(s => input.startsWith(s));
+    if (!pick) { bootPrint('  One of: str, dex, con, int, wis, cha', 'line-dim'); return; }
+    CREATION.statPicks.push(pick);
+    GS.stats[pick] += 1;
+    bootPrint('  ' + pick.toUpperCase() + ' rises to ' + GS.stats[pick] + '.', 'line-white');
+    if (CREATION.statPicks.length >= 2) showRemnantList();
+    else bootPrint('  And the second?', 'line-bright');
+    return;
+  }
+
+  if (CREATION.stage === 'remnant') {
+    const id = matchRemnant(input);
+    if (id) { CREATION.remnant = id; CREATION.stage = 'remnant_confirm'; remnantCard(id); }
+    else bootPrint('  Your pocket disagrees. Try a number from the list.', 'line-dim');
+    return;
+  }
+
+  if (CREATION.stage === 'remnant_confirm') {
+    if (input === 'yes' || input === 'y' || input === 'keep') {
+      applyRemnantToState(CREATION.remnant);
+      finishCreation();
+    } else {
+      const id = matchRemnant(input);
+      if (id) { CREATION.remnant = id; remnantCard(id); }
+      else bootPrint("  'yes' to keep it, or another number.", 'line-dim');
+    }
+    return;
+  }
+}
+
+function finishCreation() {
+  CREATION.stage = null;
+  applyDerivedStats();
+  bootPrint('');
+  if (GS.race === 'vesseling') {
+    bootPrint('The Porter checks your pockets twice. They are empty. They were always empty.', 'line-white');
+    bootPrint('[ Discrepancy: none. The Keep double-checks. The Keep does not like it either. ]', 'line-amber');
+  }
+  bootPrint('The gate is behind you. It was always behind you.', 'line-white');
+  bootPrint('');
+  setTimeout(() => startGame(false), 600);
+}

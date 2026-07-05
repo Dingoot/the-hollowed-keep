@@ -68,8 +68,13 @@ function handleBootInput(e) {
   const input = e.target.value.trim().toLowerCase();
   e.target.value = '';
 
+  if (CREATION.stage) {
+    handleCreationInput(input);
+    return;
+  }
+
   if (input === 'begin' || input === 'start' || input === 'play' || input === 'enter') {
-    startGame();
+    startCreation();
   } else if (input === 'load' || input === 'restore') {
     startGame(true);
   } else if (input === 'lore' || input === 'history') {
@@ -114,14 +119,19 @@ function startGame(loadSave) {
     const loaded = loadGame();
     if (!loaded) {
       GS.gameStarted = true;
-      printRoom('moor_path');
+      printRoom(GS.currentRoom);
     }
   } else {
     GS.gameStarted = true;
-    print('You step onto the moor path. The fog closes behind you like a curtain.', 'text-amber');
-    print('There is no going back.', 'text-dim');
+    print('Cold flagstones. A grey sky framed by black walls.', 'text-amber');
+    print('You are lying in a courtyard, and you do not remember lying down.', 'text-amber');
     print('');
-    printRoom('moor_path');
+    keepSays('The Toll is paid. Welcome to the Hollowed Keep.');
+    print('');
+    print('Something is missing. Everything is missing. Your hands know things', 'text-dim');
+    print('your mind does not. Perhaps, in here, you will meet yourself.', 'text-dim');
+    print('');
+    printRoom(GS.currentRoom);
   }
 
   const cmdInput = inputEl();

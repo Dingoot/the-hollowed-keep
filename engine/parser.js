@@ -57,6 +57,9 @@ function parseCommand(raw) {
     case 'ask': doAsk(args); break;
     case 'answer': doAnswer(args); break;
     case 'search': case 'investigate': doSearch(); break;
+    case 'skills': case 'skill': doSkillsCmd(); break;
+    case 'stats': case 'self': case 'vessel': doStatsCmd(); break;
+    case 'light': if (!args || args.includes('hearth') || args.includes('fire')) { doLightHearth(); } else { doUse(args); } break;
     case 'open': case 'unlock': doOpen(args); break;
     case 'push': case 'pull': case 'press': doPush(args); break;
     case 'read': doRead(args); break;
@@ -65,7 +68,7 @@ function parseCommand(raw) {
     case 'play': doPlay(args); break;
     case 'rest': case 'sleep': doRest(); break;
     case 'map': case 'm': doMap(); break;
-    case 'stats': case 'status': case 'stat': doStats(); break;
+    case 'status': case 'stat': case 'record': doStats(); break;
     case 'quests': case 'journal': case 'quest': doQuests(); break;
     case 'save': saveGame(); break;
     case 'load': case 'restore': loadGame(); break;

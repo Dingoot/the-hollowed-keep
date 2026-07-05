@@ -27,18 +27,8 @@ const originalParse = parseCommand;
 parseCommand = function(raw) {
   const input = raw.trim().toLowerCase();
   if (input === 'restart' || input === 'new game' || input === 'newgame') {
-    GS = defaultState();
-    initRoomStates();
-    for (const npc of Object.values(NPCS)) {
-      if (npc.quest) { npc.quest.active = false; npc.quest.completed = false; }
-      if (npc.riddleSolved !== undefined) npc.riddleSolved = false;
-    }
-    outputEl().innerHTML = '';
-    print('A new journey begins...', 'text-amber');
-    print('');
-    printRoom('moor_path');
-    GS.gameStarted = true;
-    updatePanels();
+    // Back through the gate. The Toll is taken fresh each time.
+    location.reload();
     return;
   }
 

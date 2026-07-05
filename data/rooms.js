@@ -82,6 +82,7 @@ const ROOMS = {
   great_hall: {
     name: "The Great Hall",
     region: "Ground Floor",
+    hearth: true,
     desc: "A vast chamber with vaulted ceilings lost in shadow. A long banquet table runs its length, set for a feast that was never eaten—plates of petrified food, goblets of dust. Tattered banners hang from the walls, their heraldry: a black tower on a field of flame. Massive hearths at each end hold nothing but cold ash. The hall feels like it's waiting.",
     exits: { south: "main_courtyard", east: "library", west: "kitchen", north: "chapel", up: "grand_staircase" },
     items: [],
@@ -92,6 +93,7 @@ const ROOMS = {
   kitchen: {
     name: "The Kitchen",
     region: "Ground Floor",
+    hearth: true,
     desc: "Blackened pots still hang over cold hearths. Knives rust in a block. The pantry door hangs open, and something has been at the stores—tooth marks in petrified bread, claw marks on shelving. A lantern sits on the prep table, its glass intact, oil still sloshing inside. Someone was here recently.",
     exits: { east: "great_hall", north: "pantry", west: "servants_quarters" },
     items: ["lantern"],
@@ -117,6 +119,7 @@ const ROOMS = {
   library: {
     name: "The Library",
     region: "Ground Floor",
+    hearth: true,
     desc: "Towering shelves of books stretch into darkness above. Many volumes have decayed to mulch, but others are preserved—bound in materials that resist time. The smell of old paper and leather is overwhelming. A reading area with armchairs sits near a cold fireplace. The shelves are organized by a system you don't recognize—the categories seem to include 'Things That Were', 'Things That Are', and 'Things That Should Not Be'.",
     exits: { west: "great_hall", north: "reading_nook" },
     items: ["ancient_tome"],

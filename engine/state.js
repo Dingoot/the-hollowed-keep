@@ -1,7 +1,7 @@
 // === GAME STATE ===
 
 const defaultState = () => ({
-  currentRoom: "moor_path",
+  currentRoom: "main_courtyard",
   hp: 100,
   maxHp: 100,
   attack: 5,
@@ -10,6 +10,14 @@ const defaultState = () => ({
   xp: 0,
   xpToLevel: 50,
   gold: 0,
+  race: null,
+  remnant: null,
+  stats: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10, hollow: 0 },
+  skills: {},
+  perks: {},
+  litHearths: [],
+  lastHearth: null,
+  searchedRooms: [],
   inventory: [],
   equipped: { weapon: null, armor: null, offhand: null, light: null, amulet: null, ring: null },
   spells: [],

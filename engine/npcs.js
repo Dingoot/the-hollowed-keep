@@ -1,5 +1,21 @@
 // === NPC INTERACTION ===
 
+// Topics visible to this player (Gravekin hear more from the dead).
+function npcTopics(npc) {
+  const t = Object.assign({}, npc.topics || {});
+  if (GS.race === 'gravekin' && npc.gravekinTopics) Object.assign(t, npc.gravekinTopics);
+  return t;
+}
+
+function trackSkullTalk(npcId) {
+  if (npcId !== 'talking_skull') return;
+  GS.perks.skullTalks = (GS.perks.skullTalks || 0) + 1;
+  const needed = GS.race === 'gravekin' ? 3 : 5;
+  if (GS.perks.skullTalks >= needed && !GS.skills.bone_speaking) {
+    gainSkillXP('bone_speaking', 10);
+  }
+}
+
 function doTalk(args) {
   const room = ROOMS[GS.currentRoom];
   if (!room.npcs || room.npcs.length === 0) {
@@ -14,9 +30,10 @@ function doTalk(args) {
   const npc = NPCS[npcId];
   print('<span class="npc-name">' + npc.name + '</span>', '');
   print(npc.greeting, 'npc-speech');
+  trackSkullTalk(npcId);
   if (npc.topics) {
     print('');
-    print('Topics: ' + Object.keys(npc.topics).join(', '), 'text-dim');
+    print('Topics: ' + Object.keys(npcTopics(npc)).join(', '), 'text-dim');
     print("(Type 'ask [topic]' to inquire)", 'text-dim');
   }
 

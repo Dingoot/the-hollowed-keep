@@ -58,6 +58,7 @@ function handleCombatCommand(input) {
     const dmg = Math.max(1, playerAtk + bonusDmg - enemy.defense + rng(-2, 2));
     enemy.hp -= dmg;
     print('You strike the ' + enemy.name + ' for ' + dmg + ' damage!', 'combat-hit');
+    gainSkillXP(equippedWeaponSkill(), 5);
 
     if (enemy.hp <= 0) {
       endCombat(true);
@@ -211,6 +212,14 @@ function doFlee() {
   updatePanels();
 }
 
+const DEATH_TOLL_LINES = [
+  'The rat, it should be said, was also having a bad day.',
+  'It will be spent on upkeep. The Keep always says that.',
+  'Consider it rent, paid in arrears.',
+  'The Keep files it under: tuition.',
+  'Somewhere below, something smiled.',
+];
+
 function playerDeath(cause) {
   GS.inCombat = false;
   GS.currentEnemy = null;
@@ -224,20 +233,31 @@ function playerDeath(cause) {
   } else {
     print('  Slain by: ' + cause, 'text-red');
   }
-  print('  Deaths: ' + GS.deaths + ' | Rooms: ' + GS.roomsDiscovered + ' | Turns: ' + GS.turnCount, 'text-dim');
   print('', '');
-  print('  The Keep endures. You do not.', 'text-dim');
-  print('  But the moor path remembers your footsteps...', 'text-dim');
-  print('', '');
-  printLine();
-  print("Type 'load' to restore a save, or 'restart' to begin anew.", 'text-amber');
-
+  keepSays('The Keep accepts your offering.');
+  // Death toll, tier 1: gold. Deeper tiers arrive with deeper floors.
+  if (GS.gold > 0) {
+    const taken = Math.min(GS.gold, 5 + Math.floor(GS.gold * 0.3));
+    GS.gold -= taken;
+    keepSays('Taken: ' + taken + ' gold. ' + pick(DEATH_TOLL_LINES));
+  } else {
+    keepSays('You had nothing worth taking. The Keep finds this almost admirable.');
+  }
   GS.hp = GS.maxHp;
   GS.poisoned = false;
   GS.poisonTurns = 0;
-  GS.currentRoom = 'moor_path';
   GS.tempAttackBonus = 0;
   GS.tempAttackTurns = 0;
+  const home = GS.lastHearth || 'main_courtyard';
+  GS.currentRoom = home;
+  print('');
+  if (GS.lastHearth) {
+    print('You wake at the hearth you lit. The embers have kept your shape warm.', 'text-amber');
+  } else {
+    print('You wake on the courtyard flagstones. Again. The stones are getting to know you.', 'text-amber');
+  }
+  print('');
+  printRoom(home);
 }
 
 function checkLevelUp() {

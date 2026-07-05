@@ -14,6 +14,9 @@ function print(text, className) {
 
 function printLine() { print('<span class="separator">' + '─'.repeat(50) + '</span>'); }
 
+// The Keep's voice — the bracketed system layer. Old, dry, faintly amused.
+function keepSays(text) { print('[ ' + text + ' ]', 'keep-voice'); }
+
 function printRoom(roomId) {
   const room = ROOMS[roomId];
   const rs = roomStates[roomId];
@@ -71,6 +74,13 @@ function printRoom(roomId) {
     GS.roomsDiscovered++;
   }
 
+  if (GS.race === 'dwarf' && room.search && !GS.searchedRooms.includes(roomId)) {
+    print('(Your bones itch. Something here rewards a closer look.)', 'text-dim');
+  }
+  if (GS.race === 'gravekin' && roomId === 'chapel') {
+    print('(The sanctified ground prickles, faintly offended by your blood.)', 'text-dim');
+  }
+
   document.title = 'The Hollowed Keep — ' + room.name;
   updatePanels();
 }
@@ -86,6 +96,7 @@ function getExits(roomId) {
 }
 
 function hasLight() {
+  if (GS.race === 'ashborn') return true; // Candleflame: always with you.
   return GS.equipped.light !== null;
 }
 
@@ -99,6 +110,7 @@ function isEquipped(id) {
 
 function getAttack() {
   let atk = GS.attack;
+  atk += GS.tempAttackBonus === undefined ? 0 : 0; // (stat contribution applied at creation — see applyDerivedStats)
   if (GS.equipped.weapon && ITEMS[GS.equipped.weapon]) atk += ITEMS[GS.equipped.weapon].attack || 0;
   if (GS.equipped.ring && ITEMS[GS.equipped.ring]) atk += ITEMS[GS.equipped.ring].attack || 0;
   atk += GS.tempAttackBonus;
@@ -117,6 +129,7 @@ function getDefense() {
 
 function updatePanels() {
   updateStats();
+  updateSkills();
   updateInventory();
   updateMap();
   updateQuests();
@@ -135,6 +148,10 @@ function updateStats() {
     <div class="stat-line"><span class="stat-label">ATK</span><span class="stat-value">${getAttack()}</span></div>
     <div class="stat-line"><span class="stat-label">DEF</span><span class="stat-value">${getDefense()}</span></div>
     <div class="stat-line"><span class="stat-label">Gold</span><span class="stat-value">${GS.gold}</span></div>
+    <div class="stat-line"><span class="stat-label">Blood</span><span class="stat-value">${GS.race && RACES[GS.race] ? RACES[GS.race].name : '—'}</span></div>
+    <div class="stat-line"><span class="stat-label">S/D/C</span><span class="stat-value">${GS.stats.str}/${GS.stats.dex}/${GS.stats.con}</span></div>
+    <div class="stat-line"><span class="stat-label">I/W/Ch</span><span class="stat-value">${GS.stats.int}/${GS.stats.wis}/${GS.stats.cha}</span></div>
+    ${GS.stats.hollow > 0 ? '<div class="stat-line"><span class="stat-label">Hollow</span><span class="stat-value warning">' + GS.stats.hollow + '</span></div>' : ''}
     <div class="stat-line"><span class="stat-label">Rooms</span><span class="stat-value">${GS.roomsDiscovered}/${Object.keys(ROOMS).length}</span></div>
     ${GS.poisoned ? '<div class="stat-line"><span class="stat-value danger">POISONED</span></div>' : ''}
     ${GS.tempAttackBonus > 0 ? '<div class="stat-line"><span class="stat-value warning">STR+' + GS.tempAttackBonus + ' (' + GS.tempAttackTurns + ')</span></div>' : ''}

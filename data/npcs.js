@@ -113,6 +113,9 @@ const NPCS = {
     name: "Talking Skull",
     desc: "A human skull resting on a shelf of other skulls, distinguished only by the faint green glow in its eye sockets and the fact that it won't shut up.",
     greeting: "'Oh wonderful, another hero. Let me guess—you're here for the Scepter. Everyone's here for the Scepter. Nobody's here for the charming company. Nobody asks how the skull is doing. Fine, thanks for asking.'",
+    gravekinTopics: {
+      kinship: "'Ah. Quiet-blood. You hear us without the theatrics, don't you? A tip between relatives: ask the bones before you trust the doors. The bones have no reason left to lie.'",
+    },
     topics: {
       catacombs: "'The bone arrangements aren't random. They're a warning, a history, and a map all at once. The skulls face the safe paths. The ribcages arch over danger. Read the bones and you'll survive. Probably.'",
       wraith: "'The wraith down here was the Keep's chaplain, if you can believe it. Holy man gone very unholy. Silver hurts it. Holy water destroys it. Regular weapons just make it angry, and trust me, you don't want an angry wraith.'",
