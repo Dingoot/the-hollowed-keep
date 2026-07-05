@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Hollowed Keep</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F3F0;</text></svg>">
+</head>
+<body>
+
+  <div class="crt-overlay"></div>
+
+  <div id="boot-screen">
+    <div id="boot-text"></div>
+    <div id="boot-prompt" class="hidden">
+      <span class="prompt-char">&gt; </span>
+      <input type="text" id="boot-input" spellcheck="false" autocomplete="off" autocapitalize="off">
+    </div>
+  </div>
+
+  <div id="game-container" class="hidden">
+
+    <header id="ascii-header"><pre id="castle-art"></pre></header>
+
+    <div id="game-layout">
+
+      <aside id="left-panel">
+        <div class="panel-section" id="stats-panel">
+          <div class="panel-title">[ STATUS ]</div>
+          <div id="stats-content"></div>
+        </div>
+        <div class="panel-section" id="inventory-panel">
+          <div class="panel-title">[ INVENTORY ]</div>
+          <div id="inventory-content"></div>
+        </div>
+        <div class="panel-section" id="map-panel">
+          <div class="panel-title">[ MAP ]</div>
+          <pre id="map-content"></pre>
+        </div>
+        <div class="panel-section" id="quests-panel">
+          <div class="panel-title">[ QUESTS ]</div>
+          <div id="quests-content"></div>
+        </div>
+      </aside>
+
+      <main id="center-panel">
+        <div id="output" role="log" aria-live="polite"></div>
+        <div id="input-area">
+          <span class="prompt-char">&gt; </span>
+          <input type="text" id="command-input" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="enter command...">
+        </div>
+      </main>
+
+      <aside id="right-panel">
+        <div class="panel-section" id="chronicle-panel">
+          <div class="panel-title">[ ADVENTURER'S CHRONICLE ]</div>
+          <div id="chronicle-content"></div>
+        </div>
+        <div class="panel-section" id="runewall-panel">
+          <div class="panel-title">[ RUNE WALL ]</div>
+          <div id="runewall-content"></div>
+        </div>
+        <div class="panel-section" id="server-panel">
+          <div class="panel-title">[ SERVER ]</div>
+          <div id="server-content"></div>
+        </div>
+      </aside>
+
+    </div>
+
+    <footer id="game-footer">
+      <span id="footer-left">The Hollowed Keep v2.17 &middot; Est. 993 A.D.</span>
+      <span id="footer-right">hollowkeep.net:6660</span>
+    </footer>
+
+  </div>
+
+  <div id="mobile-tabs" class="hidden">
+    <button class="tab-btn active" data-panel="center-panel">Game</button>
+    <button class="tab-btn" data-panel="left-panel">Status</button>
+    <button class="tab-btn" data-panel="right-panel">Chronicle</button>
+  </div>
+
+  <!-- Load order is a contract: data first, then engine; endings.js must
+       follow parser.js (it wraps parseCommand); main.js always last.
+       Keep in sync with LOAD_ORDER in test/smoke.js. -->
+  <script src="data/art.js"></script>
+  <script src="data/rooms.js"></script>
+  <script src="data/items.js"></script>
+  <script src="data/npcs.js"></script>
+  <script src="data/enemies.js"></script>
+  <script src="data/chronicle.js"></script>
+  <script src="engine/utils.js"></script>
+  <script src="engine/state.js"></script>
+  <script src="engine/ui.js"></script>
+  <script src="engine/chronicle.js"></script>
+  <script src="engine/parser.js"></script>
+  <script src="engine/world.js"></script>
+  <script src="engine/actions.js"></script>
+  <script src="engine/combat.js"></script>
+  <script src="engine/npcs.js"></script>
+  <script src="engine/endings.js"></script>
+  <script src="engine/main.js"></script>
+</body>
+</html>
