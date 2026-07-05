@@ -6,8 +6,6 @@ A text-based adventure game with an old-internet MUD aesthetic.
 
 **Play it:** Open `index.html` in any browser. No server required.
 
-**Structure:** world content lives in `data/`, game logic in `engine/`, design docs in `docs/` — see `docs/architecture.md`. Test with `node test/smoke.js`. The original single-file prototype is preserved in `legacy/`.
-
 ## Features
 
 - 39 rooms across 6 regions (The Threshold, Courtyard, Ground Floor, Upper Floors, The Dungeons, The Deep)
@@ -19,7 +17,6 @@ A text-based adventure game with an old-internet MUD aesthetic.
 - Save/load via localStorage
 - Adventurer's Chronicle: simulated live activity from other "players"
 - Rune Wall: leave persistent messages for future visits
-- CRT terminal aesthetic with ASCII art castle
 - Mobile-responsive with tabbed panels
 
 ## Commands
