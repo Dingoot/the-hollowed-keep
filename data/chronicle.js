@@ -12,7 +12,7 @@ const ADVENTURER_NAMES = [
 const CHRONICLE_EVENTS = [
   { action: "fell to the Wraith in the Catacombs", type: "death" },
   { action: "was slain by the Shadow Knight", type: "death" },
-  { action: "perished at the Shadow Lord's hand", type: "death" },
+  { action: "was unmade by the Hollow Steward", type: "death" },
   { action: "was devoured by giant rats on the moor", type: "death" },
   { action: "drowned in the flooded passage", type: "death" },
   { action: "succumbed to spider venom", type: "death" },
@@ -47,11 +47,11 @@ const RUNE_WALL_MESSAGES = [
   { text: "I've been here three days. Or three centuries. Time is broken.", author: "Wanderer_42" },
   { text: "Don't look through the telescope at midnight.", author: "StarAnvil" },
   { text: "The merchant ghost gives fair prices. The skull gives fair warnings.", author: "Oakenshield" },
-  { text: "To whoever finds this: I didn't make it out. The Scepter isn't worth it.", author: "Ser Aldous" },
+  { text: "To whoever finds this: I didn't make it out. The Rod isn't worth it. Nothing down there is worth it. Says the man still here.", author: "Ser Aldous" },
   { text: "The stars below the glass floor are not stars. They are eyes.", author: "Hexbound" },
   { text: "If you free the thief, watch your pockets.", author: "Daggerfall" },
-  { text: "The crown is the answer. The Scepter is the trap.", author: "Unknown" },
-  { text: "I chose power. I regret it. Don't be me.", author: "Lord Vane" },
+  { text: "The crown gives back. The rod keeps taking. Choose like it's your last self. It is.", author: "Unknown" },
+  { text: "I kept two books. I regret both.", author: "Malchor" },
   { text: "Three shards make a key. River, rune, crypt.", author: "GhostPetal" },
 ];
 

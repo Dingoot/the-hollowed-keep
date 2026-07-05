@@ -87,6 +87,14 @@ function handleCombatCommand(input) {
       print('You hurl the holy water! It burns the ' + enemy.name + ' for ' + dmg + ' damage!', 'combat-hit');
       if (enemy.hp <= 0) { endCombat(true); return; }
       print(enemy.name + ' HP: ' + enemy.hp + '/' + enemy.maxHp, 'combat-info');
+    } else if (itemId === 'crude_bomb') {
+      GS.inventory.splice(itemIdx, 1);
+      const dmg = (item.damage || 25) + rng(0, 10);
+      enemy.hp -= dmg;
+      print('You hurl the crude bomb! The blast tears through the ' + enemy.name + ' — and a fair amount of masonry. (' + dmg + ' damage)', 'combat-hit');
+      gainSkillXP('demolitions', 20);
+      if (enemy.hp <= 0) { endCombat(true); return; }
+      print(enemy.name + ' HP: ' + enemy.hp + '/' + enemy.maxHp, 'combat-info');
     } else if (item.healing) {
       GS.inventory.splice(itemIdx, 1);
       GS.hp = Math.min(GS.maxHp, GS.hp + item.healing);

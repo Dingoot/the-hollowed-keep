@@ -20,13 +20,12 @@ function runBootSequence() {
     { text: '', cls: '', delay: 200 },
     { text: '═'.repeat(56), cls: 'line-amber', delay: 100 },
     { text: '  THE HOLLOWED KEEP  ·  A Text Adventure', cls: 'line-bright', delay: 100 },
-    { text: '  Est. 993 A.D.  ·  Version 2.17', cls: 'line-dim', delay: 100 },
+    { text: '  Older than its own records  ·  Version 3.0', cls: 'line-dim', delay: 100 },
     { text: '  hollowkeep.net:6660', cls: 'line-dim', delay: 100 },
     { text: '═'.repeat(56), cls: 'line-amber', delay: 100 },
     { text: '', cls: '', delay: 300 },
-    { text: '  "The Keep appeared one moonless night. None knew its origin.', cls: 'line-white', delay: 100 },
-    { text: '   At its heart, the Scepter of Aethon—a relic of shadow and', cls: 'line-white', delay: 100 },
-    { text: '   flame—calls to those bold enough to claim it."', cls: 'line-white', delay: 100 },
+    { text: '  "Every door demands a toll. The Keep\'s toll is you."', cls: 'line-white', delay: 100 },
+    { text: '   Paid at the threshold. Collected forever. The gates stand open.', cls: 'line-white', delay: 100 },
     { text: '', cls: '', delay: 300 },
     { text: "  Type 'begin' to enter the Keep, or 'load' to restore a save.", cls: 'line-cyan', delay: 100 },
     { text: "  Type 'lore' for history, 'help' for commands.", cls: 'line-dim', delay: 100 },
@@ -81,7 +80,7 @@ function handleBootInput(e) {
     const bootEl = document.getElementById('boot-text');
     const div = document.createElement('div');
     div.className = 'line line-white';
-    div.innerHTML = '\n  The Hollowed Keep appeared on the moors of Ashenvale one moonless\n  night in 993 A.D. Lord Aldric Vane summoned it from between worlds\n  using the Scepter of Aethon. Each lord of the Vane dynasty wielded\n  the Scepter, each consumed by its power. The last—Lord Malachar—\n  became the Shadow Lord, bound to the throne for eternity.\n\n  Many have entered seeking the Scepter. Few have returned.\n  The Keep endures.\n\n  Type \'begin\' to enter.\n';
+    div.innerHTML = '\n  The Hollowed Keep surfaces where it pleases. One moonless night it\n  stood on the moor, gates open. The desperate walk in — and at the\n  threshold the Keep takes its Toll: name, past, trade, loves.\n\n  Once, a household of Stewards collected the Toll at the gate so the\n  Keep would not collect it inside. The last Steward skimmed from the\n  take. The Keep noticed. It always notices. He sits below now,\n  hollowed into a warning, still holding the Toll-Rod.\n\n  Everything the Keep has ever taken settles downward, floor upon\n  floor. Somewhere at the bottom is everything you were.\n\n  Type \'begin\' to pay the Toll.\n';
     bootEl.appendChild(div);
     bootEl.scrollTop = bootEl.scrollHeight;
   } else if (input === 'help') {

@@ -1,6 +1,6 @@
 // ============================================================
 //  THE HOLLOWED KEEP
-//  A Text Adventure  ·  Est. 993 A.D.
+//  A Text Adventure  ·  Older than its own records
 //  hollowkeep.net:6660  ·  Version 2.17
 // ============================================================
 

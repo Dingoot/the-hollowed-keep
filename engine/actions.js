@@ -232,6 +232,16 @@ function doRead(args) {
 // === CRAFTING ===
 
 function doCombine(args) {
+  if (hasItem('saltpeter') && hasItem('lamp_oil') && (args.includes('salt') || args.includes('oil') || args.includes('bomb') || args.includes('powder') || !args)) {
+    GS.inventory = GS.inventory.filter(i => i !== 'saltpeter' && i !== 'lamp_oil');
+    GS.inventory.push('crude_bomb');
+    GS.itemsFound++;
+    print('You pack the saltpeter and oil-soaked wadding into the flask, working from an instinct your hands seem to have kept off the books.', 'text-white');
+    print('Obtained: Crude Bomb', 'text-amber');
+    gainSkillXP('demolitions', 15);
+    return;
+  }
+
   if (hasItem('crystal_shard_1') && hasItem('crystal_shard_2') && hasItem('crystal_shard_3') &&
       (args.includes('shard') || args.includes('crystal'))) {
     GS.inventory = GS.inventory.filter(i => !i.startsWith('crystal_shard'));
@@ -315,7 +325,7 @@ function doRest() {
 
 function doMap() {
   print('=== EXPLORED REGIONS ===', 'text-amber');
-  const regionOrder = ["The Approach", "Courtyard", "Ground Floor", "Upper Floors", "The Dungeons", "The Deep"];
+  const regionOrder = ["The Threshold", "Courtyard", "Ground Floor", "Upper Floors", "The Dungeons", "The Deep"];
   for (const region of regionOrder) {
     const rooms = Object.entries(ROOMS).filter(([id, r]) => r.region === region && GS.visitedRooms.includes(id));
     if (rooms.length === 0) continue;
@@ -380,18 +390,18 @@ function doQuests() {
 function doLore() {
   print('=== THE HOLLOWED KEEP ===', 'text-amber');
   print('', '');
-  print('The Hollowed Keep appeared on the moors of Ashenvale one moonless', 'text-white');
-  print('night in 993 A.D. None knew its origin. The local folk whispered of', 'text-white');
-  print('Lord Aldric Vane—a nobleman who sought power beyond mortal reach—and', 'text-white');
-  print('the Scepter of Aethon, a relic said to command shadow and flame.', 'text-white');
+  print('The Hollowed Keep surfaces where it pleases. One moonless night it', 'text-white');
+  print('stood on the moor — gates open, windows dark, patient. It does not', 'text-white');
+  print('advertise. At the threshold it takes the Toll: name, past, trade,', 'text-white');
+  print('loves. The blood stays. One keepsake stays. Terms are terms.', 'text-white');
   print('', '');
-  print('The Vane dynasty ruled from the Keep for generations, each lord', 'text-white');
-  print('wielding the Scepter, each consumed by its power. The last—Lord', 'text-white');
-  print('Malachar Vane—opened the way fully, becoming the Shadow Lord, a', 'text-white');
-  print('being of pure darkness bound to the throne for eternity.', 'text-white');
+  print('Once, a household of Stewards collected the Toll at the gate so the', 'text-white');
+  print('Keep would not collect inside. The last Steward, Malchor, skimmed', 'text-white');
+  print('from the take. The Keep noticed. It always notices. He sits below', 'text-white');
+  print('now, hollowed into a warning, still holding the Toll-Rod.', 'text-white');
   print('', '');
-  print('Many adventurers have entered the Keep seeking the Scepter.', 'text-white');
-  print('Few have returned. The Keep endures.', 'text-white');
+  print('Everything the Keep has ever taken settles downward, floor upon', 'text-white');
+  print('floor. Somewhere at the bottom is everything you were.', 'text-white');
   print('', '');
   print('Type "help" for a list of commands.', 'text-dim');
 }
@@ -408,7 +418,7 @@ function doHint() {
   if (!GS.flags.hiddenPassageFound && GS.visitedRooms.includes('reading_nook')) hints.push("The reading nook has a peculiar red-bound book. Try pushing it.");
   if (GS.visitedRooms.includes('rune_chamber') && !GS.flags.runesSolved) hints.push('The rune chamber pattern matches the star charts from the observatory.');
   if (hasItem('crystal_shard_1') || hasItem('crystal_shard_2') || hasItem('crystal_shard_3')) hints.push('Crystal shards can be combined. Collect all three and try "combine shards".');
-  if (!hasItem('amulet_of_warding') && GS.visitedRooms.includes('shadow_halls')) hints.push('The Shadow Lord is nearly invincible without the Amulet of Warding. Find the Ancient Shrine.');
+  if (!hasItem('amulet_of_warding') && GS.visitedRooms.includes('shadow_halls')) hints.push('The Hollow Steward is nearly invincible without the Amulet of Warding. Find the Ancient Shrine.');
 
   if (hints.length === 0) hints.push('Explore deeper. The Keep has many secrets yet to reveal.');
   print('A whisper in the walls: "' + pick(hints) + '"', 'text-cyan');

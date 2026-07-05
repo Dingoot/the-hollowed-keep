@@ -202,6 +202,34 @@ const driver = `
     enemyTurn();
     assert(GS.perks.roarUsed === true && GS.tempAttackBonus >= 4, "roar did not trigger: bonus " + GS.tempAttackBonus);
   });
+  // --- Content pass: The Toll world ---
+  step("threshold rebuilt", () => {
+    assert(!ROOMS.moor_path && !ROOMS.crumbling_bridge, "old approach rooms remain");
+    assert(ROOMS.outer_gate.region === "The Threshold", "region not renamed");
+    assert(ROOMS.gatehouse.npcs && ROOMS.gatehouse.npcs.includes("porter"), "porter not at the gate");
+    assert(ROOMS.main_courtyard.npcs.includes("wick"), "wick not in courtyard");
+    assert(NPCS.porter && NPCS.wick, "new NPC defs missing");
+    assert(ROOMS.outer_gate.items.includes("journal_page_1"), "journal page 1 lost in the move");
+  });
+  step("old lore gone from data", () => {
+    const blob = JSON.stringify(ROOMS) + JSON.stringify(ITEMS) + JSON.stringify(NPCS) + JSON.stringify(ENEMIES);
+    assert(!/Vane|Scepter of Aethon|Shadow Lord|Malachar/.test(blob), "old premise text still present");
+  });
+  step("demolitions via crude bomb craft", () => {
+    GS = defaultState();
+    GS.race = "human";
+    GS.inventory.push("saltpeter", "lamp_oil");
+    doCombine("bomb");
+    assert(hasItem("crude_bomb"), "bomb not crafted");
+    assert(GS.skills.demolitions, "demolitions not carved on craft");
+  });
+  step("talk to the porter", () => {
+    GS.currentRoom = "gatehouse";
+    initRoomStates();
+    parseCommand("talk porter");
+    parseCommand("ask toll");
+  });
+
   step("meta unlock: vesseling at 5 deaths", () => {
     GS = defaultState();
     GS.race = "dwarf";

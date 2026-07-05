@@ -108,7 +108,7 @@ function doExamine(args) {
   }
 
   if (args.includes('throne') && GS.currentRoom === 'throne_of_shadows') {
-    print('The throne is carved from solidified shadow—a paradox made material. Its surface absorbs all light. Sitting in it would mean touching something that exists in another reality entirely. The Scepter of Aethon rests upon its arm.', 'text-white');
+    print('The throne is carved from curdled shadow — a self taken in anger, and it never settled. Its surface absorbs light the way a debt absorbs wages. Sitting in it is an application for a position you should not want.', 'text-white');
     return;
   }
 

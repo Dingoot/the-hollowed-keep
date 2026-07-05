@@ -2,21 +2,24 @@
 
 function handleShadowLordDefeat() {
   print('');
-  print('The Shadow Lord—Lord Malachar Vane—lies defeated. The Scepter of Aethon', 'text-white');
-  print('pulses on the ground before you, its dark energy beckoning.', 'text-white');
+  print('The Hollow Steward — Malchor, last of the household — lies unmade.', 'text-white');
+  print('The Toll-Rod pulses on the obsidian, humming with borrowed authority.', 'text-white');
+  print('It wants a hand. Any hand. Yours would do nicely.', 'text-white');
   print('');
-  print('Behind the throne, a passage opens, revealing a chamber of white stone.', 'text-amber');
+  print('Behind the throne, a seam opens: a chamber of white stone.', 'text-amber');
+  print('');
+  keepSays('The position of Steward is, as of this moment, vacant.');
   print('');
   print('You have a choice:', 'text-bright');
   print('');
-  print('  1. Take the Scepter — Claim its power. Become the new Shadow Lord.', 'text-red');
-  print('     (Type "take scepter")', 'text-dim');
+  print('  1. Take the Rod — Take up the collection. The Keep needs a Steward.', 'text-red');
+  print('     (Type "take rod")', 'text-dim');
   print('');
-  print('  2. Enter the Sanctum — Seek another way. The Crown of Endings awaits.', 'text-cyan');
+  print('  2. Enter the Sanctum — What the Steward hid is still hidden. For now.', 'text-cyan');
   print('     (Go east to the Sanctum)', 'text-dim');
   print('');
-  print('  3. Destroy the Scepter — Speak the Word of Sundering upon it.', 'text-amber');
-  print('     (Type "cast sunder" or "use scepter")', 'text-dim');
+  print('  3. Sunder the Rod — Speak the Word upon the Keep\'s own authority.', 'text-amber');
+  print('     (Type "cast sunder")', 'text-dim');
 
   ROOMS.throne_of_shadows.exits.east = 'sanctum';
   GS.flags.shadowLordDefeated = true;
@@ -58,7 +61,7 @@ parseCommand = function(raw) {
   }
 
   if (GS.flags.shadowLordDefeated && !GS.gameWon) {
-    if (input === 'take scepter' || input === 'grab scepter' || input === 'get scepter') {
+    if (input === 'take rod' || input === 'take scepter' || input === 'grab rod' || input === 'get rod' || input === 'take toll-rod') {
       GS.gameWon = true;
       GS.ending = 'power';
       GS.inventory.push('scepter_of_aethon');
@@ -76,7 +79,7 @@ parseCommand = function(raw) {
     }
   }
 
-  if (GS.flags.shadowLordDefeated && !GS.gameWon && (input === 'cast sunder' || input === 'destroy scepter')) {
+  if (GS.flags.shadowLordDefeated && !GS.gameWon && (input === 'cast sunder' || input === 'destroy rod' || input === 'destroy scepter' || input === 'sunder rod')) {
     GS.gameWon = true;
     GS.ending = 'destruction';
     showEnding('destruction');
@@ -91,63 +94,59 @@ function showEnding(type) {
   print('');
 
   if (type === 'power') {
-    print('  E N D I N G :  T H E   N E W   L O R D', 'text-red text-bold');
+    print('  E N D I N G :  T H E   N E W   S T E W A R D', 'text-red text-bold');
     print('');
-    print('  You grasp the Scepter. Power floods through you—vast,', 'text-white');
-    print('  intoxicating, terrible. The shadows of the Keep bend to', 'text-white');
-    print('  your will. The throne calls. You sit.', 'text-white');
+    print('  You grasp the Rod. Authority floods through you — every debt', 'text-white');
+    print('  in the building, itemized, and the perfect right to collect.', 'text-white');
+    print('  The throne is warm. You sit. Of course you sit.', 'text-white');
     print('');
-    print('  The Keep shudders, acknowledging its new master. You can', 'text-white');
-    print('  feel every stone, every shadow, every whisper within its', 'text-white');
-    print('  walls. You are the Keep. The Keep is you.', 'text-white');
+    print('  The Keep settles around you like a coat being tried on.', 'text-white');
+    print('  You feel the gates far above, and the stairs far below, and', 'text-white');
+    print('  every cold hearth in between. The ledger opens itself.', 'text-white');
     print('');
-    print('  Outside, on the moors, the fog thickens. The Keep stands', 'text-white');
-    print('  eternal, waiting for the next adventurer to challenge its', 'text-white');
-    print('  new lord.', 'text-white');
+    print('  Somewhere overhead, footsteps: a new arrival, hollow and', 'text-white');
+    print('  blinking on the courtyard stones. Their Toll passes down', 'text-white');
+    print('  through the walls and settles, neat and weightless,', 'text-white');
+    print('  into your open hand.', 'text-white');
     print('');
-    print('  You chose power. The cycle continues.', 'text-red');
+    print('  You chose to collect. The ledger continues.', 'text-red');
   } else if (type === 'sacrifice') {
-    print('  E N D I N G :  T H E   S A C R I F I C E', 'text-cyan text-bold');
+    print('  E N D I N G :  T H E   R E S T I T U T I O N', 'text-cyan text-bold');
     print('');
-    print('  You place the Crown of Endings upon your head. Starlight', 'text-white');
-    print('  fills your vision. You understand, suddenly and completely,', 'text-white');
-    print('  what must be done.', 'text-white');
+    print('  You lift the Crown of Endings — every fragment the Steward', 'text-white');
+    print('  ever skimmed, grown together — and you put it on, and you', 'text-white');
+    print('  give it all back.', 'text-white');
     print('');
-    print('  The door between worlds begins to close. The Keep groans,', 'text-white');
-    print('  stone grinding against stone, reality folding. The shadows', 'text-white');
-    print('  scream. You hold firm.', 'text-white');
+    print('  Through the Keep, the robbed remember. Cedric signs his own', 'text-white');
+    print('  name to his own book. The merchant recalls, at last, what he', 'text-white');
+    print('  once sold, and laughs until he weeps. A knight reads his', 'text-white');
+    print('  crest like a letter from home.', 'text-white');
     print('');
-    print('  When it is done, the Keep vanishes from the moors. The fog', 'text-white');
-    print('  lifts. Sunlight touches Ashenvale for the first time in a', 'text-white');
-    print('  thousand years. The door is sealed forever.', 'text-white');
+    print('  And the gates — for one long night, for the first time in', 'text-white');
+    print('  anyone\'s stolen memory — open outward. The freed walk out', 'text-white');
+    print('  across the moor and do not look back. You are not among', 'text-white');
+    print('  them. Restitution has a clerk, and the clerk stays.', 'text-white');
     print('');
-    print('  You remain, the final seal, in a place between worlds—', 'text-white');
-    print('  alone, but at peace. The cage is locked. The sacrifice holds.', 'text-white');
-    print('');
-    print('  You chose sacrifice. The cycle is broken.', 'text-cyan');
+    print('  You chose to give back what was taken.', 'text-cyan');
+    print('  Even the Keep is quiet tonight.', 'text-cyan');
   } else if (type === 'destruction') {
     print('  E N D I N G :  T H E   S U N D E R I N G', 'text-amber text-bold');
     print('');
-    print('  You speak the Word of Sundering upon the Scepter. The', 'text-white');
-    print('  artifact cracks, screams, and explodes in a burst of', 'text-white');
-    print('  shadow and light.', 'text-white');
+    print('  You speak the Word of Sundering upon the Toll-Rod — upon', 'text-white');
+    print('  the Keep\'s own lent authority. The Rod cracks, screams', 'text-white');
+    print('  in a voice like tearing paper, and unravels.', 'text-white');
     print('');
-    print('  The Keep begins to collapse. Not physically—but', 'text-white');
-    print('  existentially. Walls fade. Floors dissolve. The boundary', 'text-white');
-    print('  between worlds tears open completely.', 'text-white');
+    print('  Every debt on this floor is suddenly, catastrophically', 'text-white');
+    print('  void. The ghosts flicker. The walls forget what they are', 'text-white');
+    print('  owed. For one impossible hour, nothing in the Keep Proper', 'text-white');
+    print('  can take anything from anyone.', 'text-white');
     print('');
-    print('  You run. Behind you, the Keep folds in on itself like', 'text-white');
-    print('  a closing fist. You burst through the outer gate moments', 'text-white');
-    print('  before it ceases to exist.', 'text-white');
+    print('  Then, from far below, a sound you feel in your teeth:', 'text-white');
+    print('  stairs, opening. Many stairs. The Keep, unpaid, will do', 'text-white');
+    print('  its own collecting now — and it is coming up to start.', 'text-white');
     print('');
-    print('  On the moor, you turn. Where the Keep stood, there is', 'text-white');
-    print('  nothing—not even a foundation. Just moor grass and', 'text-white');
-    print('  silence. But in the sky above that spot, the stars', 'text-white');
-    print('  flicker strangely, and you know the door is not closed.', 'text-white');
-    print('  Merely... unhinged.', 'text-white');
-    print('');
-    print('  You chose destruction. The cycle is shattered—', 'text-amber');
-    print('  but what comes next may be worse.', 'text-amber');
+    print('  You chose to void the ledger. The Keep chose', 'text-amber');
+    print('  to stop using clerks.', 'text-amber');
   }
 
   print('');
