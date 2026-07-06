@@ -13,7 +13,7 @@ const ROOMS = {
   gatehouse: {
     name: "The Gatehouse",
     region: "The Threshold",
-    npcIntro: "The Porter stands by the portcullis chains, ledger closed, its head turning to you at the exact moment you enter. Not before. Not after.",
+    npcIntro: "The Porter stands by the portcullis chains, ledger closed, its head turning to you at the exact moment you enter. Not before. Not after. On the table, a guttering candle and a closed book. Something small glints on a wall hook, catching what light there is.",
     desc: "A cramped stone chamber beneath a murder hole, hung with chains for a portcullis nobody has lowered in living memory - the Keep does not need one. A wooden table holds a guttering candle and a closed ledger. The Porter stands where the shadows are most convenient. A hook on the wall holds a key that is, pointedly, not the key to the gates.",
     exits: { south: "outer_gate", north: "main_courtyard" },
     items: ["torch", "iron_key", "flint_and_tinder"],
@@ -29,12 +29,11 @@ const ROOMS = {
   main_courtyard: {
     name: "The Main Courtyard",
     region: "Courtyard",
-    npcIntro: "By the dry fountain a knight in battered plate sits pressing a hand to his side, watching you with tired, professional interest. Nearer, a small hooded shape waits with a lantern that burns without oil, tilted slightly toward you, like an offer.",
+    npcIntro: "Against the fountain's rim a knight in dented plate lies slumped, one gauntlet pressed to his side, so still you cannot tell at this distance whether he breathes. Closer by, a small hooded figure notices you rise to your feet, and lifts its lantern.",
     desc: "An open expanse of cracked flagstones surrounded by the Keep's oppressive walls. A dry fountain stands at the centre, its stone figure eroded beyond recognition - though it seems to be reaching upward in supplication or horror. Doors and archways lead in every direction. A well sits in the northeast corner, its stones green with moss.",
     exits: { south: "gatehouse", north: "great_hall", east: "east_garden", west: "west_garden" },
     items: [],
     npcs: ["wounded_knight", "wick"],
-    firstVisit: "The courtyard is utterly silent. No birds. No wind. In the dust: footprints beyond counting, layered year over year - and every one of them leading inward.",
     search: "Near the fountain's base, coins are scattered - offerings to a forgotten deity. Most are corroded beyond value, but a few gold pieces gleam.",
     searchTargets: {
       fountain: "The fountain's figure has been worn featureless by something patienter than rain. Around the basin's rim, a ring of small handprints - pressed into the stone itself, as if it had been soft once, briefly, for someone.",

@@ -526,5 +526,5 @@ body {
 #map-content { font-size: 0.78rem; line-height: 1.5; }
 #left-panel .panel-section, #right-panel .panel-section { max-height: 34vh; overflow-y: auto; }
 #ascii-header { position: relative; overflow: hidden; }
-#castle-art { position: relative; z-index: 2; white-space: pre; letter-spacing: 0; line-height: 1.1; }
+#castle-art { position: relative; z-index: 2; white-space: pre; letter-spacing: 0; line-height: 1.1; text-align: left; }
 .hk-star { position: absolute; z-index: 1; color: var(--text-dim); opacity: 0.8; pointer-events: none; }

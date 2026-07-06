@@ -1,5 +1,36 @@
 // === COMBAT ===
 
+// - Combat math: d20 to-hit against AC, damage from weapon + stat + skill -
+function skillLv(id) { return GS.skills[id] ? GS.skills[id].level : 0; }
+
+function weaponInfo(verb) {
+  if (verb) {
+    let skill = 'unarmed';
+    if ((verb === 'kick' || verb === 'knee') && GS.skills.boot_heel) skill = 'boot_heel';
+    if ((verb === 'punch' || verb === 'slap' || verb === 'elbow' || verb === 'headbutt') && GS.skills.pugilism) skill = 'pugilism';
+    return { base: 1, stat: 'str', skill };
+  }
+  const w = GS.equipped.weapon && ITEMS[GS.equipped.weapon];
+  if (!w) return { base: 1, stat: 'str', skill: 'unarmed' };
+  const finesse = ['daggers', 'bows', 'crossbows', 'thrown'];
+  const fam = w.family || 'unarmed';
+  return { base: w.attack || 1, stat: finesse.includes(fam) ? 'dex' : 'str', skill: fam };
+}
+
+function playerAC() {
+  let ac = 8 + statMod(GS.stats.dex);
+  for (const slot of ['armor', 'offhand', 'ring']) {
+    const id = GS.equipped[slot];
+    if (id && ITEMS[id]) ac += ITEMS[id].defense || 0;
+  }
+  ac += GS.perks.flatAC || 0;
+  return ac;
+}
+
+function enemyAC(e) { return 8 + (e.defense || 0); }
+function playerHitBonus(info) { return 2 + statMod(GS.stats[info.stat]) + Math.floor(skillLv(info.skill) / 4); }
+function enemyHitBonus(e) { return 2 + Math.floor((e.attack || 4) / 3); }
+
 function doAttack(args) {
   const rs = roomStates[GS.currentRoom];
   const room = ROOMS[GS.currentRoom];
@@ -47,6 +78,82 @@ function attackNpc(npcId) {
   print('You square up to ' + npc.name + ', then think better of it.', 'text-dim');
 }
 
+function doTackle() {
+  const enemy = GS.currentEnemy;
+  if (!GS.inCombat || !enemy) { print('Nothing here to tackle. The furniture forgives you.', 'text-dim'); return; }
+  if (!enemy.animal) {
+    print('It offers nothing you would want your arms around. You shove it instead, gracelessly.', 'text-dim');
+    enemyTurn();
+    updatePanels();
+    return;
+  }
+  if (enemy.pinnedTurns > 0) {
+    print('You already have it pinned. Press the advantage - or try to calm it.', 'text-dim');
+    return;
+  }
+  const you = rng(1, 20) + statMod(GS.stats.str);
+  const it = rng(1, 20) + statMod(enemy.dex || 10);
+  if (you >= it) {
+    enemy.pinnedTurns = 2;
+    print('You crash into the ' + enemy.name + ' and bear it down, your weight across it, its legs scrabbling at air. Pinned.', 'combat-hit');
+    print("(It cannot act while pinned. Strike at advantage - or, if it is the sort that can be gentled, soothe it.)", 'text-dim');
+    gainSkillXP('unarmed', 6);
+  } else {
+    print('You lunge - it twists free at the last instant and you meet the flagstones. It does not waste the opening.', 'text-amber');
+    enemyTurn();
+  }
+  updatePanels();
+}
+
+function doSoothe() {
+  const enemy = GS.currentEnemy;
+  if (!GS.inCombat || !enemy || !enemy.animal) { print('There is nothing here that gentling would reach.', 'text-dim'); return; }
+  if (!(enemy.pinnedTurns > 0)) { print('Not while it is free to take your face off. Pin it first.', 'text-dim'); return; }
+  if (!enemy.tameable) {
+    print('You speak softly. Whatever this is, it was never anyone\'s to gentle.', 'text-dim');
+    enemyTurn();
+    updatePanels();
+    return;
+  }
+  if (enemy.hp > Math.floor(enemy.maxHp * 0.6)) {
+    print('It is too whole, too sure of itself - all teeth and certainty. Wear it down first.', 'text-dim');
+    enemyTurn();
+    updatePanels();
+    return;
+  }
+  // Gentling is meant to be rare: your worst word against its wariness.
+  const a = rng(1, 20), b = rng(1, 20);
+  const you = Math.min(a, b) + statMod(GS.stats.cha);
+  const it = rng(1, 20) + statMod(enemy.wis || 10);
+  if (you >= it) {
+    print('You keep your voice low and your hand slow. The thrashing gutters out by degrees. Under your palm its heart hammers - then merely beats. It looks at you. Something in it decides.', 'text-cyan');
+    keepSays('The Keep registers a change of ownership it did not authorise. It is rereading the relevant clause.');
+    gainSkillXP('beastmaster', 10);
+    GS.companion = GS.currentEnemyId;
+    GS.kills[GS.currentRoom + '_' + GS.currentEnemyId] = true;
+    logEvent('gentled the ' + enemy.name.toLowerCase(), 'discover');
+    GS.inCombat = false;
+    GS.currentEnemy = null;
+    print('');
+    print('The hound rises, shakes itself nose to tail, and falls in at your heel as though the matter is settled. It is settled.', 'text-amber');
+    updatePanels();
+  } else {
+    print('It bares its teeth at the kindness - not yet. Perhaps not ever. But it did not go for your throat, and that is something.', 'text-dim');
+    enemyTurn();
+    updatePanels();
+  }
+}
+
+function doTackleCommand(args) {
+  if (GS.inCombat) { doTackle(); return; }
+  const rs = roomStates[GS.currentRoom];
+  const room = ROOMS[GS.currentRoom];
+  if (args && room.npcs && room.npcs.find(id => matchNpc(id, args))) { doAttack(args); return; }
+  if (!rs.enemies.length) { print('Nothing here to tackle. The furniture forgives you.', 'text-dim'); return; }
+  doAttack(args);
+  if (GS.inCombat) doTackle();
+}
+
 function porterFlick() {
   print('');
   print('The Porter sets down the ledger. This is the first time you have seen it set down the ledger.', 'text-white');
@@ -63,6 +170,8 @@ function porterFlick() {
 }
 
 function startCombat(enemyId) {
+  GS.currentEnemyId = enemyId;
+  GS.combatMemory = {};
   GS.perks.firstStrikeDone = false;
   GS.perks.undeadHesitated = false;
   const template = ENEMIES[enemyId];
@@ -92,38 +201,82 @@ function handleCombatCommand(input) {
   }
 
   if (cmd === 'attack' || cmd === 'hit' || cmd === 'fight' || cmd === 'a' || isUnarmedVerb) {
-    let playerAtk = getAttack();
-    let bonusDmg = 0;
+    const info = weaponInfo(isUnarmedVerb ? cmd : null);
 
+    // The mob reads repetition - the same move too many times running gets learnt.
+    GS.combatMemory = GS.combatMemory || {};
+    const verbKey = isUnarmedVerb ? cmd : 'strike';
+    for (const k of Object.keys(GS.combatMemory)) if (k !== verbKey) GS.combatMemory[k] = 0;
+    GS.combatMemory[verbKey] = (GS.combatMemory[verbKey] || 0) + 1;
+    const reps = GS.combatMemory[verbKey];
+
+    // Devotion to a technique carves its own craft.
+    if (isUnarmedVerb) {
+      const bucket = (cmd === 'kick' || cmd === 'knee') ? 'kickCount' : 'punchCount';
+      GS.perks[bucket] = (GS.perks[bucket] || 0) + 1;
+      if (bucket === 'kickCount' && GS.perks.kickCount >= 8 && !GS.skills.boot_heel) gainSkillXP('boot_heel', 10);
+      if (bucket === 'punchCount' && GS.perks.punchCount >= 8 && !GS.skills.pugilism) gainSkillXP('pugilism', 10);
+    }
+
+    if (reps >= 4 && rng(1, 100) <= Math.min(50, (reps - 3) * 15)) {
+      print('The ' + enemy.name + ' has your rhythm now - it slips the ' + (isUnarmedVerb ? cmd : 'blow') + ' entirely.', 'text-amber');
+      GS.perks.firstStrikeDone = true;
+      enemyTurn();
+      updatePanels();
+      return;
+    }
+
+    const roll = rng(1, 20);
+    const pinnedBonus = (enemy.pinnedTurns || 0) > 0 ? 4 : 0;
+    if (roll !== 20 && roll + playerHitBonus(info) + pinnedBonus < enemyAC(enemy)) {
+      const missLines = [
+        'Your ' + (isUnarmedVerb ? cmd : 'strike') + ' finds only the space it just left.',
+        'It shifts - your blow skates wide.',
+        'A miss, close enough to feel the heat of almost.',
+      ];
+      print(missLines[rng(0, missLines.length - 1)], 'text-dim');
+      GS.perks.firstStrikeDone = true;
+      enemyTurn();
+      updatePanels();
+      return;
+    }
+
+    let bonusDmg = 0;
     if (enemy.undead && GS.equipped.weapon) {
       const wpn = ITEMS[GS.equipped.weapon];
       if (wpn && wpn.undeadBonus) bonusDmg += wpn.undeadBonus;
     }
     if (enemy.undead && GS.class === 'cleric') bonusDmg += 3; // radiant edge
 
+    let dmg = info.base + statMod(GS.stats[info.stat]) + Math.floor(skillLv(info.skill) / 5)
+      + bonusDmg + (GS.perks.flatDamage || 0) + (GS.perks.reaverStacks || 0) + GS.tempAttackBonus + rng(0, 2);
+    dmg = Math.max(1, dmg);
+
     if (enemy.physicalResist && !(GS.equipped.weapon && ITEMS[GS.equipped.weapon] && ITEMS[GS.equipped.weapon].undeadBonus)) {
-      playerAtk = Math.floor(playerAtk / 3);
-      print('Your weapon passes through the creature with little effect! You need silver!', 'text-amber');
+      dmg = Math.max(1, Math.floor(dmg / 3));
+      print('Your weapon passes through it with little purchase - it wants silver.', 'text-amber');
     }
-
     if (enemy.shadowBeing && !hasItem('amulet_of_warding') && !isEquipped('amulet_of_warding')) {
-      print('Shadow energy saps your strength! You need protection!', 'text-amber');
-      playerAtk = Math.floor(playerAtk / 2);
+      dmg = Math.max(1, Math.floor(dmg / 2));
+      print('Shadow drinks half the force of the blow - you need warding.', 'text-amber');
     }
-
-    let dmg = Math.max(1, playerAtk + bonusDmg - enemy.defense + rng(-2, 2));
+    if (roll === 20) { dmg *= 2; print('A perfect opening -', 'text-cyan'); }
     if (GS.class === 'rogue' && !GS.perks.firstStrikeDone) {
       dmg *= 2;
       print("Opening strike - you were already where the guard wasn't.", 'text-cyan');
     }
     GS.perks.firstStrikeDone = true;
     enemy.hp -= dmg;
+    if (GS.companion === 'feral_hound' && enemy.hp > 0 && rng(1, 5) === 1) {
+      enemy.hp -= 3;
+      print('The hound darts in low and worries at it. (+3 damage)', 'text-cyan');
+    }
     if (isUnarmedVerb) {
-      print('You ' + cmd + ' the ' + enemy.name + ' - no steel, just intent. (' + dmg + ' damage)', 'combat-hit');
-      gainSkillXP('unarmed', 5);
+      print('You drive a ' + cmd + ' into the ' + enemy.name + ' - no steel, just intent. (' + dmg + ' damage)', 'combat-hit');
+      gainSkillXP(info.skill, 5);
     } else {
       print('You strike the ' + enemy.name + ' for ' + dmg + ' damage!', 'combat-hit');
-      gainSkillXP(equippedWeaponSkill(), 5);
+      gainSkillXP(info.skill, 5);
     }
 
     if (enemy.hp <= 0) {
@@ -196,6 +349,10 @@ function handleCombatCommand(input) {
       enemyTurn();
     }
 
+  } else if (cmd === 'tackle' || cmd === 'grapple' || cmd === 'pin') {
+    doTackle(); return;
+  } else if (cmd === 'soothe' || cmd === 'calm' || cmd === 'comfort' || cmd === 'tame') {
+    doSoothe(); return;
   } else if (cmd === 'rally') {
     doRally(); return;
   } else if (cmd === 'pray') {
@@ -232,17 +389,30 @@ function enemyTurn() {
     return;
   }
 
-  const enemyDmg = Math.max(1, enemy.attack - getDefense() + rng(-2, 2));
-  GS.hp -= enemyDmg;
-  print(enemy.attackMsg + ' (' + enemyDmg + ' damage)', 'combat-hit');
-
-  // Blood Roar: below a quarter health, the ancestors answer. (Orc)
+  // Blood Roar: at a quarter health, the ancestors answer. (Orc)
   if (GS.hp > 0 && GS.race === 'orc' && GS.hp <= Math.floor(GS.maxHp * 0.25) && !GS.perks.roarUsed) {
     GS.perks.roarUsed = true;
     GS.tempAttackBonus += 4;
     GS.tempAttackTurns = Math.max(GS.tempAttackTurns, 3);
-    print('Your ancestors ROAR in the blood. Your next blows carry all of them. (+4 ATK, 3 turns)', 'text-red');
+    print('Your ancestors ROAR in the blood. Your next blows carry all of them. (+4 damage, 3 turns)', 'text-red');
   }
+
+  if (enemy.pinnedTurns && enemy.pinnedTurns > 0) {
+    enemy.pinnedTurns--;
+    print('Pinned, the ' + enemy.name + ' thrashes under your weight' + (enemy.pinnedTurns > 0 ? '.' : ' - and is working itself loose.'), 'text-amber');
+    return;
+  }
+
+  const roll = rng(1, 20);
+  if (roll !== 20 && roll + enemyHitBonus(enemy) < playerAC()) {
+    print(enemy.attackMsg, 'combat-hit');
+    print('It misses - your guard holds.', 'text-dim');
+    return;
+  }
+  let enemyDmg = Math.max(1, (enemy.attack || 3) + rng(-2, 2));
+  if (roll === 20) enemyDmg = Math.floor(enemyDmg * 1.5);
+  GS.hp -= enemyDmg;
+  print(enemy.attackMsg + ' (' + enemyDmg + ' damage)' + (roll === 20 ? ' It found the gap.' : ''), 'combat-hit');
 
   if (enemy.poisonous && !GS.poisoned && rng(1, 3) === 1) {
     GS.poisoned = true;
@@ -378,16 +548,24 @@ function playerDeath(cause) {
   GS.tempAttackBonus = 0;
   GS.tempAttackTurns = 0;
   logEvent('died: ' + cause, 'death');
+  GS.awaitingDeath = true;
+  print('');
+  print("(Type 'wake' to rise, or 'quit' to return to the gate.)", 'text-amber');
+}
+
+function respawnFromDeath() {
+  GS.awaitingDeath = false;
   const home = GS.lastHearth || 'main_courtyard';
   GS.currentRoom = home;
   print('');
   if (GS.lastHearth) {
-    print('You wake at the hearth you lit. The embers have kept your shape warm.', 'text-amber');
+    print('Warmth first. Then the ache. You come back to yourself beside the embers, patted into shape by the heat - lighter than you were, and aware of the gap without being able to name what filled it.', 'text-amber');
   } else {
-    print('You wake on the courtyard flagstones. Again. The stones are getting to know you.', 'text-amber');
+    print('Cold flagstones again. You come back to yourself where the Keep first learnt your shape - lighter than you were, and aware of the gap without being able to name what filled it.', 'text-amber');
   }
   print('');
   printRoom(home);
+  updatePanels();
 }
 
 function checkLevelUp() {

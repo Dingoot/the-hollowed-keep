@@ -21,6 +21,7 @@ const LOAD_ORDER = [
   "data/skills.js",
   "data/classes.js",
   "data/verbs.js",
+  "data/ambience.js",
   "engine/utils.js",
   "engine/state.js",
   "engine/skills.js",
@@ -116,7 +117,7 @@ const driver = `
   step("creation: derived", () => {
     applyDerivedStats();
     assert(GS.maxHp === 115, "maxHp wrong: " + GS.maxHp);
-    assert(GS.defense === 2, "dex penalty not applied to defense: " + GS.defense);
+    assert(playerAC() === 7, "dwarf AC (8 + dex mod -1): " + playerAC());
   });
 
   step("start state", () => { GS.gameStarted = true; assert(GS.currentRoom === "main_courtyard", "bad start room: " + GS.currentRoom); });
@@ -157,11 +158,14 @@ const driver = `
     doRest();
     assert(GS.hp === GS.maxHp, "hearth rest did not fully heal: " + GS.hp);
   });
-  step("death toll: gold, wake at hearth", () => {
+  step("death toll: gold, then the choice", () => {
     GS.gold = 50;
     GS.currentRoom = "library";
     playerDeath("smoke test");
     assert(GS.gold === 30, "death toll wrong, gold: " + GS.gold);
+    assert(GS.awaitingDeath === true, "death should await the choice");
+    parseCommand("wake");
+    assert(GS.awaitingDeath === false, "wake did not clear the between");
     assert(GS.currentRoom === "great_hall", "did not wake at hearth: " + GS.currentRoom);
     assert(GS.hp === GS.maxHp, "not healed on respawn");
   });
@@ -272,6 +276,7 @@ const driver = `
     GS.gold = 50;
     playerDeath("terms test");
     assert(GS.gold === 40, "tollwright toll should halve to 10, gold: " + GS.gold);
+    parseCommand("wake");
   });
   step("fighter rally", () => {
     GS = defaultState();
@@ -305,12 +310,42 @@ const driver = `
     assert(GS.crystalAnnounced === true, "announcement did not fire");
   });
 
+  step("kick devotion carves Boot & Heel", () => {
+    GS = defaultState();
+    applyRaceToState("human");
+    applyDerivedStats();
+    GS.maxHp = 1000; GS.hp = 1000;
+    GS.currentRoom = "main_courtyard";
+    initRoomStates();
+    GS.inCombat = true;
+    GS.currentEnemyId = "test_dummy";
+    GS.currentEnemy = { name: "Training Dummy", hp: 10000, maxHp: 10000, attack: 1, defense: 0, attackMsg: "It wobbles." };
+    for (let i = 0; i < 8; i++) handleCombatCommand("kick");
+    assert(GS.skills.boot_heel, "Boot & Heel not carved after 8 kicks");
+    GS.inCombat = false; GS.currentEnemy = null;
+  });
+  step("tackle pins an animal (forced roll)", () => {
+    GS = defaultState();
+    applyRaceToState("orc");
+    applyDerivedStats();
+    GS.inCombat = true;
+    GS.currentEnemyId = "feral_hound";
+    GS.currentEnemy = { name: "Feral Hound", animal: true, tameable: true, hp: 10, maxHp: 30, attack: 1, defense: 2, dex: 13, wis: 8, attackMsg: "It snaps." };
+    const realRandom = Math.random;
+    Math.random = () => 0.99; // you roll high, it rolls... also high, but str mod decides
+    doTackle();
+    Math.random = realRandom;
+    assert(GS.currentEnemy.pinnedTurns === 2, "tackle did not pin: " + GS.currentEnemy.pinnedTurns);
+    GS.inCombat = false; GS.currentEnemy = null;
+  });
+
   step("meta unlock: vesseling at 5 deaths", () => {
     GS = defaultState();
     GS.race = "dwarf";
     META.totalDeaths = 4;
     META.unlocks = {};
     playerDeath("meta test");
+    parseCommand("wake");
     assert(META.unlocks.vesseling === true, "vesseling not unlocked at 5 lifetime deaths");
     assert(availableRaces().includes("vesseling"), "unlocked blood missing from the gate");
   });

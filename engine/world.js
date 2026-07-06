@@ -75,6 +75,11 @@ function doExamine(args) {
     const npcId = room.npcs.find(id => matchNpc(id, args));
     if (npcId && NPCS[npcId]) {
       print(NPCS[npcId].desc, 'text-white');
+      if (!GS.perks['met_' + npcId]) {
+        GS.perks['met_' + npcId] = true;
+        print('');
+        doTalk(args);
+      }
       return;
     }
   }

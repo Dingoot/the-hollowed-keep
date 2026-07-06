@@ -112,8 +112,7 @@ function doStatsCmd() {
   print('  INT ' + st.int + '   WIS ' + st.wis + '   CHA ' + st.cha, 'text-white');
   print('  HOLLOW ' + st.hollow, st.hollow > 0 ? 'keep-voice' : 'text-dim');
   print('');
-  print('  Level ' + GS.level + '  ·  HP ' + GS.hp + '/' + GS.maxHp +
-    '  ·  ATK ' + getAttack() + '  ·  DEF ' + getDefense(), 'text-white');
+  print('  Level ' + GS.level + '  ·  HP ' + GS.hp + '/' + GS.maxHp + '  ·  AC ' + playerAC(), 'text-white');
 }
 
 // === SKILLS PANEL ===

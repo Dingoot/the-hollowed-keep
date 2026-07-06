@@ -2,21 +2,22 @@
 
 function runBootSequence() {
   const bootEl = document.getElementById('boot-text');
+  const menuPad = (cmd, text) => (cmd + '   ' + text).padEnd(38, ' ');
   const lines = [
-    { text: '', cls: '', delay: 200 },
-    { text: '', cls: '', delay: 100 },
-    { text: 'T H E   H O L L O W E D   K E E P', cls: 'line-bright line-center', delay: 500 },
-    { text: 'a text adventure', cls: 'line-dim line-center', delay: 300 },
-    { text: '', cls: '', delay: 200 },
-    { text: '─'.repeat(44), cls: 'line-amber line-center', delay: 200 },
     { text: '', cls: '', delay: 150 },
-    { text: 'Every door demands a toll.', cls: 'line-keep line-center', delay: 500 },
-    { text: '', cls: '', delay: 300 },
-    { text: 'begin  ·  pay the Toll and enter', cls: 'line-white line-center', delay: 200 },
-    { text: 'load   ·  resume a delve', cls: 'line-white line-center', delay: 150 },
-    { text: 'lore   ·  what little is known', cls: 'line-white line-center', delay: 150 },
-    { text: '', cls: '', delay: 200 },
+    { text: CASTLE_ART, cls: '', delay: 250, pre: true },
+    { text: '', cls: '', delay: 150 },
+    { text: 'T H E   H O L L O W E D   K E E P', cls: 'line-bright line-center', delay: 400 },
+    { text: 'a text adventure', cls: 'line-dim line-center', delay: 250 },
+    { text: '', cls: '', delay: 150 },
+    { text: 'Every door demands a toll.', cls: 'line-keep line-center', delay: 400 },
+    { text: '', cls: '', delay: 250 },
+    { text: menuPad('begin', 'pay the Toll and enter'), cls: 'line-white line-center', delay: 150 },
+    { text: menuPad('load ', 'resume a delve'), cls: 'line-white line-center', delay: 120 },
+    { text: menuPad('lore ', 'what little is known'), cls: 'line-white line-center', delay: 120 },
+    { text: '', cls: '', delay: 150 },
   ];
+
 
 
   let totalDelay = 0;
@@ -24,12 +25,17 @@ function runBootSequence() {
     totalDelay += line.delay;
     setTimeout(() => {
       if (line.pre) {
+        const wrap = document.createElement('div');
+        wrap.className = 'line line-center';
         const pre = document.createElement('pre');
-        pre.className = 'line ' + line.cls;
+        pre.className = line.cls;
         pre.textContent = line.text;
         pre.style.fontSize = '0.5rem';
         pre.style.lineHeight = '1.1';
-        bootEl.appendChild(pre);
+        pre.style.display = 'inline-block';
+        pre.style.textAlign = 'left';
+        wrap.appendChild(pre);
+        bootEl.appendChild(wrap);
       } else {
         const div = document.createElement('div');
         div.className = 'line ' + line.cls;
@@ -110,6 +116,7 @@ function startGame(loadSave) {
     }
   } else {
     GS.gameStarted = true;
+    GS.runeMessages = [{ text: 'New arrival: when your legs remember themselves, come south to the gatehouse. Orientation is part of the service.', author: 'The Porter' }];
     print('Cold flagstones. A grey sky framed by black walls.', 'text-amber');
     print('You are lying in a courtyard, and you do not remember lying down.', 'text-amber');
     print('');
@@ -182,46 +189,41 @@ document.addEventListener('DOMContentLoaded', () => {
 let ambientTimer = null;
 
 function startAmbient() {
-  const messages = [
-    'The walls whisper. You cannot make out the words.',
-    'A cold draft stirs the dust.',
-    'Somewhere distant, a door creaks open. Then shuts.',
-    'You hear footsteps above you. Or below. Hard to tell.',
-    'The shadows seem to deepen for a moment, then recede.',
-    'A faint smell of smoke drifts through the air.',
-    'The stone beneath your feet vibrates, barely perceptibly.',
-    'For an instant, you see movement in your peripheral vision. Nothing is there.',
-    'A distant bell tolls once. Silence follows.',
-    'The flame of your light source flickers, though there is no breeze.',
-    'You feel watched.',
-    'The temperature drops suddenly, then normalizes.',
-  ];
-
+  let lastLine = '';
   ambientTimer = setInterval(() => {
-    if (!GS.gameStarted || GS.gameWon || GS.inCombat) return;
-    // Only whisper at the idle - never interrupt someone mid-thought.
+    if (!GS.gameStarted || GS.gameWon || GS.inCombat || GS.awaitingDeath) return;
     if (Date.now() - (GS.lastInputAt || 0) < 60000) return;
-    if (Math.random() < 0.4) {
-      print('');
-      print(pick(messages), 'system-msg');
+    if (Math.random() > 0.35) return;
+    const room = ROOMS[GS.currentRoom];
+    const pool = (room && AMBIENCE[room.region]) || null;
+    if (!pool || pool.length === 0) return;
+    let line = pool[Math.floor(Math.random() * pool.length)];
+    if (line === lastLine && pool.length > 1) {
+      line = pool[(pool.indexOf(line) + 1) % pool.length];
     }
-  }, 45000);
+    lastLine = line;
+    print('');
+    print(line, 'system-msg');
+  }, 50000);
 }
+
 
 // Stars across the full width of the header. Various sizes, none too big.
 function scatterStars() {
   const header = document.getElementById('ascii-header');
   if (!header || header.querySelector('.hk-star')) return;
-  const glyphs = ['.', '·', '*', '+', '˙'];
-  const count = 34;
+  const glyphs = ['.', '·', '*', '+', '˙', '.', '·'];
+  const count = 80;
   for (let i = 0; i < count; i++) {
     const s = document.createElement('span');
     s.className = 'hk-star';
     s.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
-    s.style.left = (Math.random() * 98) + '%';
-    s.style.top = (Math.random() * 90) + '%';
-    s.style.fontSize = (6 + Math.random() * 6) + 'px';
-    s.style.opacity = (0.35 + Math.random() * 0.55).toFixed(2);
+    s.style.left = (Math.random() * 99) + '%';
+    s.style.top = (Math.random() * 92) + '%';
+    s.style.fontSize = (5 + Math.random() * 8) + 'px';
+    s.style.opacity = (0.25 + Math.random() * 0.6).toFixed(2);
+    s.style.animationDuration = (3 + Math.random() * 6).toFixed(1) + 's';
+    s.style.animationDelay = (Math.random() * 5).toFixed(1) + 's';
     header.appendChild(s);
   }
 }
@@ -231,6 +233,7 @@ function scatterStars() {
 document.addEventListener('DOMContentLoaded', () => {
   runBootSequence();
   startAmbient();
+  setInterval(flushPrintQueue, 26);
 
   document.body.addEventListener('click', () => {
     // Respect text selection - refocusing the input clears highlights,

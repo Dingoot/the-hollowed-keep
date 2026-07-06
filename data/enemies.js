@@ -1,15 +1,15 @@
 // === ENEMIES ===
 
 const ENEMIES = {
-  giant_rats: { name: "Giant Rats", desc: "A pack of rats the size of dogs, eyes gleaming red in the darkness. Their fur is matted with something dark and their teeth are too long.", hp: 15, maxHp: 15, attack: 3, defense: 1, xp: 10, gold: 0, loot: null, undead: false,
+  giant_rats: { animal: true, str: 6, dex: 14, wis: 5, name: "Giant Rats", desc: "A pack of rats the size of dogs, eyes gleaming red in the darkness. Their fur is matted with something dark and their teeth are too long.", hp: 15, maxHp: 15, attack: 3, defense: 1, xp: 10, gold: 0, loot: null, undead: false,
     attackMsg: "The rats swarm and bite!", defeatMsg: "The rats scatter, squealing, into the darkness." },
-  feral_hound: { name: "Feral Hound", desc: "A massive hound with slavering jaws and eyes that glow with unnatural intelligence. Its fur is patchy, revealing grey skin beneath.", hp: 30, maxHp: 30, attack: 6, defense: 2, xp: 15, gold: 0, loot: null, undead: false,
+  feral_hound: { animal: true, tameable: true, str: 12, dex: 13, wis: 8, name: "Feral Hound", desc: "A massive hound with slavering jaws and eyes that glow with unnatural intelligence. Its fur is patchy, revealing grey skin beneath.", hp: 30, maxHp: 30, attack: 6, defense: 2, xp: 15, gold: 0, loot: null, undead: false,
     attackMsg: "The hound lunges with snapping jaws!", defeatMsg: "The hound collapses with a final whimper, its glowing eyes fading to dark." },
   skeleton_warrior: { name: "Skeleton Warrior", desc: "The animated bones of a soldier, still wearing fragments of armour. It fights with terrible precision, muscle memory encoded in bone.", hp: 45, maxHp: 45, attack: 9, defense: 5, xp: 25, gold: 10, loot: null, undead: true,
     attackMsg: "The skeleton strikes with practiced precision!", defeatMsg: "The bones clatter apart and the animating force dissipates like smoke." },
   animated_armor: { name: "Animated Armour", desc: "The suit of plate armour steps off its stand, moving with grinding precision. No body inhabits it - only will.", hp: 55, maxHp: 55, attack: 10, defense: 8, xp: 30, gold: 0, loot: null, undead: false,
     attackMsg: "The armour swings a massive gauntleted fist!", defeatMsg: "The armour freezes mid-swing, then collapses into a pile of inert metal." },
-  cave_spider: { name: "Cave Spider", desc: "A spider the size of a large dog, pale and blind, sensing prey through vibration. Venom drips from its mandibles.", hp: 35, maxHp: 35, attack: 7, defense: 3, xp: 20, gold: 0, loot: null, undead: false, poisonous: true,
+  cave_spider: { animal: true, str: 10, dex: 15, wis: 6, name: "Cave Spider", desc: "A spider the size of a large dog, pale and blind, sensing prey through vibration. Venom drips from its mandibles.", hp: 35, maxHp: 35, attack: 7, defense: 3, xp: 20, gold: 0, loot: null, undead: false, poisonous: true,
     attackMsg: "The spider strikes with venomous fangs!", defeatMsg: "The spider curls in on itself, legs twitching, then goes still." },
   ghoul: { name: "Ghoul", desc: "A hunched figure with too-long limbs and a mouth of needle teeth. It was human once. Now it is hunger given form.", hp: 55, maxHp: 55, attack: 12, defense: 6, xp: 35, gold: 15, loot: null, undead: true,
     attackMsg: "The ghoul rakes with filthy claws!", defeatMsg: "The ghoul screams - a sound almost like words - and dissolves into dark mist." },

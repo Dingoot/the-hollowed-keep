@@ -14,6 +14,13 @@ function parseCommand(raw) {
   print('<span class="text-dim">&gt; ' + raw + '</span>');
   print('');
 
+  if (GS.awaitingDeath) {
+    if (input === 'wake' || input === 'wake up' || input === 'rise') { respawnFromDeath(); updatePanels(); return; }
+    if (input === 'quit' || input === 'menu') { location.reload(); return; }
+    print("You are between. 'wake', or 'quit'.", 'text-dim');
+    return;
+  }
+
   if (GS.inCombat) {
     handleCombatCommand(input);
     return;
@@ -55,9 +62,10 @@ function parseCommand(raw) {
     case 'unequip': case 'remove': doUnequip(args); break;
     case 'inventory': case 'i': case 'inv': doInventory(); break;
     case 'attack': case 'fight': case 'kill': case 'hit':
-    case 'punch': case 'kick': case 'tackle': case 'shove': case 'slap': case 'headbutt': doAttack(args); break;
+    case 'punch': case 'kick': case 'shove': case 'slap': case 'headbutt': doAttack(args); break;
+    case 'tackle': case 'grapple': doTackleCommand(args); break;
     case 'throw': case 'hurl': case 'toss': doThrow(args); break;
-    case 'talk': case 'speak': doTalk(args); break;
+    case 'talk': case 'speak': case 'approach': case 'greet': doTalk(args); break;
     case 'ask': doAsk(args); break;
     case 'answer': doAnswer(args); break;
     case 'search': case 'investigate': case 'examine room': doSearch(args); break;
@@ -102,7 +110,7 @@ function parseCommand(raw) {
       if (cmd === 'yell') { print(pick(VERB_RESPONSES.shout), 'text-white'); break; }
       if (cmd === 'sniff') { print(pick(VERB_RESPONSES.smell), 'text-white'); break; }
       if (cmd === 'feel') { print(pick(VERB_RESPONSES.touch), 'text-white'); break; }
-      print("The Keep does not recognise that verb. It recognises more than it used to - 'help' lists the load-bearing ones.", 'error-msg');
+      print("Unrecognised command. Try 'help' for what's available.", 'error-msg');
   }
 
   updatePanels();

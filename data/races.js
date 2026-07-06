@@ -143,7 +143,7 @@ const RACES = {
     ],
     drawbackText: ["Burned thin: +25% cold and drowning damage taken"],
     exclusiveClass: "Cinderlord",
-    flavor: "Nobody has ever walked through the gate an Ashborn. Deep in the Keep the old pyres gutter, and sometimes, instead of going out, one gets up. Soul kindled with body, Toll paid at the kindling. The Keep likes things that burn. They remind it of the sky.",
+    flavor: "Deep below, the old pyres gutter for years at a time. Sometimes, instead of going out, one stands up. Soul kindled together with body, the Toll settled at the kindling. The Keep likes things that burn. They remind it of the sky.",
   },
   gravekin: {
     name: "Gravekin",
@@ -163,7 +163,7 @@ const RACES = {
       "Consecrated ground prickles",
     ],
     exclusiveClass: "Deathward",
-    flavor: "No Gravekin has ever paid at the gate. Souls that outstay their bodies drift down here, forgetting; enough of them, settled long enough, remember being someone - approximately. A phenomenon of the Keep, which counts them as residents. The Keep is fond of Gravekin. Nobody has asked it why, and it has never volunteered.",
+    flavor: "Souls that linger long enough forget their bodies before they forget themselves. Down here they drift and settle, and given enough centuries, something person-shaped stands up and asks for a name. The Keep counts them among its residents. It is fond of them. Nobody has asked why.",
   },
   vesseling: {
     name: "Vesseling",

@@ -38,16 +38,9 @@ function startCreation() {
   CREATION.statPicks = [];
   bootClear();
   bootPrint('');
-  bootPrint('You remember the moor. You remember the gate.', 'line-white');
-  bootPrint('You remember beginning to step through it.', 'line-white');
-  bootPrint('');
   bootPrint('[ The Keep acknowledges receipt of: one self. ]', 'line-keep');
   bootPrint('');
-  bootPrint('Name, past, trade, loves, the reason you came - taken.', 'line-dim');
-  bootPrint('The Toll is not negotiable. It was written on the gate.', 'line-dim');
-  bootPrint('It was written in a language you knew, before.', 'line-dim');
-  bootPrint('');
-  bootPrint('But blood is not memory. Blood keeps its own records.', 'line-white');
+  bootPrint('What you were is gone. Blood keeps its own records.', 'line-white');
   bootPrint('');
   bootPrint('What does your blood remember?', 'line-bright');
   bootPrint('');
@@ -149,10 +142,9 @@ function applyRemnantToState(remId) {
 function applyDerivedStats() {
   GS.maxHp = 100 + (GS.stats.con - 10) * 5;
   GS.hp = GS.maxHp;
-  GS.attack = 5 + statMod(GS.stats.str);
-  GS.defense = 3 + statMod(GS.stats.dex);
   const rem = REMNANTS[GS.remnant];
-  if (rem && rem.bonusAttack) GS.attack += rem.bonusAttack;
+  GS.perks.flatDamage = (rem && rem.bonusAttack) ? rem.bonusAttack : 0;
+  GS.perks.flatAC = 0;
 }
 
 function handleCreationInput(raw) {
@@ -224,13 +216,6 @@ function handleCreationInput(raw) {
 function finishCreation() {
   CREATION.stage = null;
   applyDerivedStats();
-  bootClear();
-  bootPrint('');
-  if (GS.race === 'vesseling') {
-    bootPrint('The Porter checks your pockets twice. They are empty. They were always empty.', 'line-white');
-    bootPrint('[ Discrepancy: none. The Keep double-checks. The Keep does not like it either. ]', 'line-amber');
-  }
-  bootPrint('The gate is behind you. It was always behind you.', 'line-white');
-  bootPrint('');
-  setTimeout(() => startGame(false), 600);
+  startGame(false);
 }
+

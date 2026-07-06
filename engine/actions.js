@@ -206,9 +206,9 @@ function doSearch(args) {
         }
       }
     }
-    if (room.searchTargets && !rs.searched) {
+    if (rs.items.length > 0) {
       print('');
-      print('(Some things here reward a closer look: search ' + Object.keys(room.searchTargets).join(', search ') + ')', 'text-dim');
+      print('Within reach: ' + rs.items.filter(id => ITEMS[id]).map(id => ITEMS[id].name.toLowerCase()).join(', ') + '.', 'text-amber');
     }
     rs.searched = true;
   } else {
@@ -431,8 +431,9 @@ function doStats() {
   print('=== CHARACTER STATS ===', 'text-amber');
   print('  Level: ' + GS.level + ' (' + GS.xp + '/' + GS.xpToLevel + ' XP)', 'text-green');
   print('  HP: ' + GS.hp + '/' + GS.maxHp, 'text-green');
-  print('  Attack: ' + getAttack() + ' (base: ' + GS.attack + ')', 'text-green');
-  print('  Defense: ' + getDefense() + ' (base: ' + GS.defense + ')', 'text-green');
+  print('  AC: ' + playerAC(), 'text-green');
+  const wInfo = weaponInfo(null);
+  print('  Damage: ~' + Math.max(1, wInfo.base + statMod(GS.stats[wInfo.stat]) + Math.floor(skillLv(wInfo.skill) / 5) + (GS.perks.flatDamage || 0)) + ' (' + (GS.equipped.weapon ? ITEMS[GS.equipped.weapon].name : 'unarmed') + ')', 'text-green');
   print('  Gold: ' + GS.gold, 'text-green');
   print('  Rooms discovered: ' + GS.roomsDiscovered + '/' + Object.keys(ROOMS).length, 'text-green');
   print('  Items found: ' + GS.itemsFound, 'text-green');
@@ -516,10 +517,8 @@ function doCarve(args) {
   let msg = (args || '').replace(/^(on|onto|into)?\s*(the)?\s*(wall|stone|gate|gates)\s*/i, '').trim();
   if (!msg) { print('Carve what? (write [your message])', 'error-msg'); return; }
   if (msg.length > 100) { print('The stone can only hold so many words.', 'text-dim'); return; }
-  const saved = JSON.parse(localStorage.getItem('hollowkeep_runes') || '[]');
-  saved.push({ text: msg, author: 'You' });
-  if (saved.length > 10) saved.shift();
-  localStorage.setItem('hollowkeep_runes', JSON.stringify(saved));
+  GS.runeMessages.push({ text: msg, author: 'You' });
+  if (GS.runeMessages.length > 12) GS.runeMessages.shift();
   print('You carve into the old stone, beside a hundred older hands: "' + msg + '"', 'text-green');
   print('Whoever wakes on these flagstones next will read it.', 'text-dim');
   renderRuneWall();
@@ -632,7 +631,8 @@ function doHelp() {
   print('  brew             - Brew potions (with alchemist)', 'text-green');
   print('');
   print('COMBAT', 'text-amber');
-  print('  attack [enemy]   - Attack an enemy', 'text-green');
+  print('  attack [enemy]   - Attack an enemy (punch/kick work too)', 'text-green');
+  print('  tackle [beast]   - Wrestle an animal down; soothe may follow', 'text-green');
   print('  cast [spell]     - Cast a known spell', 'text-green');
   print('  flee             - Attempt to run from combat', 'text-green');
   print('');

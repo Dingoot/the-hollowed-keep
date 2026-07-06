@@ -118,7 +118,7 @@ function applyClass(id) {
   GS.class = id;
   GS.flags.pendingClass = null;
   GS.stats[c.keyStat] += 1;
-  if (id === 'fighter') { GS.attack += 1; GS.defense += 1; }
+  if (id === 'fighter') { GS.perks.flatDamage = (GS.perks.flatDamage || 0) + 1; GS.perks.flatAC = (GS.perks.flatAC || 0) + 1; }
   printLine();
   keepSays('It is written: ' + c.name.toUpperCase() + '.');
   logEvent('crystallized: ' + c.name, 'discover');

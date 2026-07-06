@@ -3,8 +3,18 @@
 const outputEl = () => document.getElementById('output');
 const inputEl = () => document.getElementById('command-input');
 
+// Output streams line by line - readable, never a wall slamming the view.
+const PRINT_QUEUE = [];
+
 function print(text, className) {
+  PRINT_QUEUE.push({ text, className });
+}
+
+function flushPrintQueue() {
+  if (PRINT_QUEUE.length === 0) return;
   const out = outputEl();
+  if (!out || !out.appendChild) return;
+  const { text, className } = PRINT_QUEUE.shift();
   const nearBottom = !out.scrollHeight || (out.scrollHeight - out.scrollTop - out.clientHeight < 80);
   const div = document.createElement('div');
   div.className = 'line ' + (className || '');
@@ -42,11 +52,7 @@ function printRoom(roomId) {
     }
   }
 
-  const items = rs.items.filter(id => ITEMS[id]);
-  if (items.length > 0 && (!room.dark || hasLight())) {
-    print('');
-    print('Your eye catches: ' + items.map(id => '<span>' + ITEMS[id].name.toLowerCase() + '</span>').join(', ') + '.', 'room-items');
-  }
+
 
   const enemies = rs.enemies.filter(id => ENEMIES[id]);
   if (enemies.length > 0 && (!room.dark || hasLight())) {
@@ -157,11 +163,9 @@ function updateStats() {
     <div class="hp-bar"><div class="hp-bar-fill ${hpClass}" style="width:${hpPct}%"></div></div>
     <div class="stat-line"><span class="stat-label">Level</span><span class="stat-value">${GS.level}</span></div>
     <div class="xp-bar"><div class="xp-bar-fill" style="width:${xpPct}%"></div></div>
-    <div class="stat-line"><span class="stat-label">Gold</span><span class="stat-value">${GS.gold}</span></div>
-    <div class="stat-line"><span class="stat-label">Blood</span><span class="stat-value">${GS.race && RACES[GS.race] ? RACES[GS.race].name : ' - '}</span></div>
-    ${GS.class && CLASSES[GS.class] ? '<div class="stat-line"><span class="stat-label">Path</span><span class="stat-value">' + CLASSES[GS.class].name + '</span></div>' : ''}
     ${GS.poisoned ? '<div class="stat-line"><span class="stat-value danger">POISONED</span></div>' : ''}
     ${GS.tempAttackBonus > 0 ? '<div class="stat-line"><span class="stat-value warning">EMBOLDENED +' + GS.tempAttackBonus + '</span></div>' : ''}
+    ${GS.companion ? '<div class="stat-line"><span class="stat-value" style="color:var(--cyan)">HOUND AT HEEL</span></div>' : ''}
   `;
 }
 
@@ -169,19 +173,22 @@ function updateVessel() {
   const el = document.getElementById('vessel-content');
   if (!el) return;
   const st = GS.stats;
-  const rows = [
-    ['Strength', st.str], ['Dexterity', st.dex], ['Constitution', st.con],
-    ['Intelligence', st.int], ['Wisdom', st.wis], ['Charisma', st.cha],
-  ];
-  let html = rows.map(([n, v]) =>
+  let html = '';
+  html += '<div class="stat-line"><span class="stat-label">Blood</span><span class="stat-value">' + (GS.race && RACES[GS.race] ? RACES[GS.race].name : '-') + '</span></div>';
+  if (GS.class && CLASSES[GS.class]) {
+    html += '<div class="stat-line"><span class="stat-label">Path</span><span class="stat-value">' + CLASSES[GS.class].name + '</span></div>';
+  }
+  const rows = [['STR', st.str], ['DEX', st.dex], ['CON', st.con], ['INT', st.int], ['WIS', st.wis], ['CHA', st.cha]];
+  html += rows.map(([n, v]) =>
     '<div class="stat-line"><span class="stat-label">' + n + '</span><span class="stat-value">' + v + '</span></div>').join('');
   if (st.hollow > 0) {
-    html += '<div class="stat-line"><span class="stat-label">Hollow</span><span class="stat-value warning">' + st.hollow + '</span></div>';
+    html += '<div class="stat-line"><span class="stat-label">HOLLOW</span><span class="stat-value warning">' + st.hollow + '</span></div>';
   }
-  html += '<div class="stat-line" style="margin-top:6px"><span class="stat-label">Attack</span><span class="stat-value">' + getAttack() + '</span></div>';
-  html += '<div class="stat-line"><span class="stat-label">Defence</span><span class="stat-value">' + getDefense() + '</span></div>';
+  html += '<div class="stat-line" style="margin-top:6px"><span class="stat-label">AC</span><span class="stat-value">' + playerAC() + '</span></div>';
+  html += '<div class="stat-line"><span class="stat-label">Gold</span><span class="stat-value">' + GS.gold + '</span></div>';
   el.innerHTML = html;
 }
+
 
 
 function updateInventory() {

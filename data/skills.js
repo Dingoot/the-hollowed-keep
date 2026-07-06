@@ -75,6 +75,11 @@ const SKILLS = {
   intimidation: { name: "Intimidation", family: "social",
     carve: "You made something afraid, in the place fear was born. Professional respect." },
 
+  pugilism: { name: "Pugilism", family: "weapons", hidden: true,
+    carve: "Fists, refined past desperation into method. The Keep has hosted worse schools." },
+  boot_heel: { name: "Boot & Heel", family: "weapons", hidden: true,
+    carve: "You have decided the floor is a weapon and you are its delivery. The Keep respects commitment to a thesis." },
+
   // The strange ones - hidden until carved. This list will grow. Quietly.
   demolitions: { name: "Demolitions", family: "strange", hidden: true,
     carve: "You made fire your argument. The Keep finds you persuasive." },
@@ -84,4 +89,6 @@ const SKILLS = {
     carve: "You take from the dead politely. The dead have noticed. The dead appreciate it." },
   falling: { name: "Falling (With Style)", family: "strange", hidden: true,
     carve: "That is three times gravity has tried to file a complaint about you. The Keep is keeping score." },
+  beastmaster: { name: "Beastmaster", family: "strange", hidden: true,
+    carve: "You spoke softly to a thing that meant to kill you, and it listened. The Keep has never once managed that." },
 };

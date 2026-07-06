@@ -150,8 +150,8 @@ function doGive(args) {
         }
         if (npc.quest.rewardText) print(npc.quest.rewardText, 'text-amber');
         if (npc.quest.statBonus) {
-          if (npc.quest.statBonus.attack) GS.attack += npc.quest.statBonus.attack;
-          if (npc.quest.statBonus.defense) GS.defense += npc.quest.statBonus.defense;
+          if (npc.quest.statBonus.attack) GS.perks.flatDamage = (GS.perks.flatDamage || 0) + npc.quest.statBonus.attack;
+          if (npc.quest.statBonus.defense) GS.perks.flatAC = (GS.perks.flatAC || 0) + npc.quest.statBonus.defense;
         }
         if (npc.quest.teachesSpell && !GS.spells.includes(npc.quest.teachesSpell)) {
           GS.spells.push(npc.quest.teachesSpell);
@@ -174,8 +174,8 @@ function doGive(args) {
         }
         if (npc.quest.rewardText) print(npc.quest.rewardText, 'text-amber');
         if (npc.quest.statBonus) {
-          if (npc.quest.statBonus.attack) GS.attack += npc.quest.statBonus.attack;
-          if (npc.quest.statBonus.defense) GS.defense += npc.quest.statBonus.defense;
+          if (npc.quest.statBonus.attack) GS.perks.flatDamage = (GS.perks.flatDamage || 0) + npc.quest.statBonus.attack;
+          if (npc.quest.statBonus.defense) GS.perks.flatAC = (GS.perks.flatAC || 0) + npc.quest.statBonus.defense;
         }
         if (npc.quest.revealsHidden) {
           roomStates[npc.quest.revealsHidden].hiddenExitRevealed = true;
