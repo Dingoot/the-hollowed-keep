@@ -19,7 +19,7 @@ function doMove(dir) {
   if (living.length > 0 && !GS.inCombat) {
     const back = GS.enteredFrom[GS.currentRoom];
     if (dir !== back) {
-      print('The ' + ENEMIES[living[0]].name.toLowerCase() + ' is between you and that way. Deal with it - or fall back ' + (back ? back : 'the way you came') + '.', 'error-msg');
+      alertSays('The ' + ENEMIES[living[0]].name.toLowerCase() + ' blocks the way ' + dir + ' - take it down, or fall back ' + (back ? back : 'the way you came') + '.');
       return;
     }
   }

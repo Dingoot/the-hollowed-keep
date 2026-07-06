@@ -105,7 +105,7 @@ function attackNpc(npcId) {
 function doTackle() {
   const enemy = GS.currentEnemy;
   if (!GS.inCombat || !enemy) { print('Nothing here to tackle. The furniture forgives you.', 'text-dim'); return; }
-  if (!enemy.animal) {
+  if (!enemy.animal && !enemy.humanoid) {
     print('It offers nothing you would want your arms around. You shove it instead, gracelessly.', 'text-dim');
     enemyTurn();
     updatePanels();
@@ -115,19 +115,27 @@ function doTackle() {
     print('You already have it pinned. Press the advantage - or try to calm it.', 'text-dim');
     return;
   }
-  const you = rng(1, 20) + statMod(GS.stats.str);
+  const you = rng(1, 20) + statMod(GS.stats.str) + Math.floor(skillLv('wrestling') / 4);
   const it = rng(1, 20) + statMod(enemy.dex || 10);
   if (you >= it) {
-    enemy.pinnedTurns = 2;
-    print('You crash into the ' + enemy.name + ' and bear it down, your weight across it, its legs scrabbling at air. Pinned.', 'combat-hit');
-    print("(It cannot act while pinned. Strike at advantage - or, if it is the sort that can be gentled, soothe it.)", 'text-dim');
-    gainSkillXP('unarmed', 6);
+    const hold = Math.max(1, Math.min(4, 2 + Math.floor((GS.stats.str - (enemy.str || 10)) / 6) + Math.floor(skillLv('wrestling') / 5)));
+    enemy.pinnedTurns = hold;
+    const dmg = 1 + rng(0, 1);
+    enemy.hp -= dmg;
+    print('&rsaquo; You drop low and crash through its guard, arms locking - you ride it down to the stone and hold it there. (' + dmg + ' damage, pinned ' + hold + ' turns)', 'you-line');
+    gainSkillXP('unarmed', 4);
+    GS.perks.tackleWins = (GS.perks.tackleWins || 0) + 1;
+    if (GS.perks.tackleWins >= 5 && !GS.skills.wrestling) gainSkillXP('wrestling', 10);
+    if (GS.skills.wrestling) gainSkillXP('wrestling', 5);
+    maybeStageLine(enemy);
+    if (enemy.hp <= 0) { endCombat(true); return; }
   } else {
-    print('You lunge - it twists free at the last instant and you meet the flagstones. It does not waste the opening.', 'text-amber');
+    print('&rsaquo; You lunge - it twists free at the last instant and you meet the flagstones. It does not waste the opening.', 'you-line you-miss');
     enemyTurn();
   }
   updatePanels();
 }
+
 
 function doSoothe() {
   const enemy = GS.currentEnemy;
@@ -155,12 +163,13 @@ function doSoothe() {
     gainSkillXP('beastmaster', 10);
     GS.companion = GS.currentEnemyId;
     GS.kills[GS.currentRoom + '_' + GS.currentEnemyId] = true;
+    roomStates[GS.currentRoom].enemies = roomStates[GS.currentRoom].enemies.filter(id => id !== GS.currentEnemyId);
     logEvent('gentled the ' + enemy.name.toLowerCase(), 'discover');
     GS.inCombat = false;
     GS.currentEnemy = null;
     print('');
     print('The hound rises, shakes itself nose to tail, and falls in at your heel as though the matter is settled. It is settled.', 'text-amber');
-    updatePanels();
+    roomAftermath();
   } else {
     print('It bares its teeth at the kindness - not yet. Perhaps not ever. But it did not go for your throat, and that is something.', 'text-dim');
     enemyTurn();
@@ -258,7 +267,7 @@ function handleCombatCommand(input) {
         'It shifts - your blow skates wide.',
         'A miss, close enough to feel the heat of almost.',
       ];
-      print(missLines[rng(0, missLines.length - 1)], 'text-dim');
+      print('&rsaquo; ' + missLines[rng(0, missLines.length - 1)], 'you-line you-miss');
       GS.perks.firstStrikeDone = true;
       enemyTurn();
       updatePanels();
@@ -284,7 +293,7 @@ function handleCombatCommand(input) {
       dmg = Math.max(1, Math.floor(dmg / 2));
       print('Shadow drinks half the force of the blow - you need warding.', 'text-amber');
     }
-    if (roll === 20) { dmg *= 2; print('A perfect opening -', 'text-cyan'); }
+    if (roll === 20) { dmg *= 2; print('&rsaquo; A perfect opening - critical hit, double damage.', 'text-cyan'); }
     if (GS.class === 'rogue' && !GS.perks.firstStrikeDone) {
       dmg *= 2;
       print("Opening strike - you were already where the guard wasn't.", 'text-cyan');
@@ -295,8 +304,8 @@ function handleCombatCommand(input) {
       enemy.hp -= 3;
       print('The hound darts in low and worries at it. (+3 damage)', 'text-cyan');
     }
-    const group = isUnarmedVerb ? ((cmd === 'kick' || cmd === 'knee') ? 'kick' : 'punch') : 'strike';
-    print(attackFlavourLine(group, enemy, dmg), 'combat-hit');
+    const group = isUnarmedVerb ? ((cmd === 'kick' || cmd === 'knee') ? 'kick' : 'punch') : (GS.equipped.weapon ? 'strike' : 'punch');
+    print('&rsaquo; ' + attackFlavourLine(group, enemy, dmg), 'you-line');
     gainSkillXP(info.skill, 5);
     maybeStageLine(enemy);
 
@@ -434,6 +443,7 @@ function enemyTurn() {
   if (roll === 20) enemyDmg = Math.floor(enemyDmg * 1.5);
   GS.hp -= enemyDmg;
   print(enemy.attackMsg + ' (' + enemyDmg + ' damage)' + (roll === 20 ? ' It found the gap.' : ''), 'combat-hit');
+  print('', '', 300);
 
   if (enemy.poisonous && !GS.poisoned && rng(1, 3) === 1) {
     GS.poisoned = true;
@@ -472,6 +482,8 @@ function endCombat(victory) {
     GS.kills[enemy.id]++;
     printLine();
     checkLevelUp();
+  updatePanels();
+  if (victory) roomAftermath();
 
     if (enemy.boss && enemy.id === 'shadow_lord') {
       handleShadowLordDefeat();
@@ -480,6 +492,24 @@ function endCombat(victory) {
   GS.inCombat = false;
   GS.currentEnemy = null;
 }
+// When the last threat in a room falls, the room exhales.
+function roomAftermath() {
+  const room = ROOMS[GS.currentRoom];
+  const rs = roomStates[GS.currentRoom];
+  const living = rs.enemies.filter(id => ENEMIES[id]);
+  if (living.length > 0) return;
+  print('', '', 600);
+  if (room.aftermath) {
+    streamProse(room.aftermath, 'text-amber', 130, 700);
+  }
+  const exits = getExits(GS.currentRoom);
+  const names = Object.keys(exits);
+  if (names.length > 0) {
+    print('Exits: ' + names.map(e => '<span>' + e + '</span>').join(', '), 'room-exits');
+  }
+  updatePanels();
+}
+
 
 function doFlee() {
   if (!GS.inCombat) { print("You're not in combat.", 'text-dim'); return; }
@@ -588,7 +618,7 @@ function checkLevelUp() {
     GS.hp = GS.maxHp;
     GS.attack += 1;
     GS.defense += 1;
-    GS.xpToLevel = Math.floor(GS.xpToLevel * 1.5);
+    GS.xpToLevel = Math.floor(GS.xpToLevel * 1.45);
     print('LEVEL UP! You are now level ' + GS.level + '!', 'text-bright');
     logEvent('reached level ' + GS.level, 'discover');
     print('  HP: ' + GS.maxHp + ' | ATK: ' + GS.attack + ' | DEF: ' + GS.defense, 'text-cyan');

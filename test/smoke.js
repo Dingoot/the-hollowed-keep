@@ -374,6 +374,24 @@ const driver = `
     assert(e.stage === "bloody", "bloody stage not set: " + e.stage);
   });
 
+  step("five clean takedowns carve Wrestling", () => {
+    GS = defaultState();
+    applyRaceToState("orc");
+    applyDerivedStats();
+    GS.inCombat = true;
+    GS.currentEnemyId = "feral_hound";
+    GS.currentEnemy = { name: "Feral Hound", animal: true, tameable: true, type: "beast", hp: 500, maxHp: 500, attack: 1, defense: 2, str: 12, dex: 13, wis: 8, attackMsg: "It snaps." };
+    const realRandom = Math.random;
+    Math.random = () => 0.99;
+    for (let i = 0; i < 5; i++) {
+      GS.currentEnemy.pinnedTurns = 0;
+      doTackle();
+    }
+    Math.random = realRandom;
+    assert(GS.skills.wrestling, "Wrestling not carved after 5 successful tackles");
+    GS.inCombat = false; GS.currentEnemy = null;
+  });
+
   step("meta unlock: vesseling at 5 deaths", () => {
     GS = defaultState();
     GS.race = "dwarf";

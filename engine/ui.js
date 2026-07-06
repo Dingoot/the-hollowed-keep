@@ -36,20 +36,26 @@ function print(text, className, pause) {
 }
 
 let printPumpRunning = false;
+let openBlock = null; // { id, el } - the paragraph currently being fed
 
 function pumpPrintQueue() {
   if (printPumpRunning) return;
   printPumpRunning = true;
   const step = () => {
-    if (PRINT_QUEUE.length === 0) { printPumpRunning = false; return; }
+    if (PRINT_QUEUE.length === 0) { printPumpRunning = false; openBlock = null; return; }
     const item = PRINT_QUEUE.shift();
     const out = outputEl();
     if (out && out.appendChild) {
       const nearBottom = !out.scrollHeight || (out.scrollHeight - out.scrollTop - out.clientHeight < 80);
-      const div = document.createElement('div');
-      div.className = 'line ' + (item.className || '');
-      div.innerHTML = item.text;
-      out.appendChild(div);
+      if (item.block && openBlock && openBlock.id === item.block && openBlock.el) {
+        openBlock.el.innerHTML += ' ' + item.text;
+      } else {
+        const div = document.createElement('div');
+        div.className = 'line ' + (item.className || '');
+        div.innerHTML = item.text;
+        out.appendChild(div);
+        openBlock = item.block ? { id: item.block, el: div } : null;
+      }
       if (nearBottom) out.scrollTop = out.scrollHeight;
     }
     setTimeout(step, item.pause != null ? item.pause : 110);
@@ -57,19 +63,31 @@ function pumpPrintQueue() {
   setTimeout(step, 0);
 }
 
-// Prose streams a sentence at a time; blocks breathe between each other.
+// Prose streams a sentence at a time INTO one paragraph; blocks breathe
+// between each other.
+let proseBlockId = 0;
 function streamProse(text, cls, sentencePause, endPause) {
   const parts = String(text).split(/(?<=[.!?])\s+/).filter(Boolean);
+  const block = ++proseBlockId;
   parts.forEach((s, i) => {
     const last = i === parts.length - 1;
-    print(s, cls, last ? (endPause != null ? endPause : 480) : (sentencePause != null ? sentencePause : 480));
+    PRINT_QUEUE.push({
+      text: s,
+      className: cls,
+      block,
+      pause: last ? (endPause != null ? endPause : 1100) : (sentencePause != null ? sentencePause : 130),
+    });
   });
+  pumpPrintQueue();
 }
 
 function printLine() { print('<span class="separator">' + '─'.repeat(50) + '</span>'); }
 
 // The Keep's voice - the bracketed system layer. Old, dry, faintly amused.
 function keepSays(text) { print('[ ' + text + ' ]', 'keep-voice'); }
+
+// Alerts share the bracketed style: gameplay-critical, at a glance.
+function alertSays(text) { print('[ ' + text + ' ]', 'keep-voice'); }
 
 function printRoom(roomId) {
   const room = ROOMS[roomId];
@@ -113,11 +131,18 @@ function printRoom(roomId) {
     for (const eid of enemies) {
       const e = ENEMIES[eid];
       if (e.emerge) {
-        streamProse(e.emerge, 'text-white', 500, 800);
+        streamProse(e.emerge, 'text-white', 130, 800);
       }
       print('! ' + e.name, 'text-red', 400);
     }
-    print('It is between you and every way onward. Fight - or fall back the way you came.', 'text-dim');
+    const back = GS.enteredFrom[roomId];
+    const blocked = Object.keys(getExits(roomId)).filter(d => d !== back);
+    const first = ENEMIES[enemies[0]];
+    if (blocked.length > 0) {
+      alertSays('The ' + first.name.toLowerCase() + ' blocks the way ' + blocked.join(' and ') + ' - take it down, or fall back ' + (back || 'the way you came') + '.');
+    } else {
+      alertSays('The ' + first.name.toLowerCase() + ' stands its ground - take it down, or fall back ' + (back || 'the way you came') + '.');
+    }
   } else {
     const exits = getExits(roomId);
     const exitNames = Object.keys(exits);

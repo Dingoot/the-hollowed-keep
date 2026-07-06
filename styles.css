@@ -531,6 +531,13 @@ body {
 
 /* === Playtest round 3 === */
 .panel-title { display: flex; justify-content: space-between; align-items: baseline; }
-.title-val { color: var(--green); font-size: 0.85em; letter-spacing: 0; }
-.npc-act { color: #6b8fa8; font-style: italic; }
-.npc-act .npc-say { color: var(--cyan); font-style: normal; }
+.title-val { color: var(--green); font-size: 1em; letter-spacing: 0; }
+.npc-act { color: var(--cyan); font-weight: 700; }
+.npc-act .npc-say { color: var(--cyan); font-weight: 400; }
+
+/* === Playtest round 4 === */
+.you-line { color: #d9f7d9; }
+.you-line.you-miss { color: #7fae7f; }
+.chronicle-sub { padding-left: 14px; font-size: 0.88em; opacity: 0.85; }
+.skill-sub .stat-label { padding-left: 12px; font-size: 0.92em; }
+.skill-sub-bar { margin-left: 12px; opacity: 0.8; }

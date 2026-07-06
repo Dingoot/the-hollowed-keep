@@ -116,7 +116,6 @@ function startGame(loadSave) {
     }
   } else {
     GS.gameStarted = true;
-    GS.runeMessages = [{ text: 'New arrival: when your legs remember themselves, come south to the gatehouse. Orientation is part of the service.', author: 'The Porter' }];
     print('Cold flagstones. A grey sky framed by black walls.', 'text-amber');
     print('You are lying in a courtyard, and you do not remember lying down.', 'text-amber');
     print('');

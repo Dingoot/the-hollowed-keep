@@ -4,7 +4,7 @@
 // Levels 1-50. XP cost to go from level N to N+1:
 //   floor(baseCost * N^exponent)
 
-const SKILL_XP = { baseCost: 30, exponent: 1.35, maxLevel: 50 };
+const SKILL_XP = { baseCost: 25, exponent: 1.22, maxLevel: 50 };
 
 const SKILLS = {
   // Weapons - each family its own skill. You get good at the thing you use.
@@ -75,10 +75,12 @@ const SKILLS = {
   intimidation: { name: "Intimidation", family: "social",
     carve: "You made something afraid, in the place fear was born. Professional respect." },
 
-  pugilism: { name: "Pugilism", family: "weapons", hidden: true,
+  pugilism: { name: "Pugilism", family: "weapons", hidden: true, parent: "unarmed",
     carve: "Fists, refined past desperation into method. The Keep has hosted worse schools." },
-  boot_heel: { name: "Boot & Heel", family: "weapons", hidden: true,
+  boot_heel: { name: "Boot & Heel", family: "weapons", hidden: true, parent: "unarmed",
     carve: "You have decided the floor is a weapon and you are its delivery. The Keep respects commitment to a thesis." },
+  wrestling: { name: "Wrestling", family: "weapons", hidden: true, parent: "unarmed",
+    carve: "Five times now something has gone down under your weight and stayed there. The Keep, which holds everything, recognises the discipline. At its fifth rank, larger things will fit in your arms." },
 
   // The strange ones - hidden until carved. This list will grow. Quietly.
   demolitions: { name: "Demolitions", family: "strange", hidden: true,

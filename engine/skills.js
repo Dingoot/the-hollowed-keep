@@ -35,7 +35,7 @@ function gainSkillXP(skillId, amount) {
     GS.skills[skillId] = { level: 1, xp: 0 };
     print('');
     keepSays('Skill carved: ' + def.name.toUpperCase() + ' - ' + def.carve);
-    if (typeof logEvent === 'function') logEvent('carved ' + def.name, 'skill');
+    if (typeof logEvent === 'function') logEvent('carved ' + def.name, 'skill', !!def.parent);
   }
 
   const s = GS.skills[skillId];
@@ -125,14 +125,19 @@ function updateSkills() {
     el.innerHTML = '<div class="empty-note">Nothing carved yet.</div>';
     return;
   }
-  el.innerHTML = ids
-    .sort((a, b) => GS.skills[b].level - GS.skills[a].level)
-    .map(id => {
-      const s = GS.skills[id];
-      const pct = Math.min(100, Math.floor((s.xp / skillXpCost(s.level)) * 100));
-      return '<div class="stat-line"><span class="stat-label">' + SKILLS[id].name +
-        '</span><span class="stat-value">' + s.level + '</span></div>' +
-        '<div class="xp-bar"><div class="xp-bar-fill" style="width:' + pct + '%"></div></div>';
-    })
-    .join('');
+  const row = (id, sub) => {
+    const s = GS.skills[id];
+    const pct = Math.min(100, Math.floor((s.xp / skillXpCost(s.level)) * 100));
+    return '<div class="stat-line' + (sub ? ' skill-sub' : '') + '"><span class="stat-label">' + (sub ? '&#8627; ' : '') + SKILLS[id].name +
+      '</span><span class="stat-value">' + s.level + '</span></div>' +
+      '<div class="xp-bar' + (sub ? ' skill-sub-bar' : '') + '"><div class="xp-bar-fill" style="width:' + pct + '%"></div></div>';
+  };
+  const parents = ids.filter(id => !SKILLS[id].parent).sort((a, b) => GS.skills[b].level - GS.skills[a].level);
+  let html = '';
+  for (const pid of parents) {
+    html += row(pid, false);
+    for (const sid of ids.filter(id => SKILLS[id].parent === pid)) html += row(sid, true);
+  }
+  for (const orphan of ids.filter(id => SKILLS[id].parent && !ids.includes(SKILLS[id].parent))) html += row(orphan, false);
+  el.innerHTML = html;
 }

@@ -14,7 +14,7 @@ const ROOMS = {
     name: "The Gatehouse",
     region: "The Threshold",
     sight: "A tall figure stands at the portcullis chains - a gatekeeper's coat of grey wool gone greyer with mending, gloved hands at rest, and a face your eyes accept and immediately lose, like a word from the tip of the tongue. Its head turns to you at the exact moment you enter. Not before, not after. One gloved hand rests on a thick ledger, closed, beside the guttering candle. Higher on the wall, something small glints on an iron hook.",
-    desc: "A cramped stone chamber beneath a murder hole, hung with chains for a portcullis nobody has lowered in living memory - the Keep does not need one. A wooden table holds a guttering candle and a closed ledger. The Porter stands where the shadows are most convenient. A hook on the wall holds a key that is, pointedly, not the key to the gates.",
+    desc: "A cramped stone chamber wedged between the gates and the courtyard. The ceiling is pierced by a single dark shaft, too regular to be damage, and chains as thick as your wrist climb into the murk above, holding a portcullis nobody has lowered in living memory. A rough wooden table and one stool are the only furniture. Every reachable stretch of wall carries carved writing, generations deep.",
     exits: { south: "outer_gate", north: "main_courtyard" },
     items: ["torch", "iron_key", "flint_and_tinder"],
     npcs: ["porter"],
@@ -45,7 +45,7 @@ const ROOMS = {
   east_garden: {
     name: "The East Garden",
     region: "Courtyard",
-    sight: "Thorned vines have taken the beds whole, strangling the stone benches into green-black mounds. The pale fungi crowding the path edges are plump and faintly wet, and their sweetness sits at the back of your throat like something you should not have swallowed. In her alcove, the faceless statue holds her cupped hands out over all of it, offering nothing.",
+    aftermath: "The garden settles. Without the hound's breathing the quiet has edges - just the fungi glistening, and the faceless statue holding her cupped hands out over the beds, as though she had been waiting on the outcome without holding a stake in it.",
     desc: "Once a formal garden, now a tangle of thorned vines and pale, bloated fungi. Stone benches are overturned and cracked. A statue of a woman with no face stands in an alcove, her hands cupped as if holding something long taken. The air here is thick and sweet with decay.",
     exits: { west: "main_courtyard", north: "stables" },
     items: ["healing_herb"],

@@ -3,18 +3,27 @@
 // of NPCs living their own lives. The simulated-player arrays in
 // data/chronicle.js are kept as a dormant template for the multiplayer era.
 
+let chronicleClock = null;
+
 function initChronicle() {
   if (!GS.chronicleLog) GS.chronicleLog = [];
   renderChronicle();
   renderRuneWall();
+  if (!chronicleClock) chronicleClock = setInterval(renderChronicle, 60000);
 }
 
 // Log a real deed. type: 'discover' | 'death' | 'skill' | 'quest' | 'active'
-function logEvent(action, type) {
+function logEvent(action, type, sub) {
   if (!GS.chronicleLog) GS.chronicleLog = [];
-  GS.chronicleLog.push({ action, type, turn: GS.turnCount });
+  GS.chronicleLog.push({ action, type, sub: !!sub, at: Date.now() });
   if (GS.chronicleLog.length > 30) GS.chronicleLog.shift();
   renderChronicle();
+}
+
+function agoLabel(at) {
+  if (!at) return '';
+  const mins = Math.floor((Date.now() - at) / 60000);
+  return mins < 1 ? 'just now' : mins + 'm';
 }
 
 function renderChronicle() {
@@ -27,10 +36,16 @@ function renderChronicle() {
   }
   el.innerHTML = log.slice(-12).reverse().map(e => {
     const typeClass = e.type === 'death' ? 'chronicle-death' : e.type === 'discover' ? 'chronicle-discover' : '';
+    if (e.sub) {
+      return `<div class="chronicle-entry chronicle-sub">
+        <span class="chronicle-action ${typeClass}">&#8627; ${e.action}</span>
+        <span class="chronicle-time">${agoLabel(e.at)}</span>
+      </div>`;
+    }
     return `<div class="chronicle-entry">
       <span class="chronicle-name">You</span>
       <span class="chronicle-action ${typeClass}"> ${e.action}</span>
-      <span class="chronicle-time">t${e.turn}</span>
+      <span class="chronicle-time">${agoLabel(e.at)}</span>
     </div>`;
   }).join('');
 }
