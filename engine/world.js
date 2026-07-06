@@ -93,12 +93,12 @@ function doExamine(args) {
   }
 
   if (args.includes('mirror') && GS.currentRoom === 'lords_chamber') {
-    print('The shattered mirror shows your face in a dozen fragments, each at a slightly different angle. In one shard, you see the room behind you—but the room in the reflection has someone standing in it. You spin around. Nothing.', 'text-white');
+    print('The shattered mirror shows your face in a dozen fragments, each at a slightly different angle. In one shard, you see the room behind you - but the room in the reflection has someone standing in it. You spin around. Nothing.', 'text-white');
     return;
   }
 
   if (args.includes('telescope') && GS.currentRoom === 'observatory') {
-    print('You peer through the telescope. The lens shows a patch of sky between the stars—and in that void, shapes move. Vast, slow shapes that suggest intelligence and scale beyond comprehension. You pull away, trembling.', 'text-white');
+    print('You peer through the telescope. The lens shows a patch of sky between the stars - and in that void, shapes move. Vast, slow shapes that suggest intelligence and scale beyond comprehension. You pull away, trembling.', 'text-white');
     return;
   }
 
@@ -108,12 +108,12 @@ function doExamine(args) {
   }
 
   if (args.includes('throne') && GS.currentRoom === 'throne_of_shadows') {
-    print('The throne is carved from curdled shadow — a self taken in anger, and it never settled. Its surface absorbs light the way a debt absorbs wages. Sitting in it is an application for a position you should not want.', 'text-white');
+    print('The throne is carved from curdled shadow - a self taken in anger, and it never settled. Its surface absorbs light the way a debt absorbs wages. Sitting in it is an application for a position you should not want.', 'text-white');
     return;
   }
 
   if (args.includes('fountain') && GS.currentRoom === 'main_courtyard') {
-    print('The fountain is dry, its basin cracked. The central figure was once a person—now eroded to abstraction. One arm reaches skyward, the other clutches something to its chest. Water stains suggest it once ran with something other than water—the residue is a dark, iridescent red.', 'text-white');
+    print('The fountain is dry, its basin cracked. The central figure was once a person - now eroded to abstraction. One arm reaches skyward, the other clutches something to its chest. Water stains suggest it once ran with something other than water - the residue is a dark, iridescent red.', 'text-white');
     return;
   }
 

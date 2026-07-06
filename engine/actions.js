@@ -1,6 +1,12 @@
 // === ITEMS ===
 
 function doTake(args) {
+  // Some things are spoken for.
+  if (GS.currentRoom === 'gatehouse' && /ledger/.test(args || '')) {
+    print("'That stays with me.' The Porter has not moved, has not looked up, and is somehow already between you and the table. 'It is the only copy. There is a waiting list.'", 'npc-speech');
+    return;
+  }
+
   if (!args) { print('Take what?', 'error-msg'); return; }
   const rs = roomStates[GS.currentRoom];
   if (args === 'all') {
@@ -19,7 +25,7 @@ function doTake(args) {
   const id = rs.items[idx];
 
   if (GS.currentRoom === 'armory' && id === 'chain_mail' && rs.enemies.includes('animated_armor') && !GS.kills['armory_animated_armor']) {
-    print('As you reach for the chain mail, the suit of armor lurches to life!', 'text-red');
+    print('As you reach for the chain mail, the suit of armour lurches to life!', 'text-red');
     startCombat('animated_armor');
     return;
   }
@@ -30,7 +36,7 @@ function doTake(args) {
   print('Taken: ' + ITEMS[id].name, 'success-msg');
 
   if (id === 'ancient_tome' && !GS.spells.includes('sunder')) {
-    print('You leaf through the tome. A chapter on the "Word of Sundering" catches your eye—a word of power that disrupts shadow constructs. You commit it to memory.', 'text-amber');
+    print('You leaf through the tome. A chapter on the "Word of Sundering" catches your eye - a word of power that disrupts shadow constructs. You commit it to memory.', 'text-amber');
     GS.spells.push('sunder');
   }
 }
@@ -131,7 +137,7 @@ function doUse(args) {
   if (id === 'bone_flute') {
     print('You raise the bone flute to your lips and play. A haunting melody fills the air, resonating in your bones. Restless spirits calm. The shadows themselves seem to still.', 'text-cyan');
     if (GS.currentRoom === 'catacombs' && roomStates.catacombs.enemies.includes('wraith') && !GS.kills['catacombs_wraith']) {
-      print('The Wraith pauses, its form flickering. For a moment, you see the chaplain it once was—eyes full of sorrow. Then it dissipates, not destroyed but... released.', 'text-amber');
+      print('The Wraith pauses, its form flickering. For a moment, you see the chaplain it once was - eyes full of sorrow. Then it dissipates, not destroyed but... released.', 'text-amber');
       GS.kills['catacombs_wraith'] = true;
       roomStates.catacombs.enemies = [];
       GS.xp += 40;
@@ -142,7 +148,7 @@ function doUse(args) {
   }
 
   if (id === 'silver_mirror') {
-    print('You hold up the mirror. Your reflection stares back—but a moment behind, always reacting to what you just did. In the mirror, you can see things that aren\'t visible directly: hidden writing on walls, invisible presences, the true nature of illusions.', 'text-cyan');
+    print('You hold up the mirror. Your reflection stares back - but a moment behind, always reacting to what you just did. In the mirror, you can see things that aren\'t visible directly: hidden writing on walls, invisible presences, the true nature of illusions.', 'text-cyan');
     if (GS.currentRoom === 'shadow_halls') {
       print('The mirror reveals the correct path through the shifting corridors! The geometry that confounds the eye becomes clear in the reflection.', 'text-amber');
     }
@@ -164,7 +170,7 @@ function doUse(args) {
 
 // === SEARCH, PUSH, READ ===
 
-function doSearch() {
+function doSearch(args) {
   const room = ROOMS[GS.currentRoom];
   const rs = roomStates[GS.currentRoom];
 
@@ -173,15 +179,26 @@ function doSearch() {
     return;
   }
 
-  if (rs.searched) {
-    print("You've already thoroughly searched this area.", 'text-dim');
+  // Search a specific thing: "search table", "search fountain".
+  if (args) {
+    const target = args.replace(/^(the|a|an)\s+/, '').trim();
+    if (room.searchTargets) {
+      const key = Object.keys(room.searchTargets).find(k => target.includes(k) || k.includes(target));
+      if (key) { print(room.searchTargets[key], 'text-white'); return; }
+    }
+    if ((room.desc + ' ' + (room.search || '')).toLowerCase().includes(target)) {
+      print('You go over the ' + target + ' carefully, but its secrets - if it keeps any - stay kept for now.', 'text-dim');
+    } else {
+      print("There's no " + target + ' here worth the searching.', 'text-dim');
+    }
     return;
   }
 
-  rs.searched = true;
+  if (!GS.searchedRooms.includes(GS.currentRoom)) GS.searchedRooms.push(GS.currentRoom);
+
   if (room.search) {
     print(room.search, 'text-white');
-    if (room.searchItems) {
+    if (room.searchItems && !rs.searched) {
       for (const id of room.searchItems) {
         if (ITEMS[id]) {
           rs.items.push(id);
@@ -189,10 +206,17 @@ function doSearch() {
         }
       }
     }
+    if (room.searchTargets && !rs.searched) {
+      print('');
+      print('(Some things here reward a closer look: search ' + Object.keys(room.searchTargets).join(', search ') + ')', 'text-dim');
+    }
+    rs.searched = true;
   } else {
     print("You search the area thoroughly but find nothing of note.", 'text-dim');
+    rs.searched = true;
   }
 }
+
 
 function doPush(args) {
   if (!args) { print('Push what?', 'error-msg'); return; }
@@ -248,7 +272,7 @@ function doCombine(args) {
     GS.inventory = GS.inventory.filter(i => !i.startsWith('crystal_shard'));
     GS.inventory.push('crystal_key');
     GS.itemsFound++;
-    print('The three crystal shards drift together, drawn by invisible forces. They fuse in a flash of light, forming a key that exists in multiple states simultaneously—solid and liquid, dark and light, here and elsewhere.', 'text-cyan');
+    print('The three crystal shards drift together, drawn by invisible forces. They fuse in a flash of light, forming a key that exists in multiple states simultaneously - solid and liquid, dark and light, here and elsewhere.', 'text-cyan');
     print('Obtained: Crystal Key', 'text-amber');
     return;
   }
@@ -285,7 +309,7 @@ function doLightHearth() {
     print('The hearth already burns low and steady. Its warmth knows you.', 'text-amber');
     return;
   }
-  const canLight = GS.race === 'ashborn' || hasItem('torch') || hasItem('lantern') || isEquipped('torch') || isEquipped('lantern');
+  const canLight = GS.race === 'ashborn' || hasItem('flint_and_tinder') || hasItem('torch') || hasItem('lantern') || isEquipped('torch') || isEquipped('lantern');
   if (!canLight) { print('You have nothing to light it with.', 'error-msg'); return; }
   GS.litHearths.push(GS.currentRoom);
   GS.lastHearth = GS.currentRoom;
@@ -299,7 +323,63 @@ function doLightHearth() {
   print('Warmth spreads through the room. The stones remember what they were for.', 'text-white');
   print('');
   keepSays('For once, the Keep says nothing at all.');
+  logEvent('lit the hearth in ' + ROOMS[GS.currentRoom].name, 'discover');
   saveGame();
+}
+
+function doThrow(args) {
+  const target = (args || '').trim();
+  if (!target) { print('Throw what?', 'error-msg'); return; }
+
+  const isRock = /\b(rock|stone|rubble|pebble)\b/.test(target);
+
+  if (GS.inCombat && GS.currentEnemy) {
+    const enemy = GS.currentEnemy;
+    if (hasItem('crude_bomb') && /bomb/.test(target)) {
+      // Route through the combat item logic for consistent behaviour.
+      handleCombatCommand('use bomb');
+      return;
+    }
+    if (isRock) {
+      const dmg = 3 + rng(0, 4);
+      enemy.hp -= dmg;
+      print('You snatch up a fist-sized piece of the Keep and hurl it. It connects. (' + dmg + ' damage)', 'combat-hit');
+      gainSkillXP('thrown', 8);
+      keepSays('The Keep notes, without rancour, that you are throwing it at things.');
+      if (enemy.hp <= 0) { endCombat(true); return; }
+      print(enemy.name + ' HP: ' + enemy.hp + '/' + enemy.maxHp, 'combat-info');
+      enemyTurn();
+      updatePanels();
+      return;
+    }
+    const idx = GS.inventory.findIndex(id => matchItem(id, target));
+    if (idx !== -1) {
+      const id = GS.inventory[idx];
+      GS.inventory.splice(idx, 1);
+      roomStates[GS.currentRoom].items.push(id);
+      const dmg = 2;
+      enemy.hp -= dmg;
+      print('You throw the ' + ITEMS[id].name + ' at the ' + enemy.name + '. It bounces off, landing somewhere behind it. (' + dmg + ' damage, one ' + ITEMS[id].name.toLowerCase() + ' down)', 'combat-hit');
+      gainSkillXP('thrown', 4);
+      if (enemy.hp <= 0) { endCombat(true); return; }
+      enemyTurn();
+      updatePanels();
+      return;
+    }
+    print("You have nothing like that to throw.", 'error-msg');
+    return;
+  }
+
+  if (isRock) {
+    print('You find a loose piece of the Keep and throw it down the way. The clatter is deeply satisfying and accomplishes nothing at all.', 'text-dim');
+    return;
+  }
+  const idx = GS.inventory.findIndex(id => matchItem(id, target));
+  if (idx !== -1) {
+    print('You weigh the ' + ITEMS[GS.inventory[idx]].name + ' in your hand, then think better of it. You would only have to pick it up again.', 'text-dim');
+    return;
+  }
+  print('Throw what, exactly?', 'error-msg');
 }
 
 function doRest() {
@@ -319,7 +399,7 @@ function doRest() {
   const heal = atHearth ? GS.maxHp - GS.hp : rng(10, 20);
   GS.hp = Math.min(GS.maxHp, GS.hp + heal);
   if (atHearth) {
-    print('You rest by the lit hearth. Sleep comes easily here — the only place it does. (fully healed)', 'combat-heal');
+    print('You rest by the lit hearth. Sleep comes easily here - the only place it does. (fully healed)', 'combat-heal');
   } else {
     print('You rest for a while, tending your wounds. (+' + heal + ' HP)', 'combat-heal');
   }
@@ -393,7 +473,7 @@ function doLore() {
   print('=== THE HOLLOWED KEEP ===', 'text-amber');
   print('', '');
   print('The Hollowed Keep surfaces where it pleases. One moonless night it', 'text-white');
-  print('stood on the moor — gates open, windows dark, patient. It does not', 'text-white');
+  print('stood on the moor - gates open, windows dark, patient. It does not', 'text-white');
   print('advertise. At the threshold it takes the Toll: name, past, trade,', 'text-white');
   print('loves. The blood stays. One keepsake stays. Terms are terms.', 'text-white');
   print('', '');
@@ -414,7 +494,7 @@ function doHint() {
   else if (GS.inventory.length === 0) hints.push('Search rooms carefully and take anything useful. The gatehouse has a torch.');
   if (!hasLight() && GS.visitedRooms.includes('gatehouse')) hints.push("You'll need a light source for dark areas. Check the gatehouse or kitchen.");
   if (!GS.equipped.weapon) hints.push('Find a weapon before engaging enemies. The training yard might have something.');
-  if (GS.questLog.length === 0) hints.push('Talk to the people you meet. They may need help—and help you in return.');
+  if (GS.questLog.length === 0) hints.push('Talk to the people you meet. They may need help - and help you in return.');
   if (GS.questLog.includes('heal_knight') && !GS.completedQuests.includes('heal_knight')) hints.push('The wounded knight needs a healing potion. Check the pantry.');
   if (GS.questLog.includes('free_thief') && !GS.completedQuests.includes('free_thief')) hints.push('The thief needs a key. There should be one in the gatehouse.');
   if (!GS.flags.hiddenPassageFound && GS.visitedRooms.includes('reading_nook')) hints.push("The reading nook has a peculiar red-bound book. Try pushing it.");
@@ -427,16 +507,24 @@ function doHint() {
 }
 
 function doCarve(args) {
-  if (!args) { print('Carve what message?', 'error-msg'); return; }
-  if (args.length > 100) { print('The stone can only hold so many words.', 'text-dim'); return; }
+  const RUNE_ROOMS = ['main_courtyard', 'gatehouse', 'outer_gate'];
+  if (!RUNE_ROOMS.includes(GS.currentRoom)) {
+    print('The stones here do not take messages. The walls near the Threshold remember - carve there.', 'text-dim');
+    return;
+  }
+  // Strip the "on the wall" part people naturally type.
+  let msg = (args || '').replace(/^(on|onto|into)?\s*(the)?\s*(wall|stone|gate|gates)\s*/i, '').trim();
+  if (!msg) { print('Carve what? (write [your message])', 'error-msg'); return; }
+  if (msg.length > 100) { print('The stone can only hold so many words.', 'text-dim'); return; }
   const saved = JSON.parse(localStorage.getItem('hollowkeep_runes') || '[]');
-  saved.push({ text: args, author: 'You' });
+  saved.push({ text: msg, author: 'You' });
   if (saved.length > 10) saved.shift();
   localStorage.setItem('hollowkeep_runes', JSON.stringify(saved));
-  print('You carve your message into the stone: "' + args + '"', 'text-green');
-  print('Perhaps another adventurer will find it someday.', 'text-dim');
+  print('You carve into the old stone, beside a hundred older hands: "' + msg + '"', 'text-green');
+  print('Whoever wakes on these flagstones next will read it.', 'text-dim');
   renderRuneWall();
 }
+
 
 function doTrade(args) {
   const room = ROOMS[GS.currentRoom];
@@ -448,7 +536,7 @@ function doTrade(args) {
   if (!args || args === '') {
     print('<span class="npc-name">Bartholomew\'s Wares:</span>', '');
     for (const [id, price] of Object.entries(merchant.inventory)) {
-      print('  ' + ITEMS[id].name + ' — ' + price + ' gold', 'text-green');
+      print('  ' + ITEMS[id].name + ' - ' + price + ' gold', 'text-green');
     }
     print('');
     print("Type 'buy [item]' to purchase, or 'sell [item]' to sell.", 'text-dim');
@@ -514,51 +602,51 @@ function doHelp() {
   print('  go [direction]', 'text-green');
   print('');
   print('EXPLORATION', 'text-amber');
-  print('  look (l)        — Describe current room', 'text-green');
-  print('  examine (x) [thing] — Examine something closely', 'text-green');
-  print('  search           — Search the room thoroughly', 'text-green');
-  print('  map (m)          — Show explored areas', 'text-green');
-  print('  skills           — What the hollow holds', 'text-green');
-  print('  stats            — The vessel: blood, remnant, stats', 'text-green');
-  print('  light hearth     — Light a cold hearth (rest point · you wake here)', 'text-green');
-  print('  crystallize      — Open the Ledger of Paths (once the Keep proposes)', 'text-green');
-  print('  rally/pray/invoke — Class abilities, for those who are written', 'text-green');
-  print('  push [thing]     — Push something', 'text-green');
+  print('  look (l)        - Describe current room', 'text-green');
+  print('  examine (x) [thing] - Examine something closely', 'text-green');
+  print('  search           - Search the room thoroughly', 'text-green');
+  print('  map (m)          - Show explored areas', 'text-green');
+  print('  skills           - What the hollow holds', 'text-green');
+  print('  stats            - The vessel: blood, remnant, stats', 'text-green');
+  print('  light hearth     - Light a cold hearth (rest point · you wake here)', 'text-green');
+  print('  crystallize      - Open the Ledger of Paths (once the Keep proposes)', 'text-green');
+  print('  rally/pray/invoke - Class abilities, for those who are written', 'text-green');
+  print('  push [thing]     - Push something', 'text-green');
   print('');
   print('ITEMS', 'text-amber');
-  print('  take/get [item]  — Pick up an item (or "take all")', 'text-green');
-  print('  drop [item]      — Drop an item', 'text-green');
-  print('  use [item]       — Use an item', 'text-green');
-  print('  equip [item]     — Equip weapon/armor', 'text-green');
-  print('  unequip [item]   — Remove equipment', 'text-green');
-  print('  inventory (i)    — List your items', 'text-green');
-  print('  combine [items]  — Combine items together', 'text-green');
-  print('  read [item]      — Read a document or book', 'text-green');
+  print('  take/get [item]  - Pick up an item (or "take all")', 'text-green');
+  print('  drop [item]      - Drop an item', 'text-green');
+  print('  use [item]       - Use an item', 'text-green');
+  print('  equip [item]     - Equip weapon/armour', 'text-green');
+  print('  unequip [item]   - Remove equipment', 'text-green');
+  print('  inventory (i)    - List your items', 'text-green');
+  print('  combine [items]  - Combine items together', 'text-green');
+  print('  read [item]      - Read a document or book', 'text-green');
   print('');
   print('INTERACTION', 'text-amber');
-  print('  talk [person]    — Talk to someone', 'text-green');
-  print('  ask [topic]      — Ask about a topic', 'text-green');
-  print('  answer [text]    — Answer a question', 'text-green');
-  print('  give [item]      — Give an item to someone', 'text-green');
-  print('  trade/buy/sell   — Trade with merchants', 'text-green');
-  print('  brew             — Brew potions (with alchemist)', 'text-green');
+  print('  talk [person]    - Talk to someone', 'text-green');
+  print('  ask [topic]      - Ask about a topic', 'text-green');
+  print('  answer [text]    - Answer a question', 'text-green');
+  print('  give [item]      - Give an item to someone', 'text-green');
+  print('  trade/buy/sell   - Trade with merchants', 'text-green');
+  print('  brew             - Brew potions (with alchemist)', 'text-green');
   print('');
   print('COMBAT', 'text-amber');
-  print('  attack [enemy]   — Attack an enemy', 'text-green');
-  print('  cast [spell]     — Cast a known spell', 'text-green');
-  print('  flee             — Attempt to run from combat', 'text-green');
+  print('  attack [enemy]   - Attack an enemy', 'text-green');
+  print('  cast [spell]     - Cast a known spell', 'text-green');
+  print('  flee             - Attempt to run from combat', 'text-green');
   print('');
   print('OTHER', 'text-amber');
-  print('  rest             — Rest and heal (if safe)', 'text-green');
-  print('  stats            — Show character details', 'text-green');
-  print('  quests           — Show quest log', 'text-green');
-  print('  carve [message]  — Leave a message on the rune wall', 'text-green');
-  print('  lore             — Read the Keep\'s history', 'text-green');
-  print('  hint             — Consult the spirits for guidance', 'text-green');
-  print('  save / load      — Save or load your game', 'text-green');
-  print('  clear            — Clear the screen', 'text-green');
-  print('  verbose          — Toggle verbose descriptions', 'text-green');
-  print('  help (?)         — Show this list', 'text-green');
+  print('  rest             - Rest and heal (if safe)', 'text-green');
+  print('  stats            - Show character details', 'text-green');
+  print('  quests           - Show quest log', 'text-green');
+  print('  carve [message]  - Leave a message on the rune wall', 'text-green');
+  print('  lore             - Read the Keep\'s history', 'text-green');
+  print('  hint             - Consult the spirits for guidance', 'text-green');
+  print('  save / load      - Save or load your game', 'text-green');
+  print('  clear            - Clear the screen', 'text-green');
+  print('  verbose          - Toggle verbose descriptions', 'text-green');
+  print('  help (?)         - Show this list', 'text-green');
 }
 
 // === OPEN / UNLOCK ===
@@ -585,14 +673,14 @@ function doOpen(args) {
     } else {
       print("It's locked. You need a key or lockpicks.", 'error-msg');
       if (GS.race === 'gnome') {
-        print('You press an ear to the plate. The tumblers gossip: iron, three wards, guard-issue. Its key hangs where a bored guard would wait — or slender tools could fool it.', 'text-dim');
+        print('You press an ear to the plate. The tumblers gossip: iron, three wards, guard-issue. Its key hangs where a bored guard would wait - or slender tools could fool it.', 'text-dim');
       }
     }
     return;
   }
 
   if (args.includes('sarcophagus') && GS.currentRoom === 'crypt') {
-    print('You heave the marble lid aside. Inside: not a body, but a rectangular window into absolute darkness. The void is perfect and complete. At the edge, something gleams—items resting on the lip of nothingness.', 'text-white');
+    print('You heave the marble lid aside. Inside: not a body, but a rectangular window into absolute darkness. The void is perfect and complete. At the edge, something gleams - items resting on the lip of nothingness.', 'text-white');
     return;
   }
 

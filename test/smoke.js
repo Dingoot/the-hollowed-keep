@@ -20,6 +20,7 @@ const LOAD_ORDER = [
   "data/remnants.js",
   "data/skills.js",
   "data/classes.js",
+  "data/verbs.js",
   "engine/utils.js",
   "engine/state.js",
   "engine/skills.js",

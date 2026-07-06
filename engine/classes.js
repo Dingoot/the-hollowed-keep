@@ -52,7 +52,7 @@ function doCrystallize(args) {
     return;
   }
   if (!crystalEligible()) {
-    print('The Keep is not ready to propose — or you are not ready to be proposed to. (Reach level ' + crystalLevel() + '.)', 'text-dim');
+    print('The Keep is not ready to propose - or you are not ready to be proposed to. (Reach level ' + crystalLevel() + '.)', 'text-dim');
     return;
   }
 
@@ -68,13 +68,13 @@ function doCrystallize(args) {
     print('');
     print('  Proposed for you:', 'text-bright');
     for (const id of recs) {
-      print('    ' + CLASSES[id].name.padEnd(14) + ' — ' + CLASSES[id].tagline, 'text-cyan');
+      print('    ' + CLASSES[id].name.padEnd(14) + ' - ' + CLASSES[id].tagline, 'text-cyan');
     }
     print('');
     print('  The full Ledger (all paths open to any vessel):', 'text-dim');
     for (const id of CLASS_ORDER) {
       if (recs.includes(id)) continue;
-      print('    ' + CLASSES[id].name.padEnd(14) + ' — ' + CLASSES[id].tagline, 'text-white');
+      print('    ' + CLASSES[id].name.padEnd(14) + ' - ' + CLASSES[id].tagline, 'text-white');
     }
     const race = RACES[GS.race];
     if (race && race.exclusiveClass) {
@@ -100,7 +100,7 @@ function doCrystallize(args) {
   print('');
   for (const t of c.abilityText) print('  + ' + t, 'text-white');
   print('');
-  print("Accept? Type 'accept' — or 'crystallize' to reread the Ledger.", 'text-bright');
+  print("Accept? Type 'accept' - or 'crystallize' to reread the Ledger.", 'text-bright');
   GS.flags.pendingClass = id;
 }
 
@@ -121,20 +121,21 @@ function applyClass(id) {
   if (id === 'fighter') { GS.attack += 1; GS.defense += 1; }
   printLine();
   keepSays('It is written: ' + c.name.toUpperCase() + '.');
+  logEvent('crystallized: ' + c.name, 'discover');
   print(c.confirmLine, 'text-amber');
   print('');
-  print('(New abilities are listed under stats. Some answer to their own commands — see help.)', 'text-dim');
+  print('(New abilities are listed under stats. Some answer to their own commands - see help.)', 'text-dim');
   updatePanels();
 }
 
 function doUnwritten() {
-  if (GS.class) { print('Too late for that — you are already written.', 'text-dim'); return; }
+  if (GS.class) { print('Too late for that - you are already written.', 'text-dim'); return; }
   if (!crystalEligible()) { print('The Keep has made no proposal to refuse. Yet.', 'text-dim'); return; }
   GS.flags.refusals = (GS.flags.refusals || 0) + 1;
   GS.flags.pendingClass = null;
   printLine();
   if (GS.flags.refusals === 1) {
-    keepSays('Refused. Noted. The Keep has been refused before — twice, if it recalls, and it always recalls.');
+    keepSays('Refused. Noted. The Keep has been refused before - twice, if it recalls, and it always recalls.');
     keepSays('It will ask again. It has nothing but time, and you have nothing but its time.');
   } else if (GS.flags.refusals === 2) {
     keepSays('Again? The Keep revises its file on you: fascinating.');
@@ -178,7 +179,7 @@ function doPray() {
   GS.hp = Math.min(GS.maxHp, GS.hp + heal);
   GS.poisoned = false;
   GS.poisonTurns = 0;
-  print('You pray. Something answers — warmth, and a silence inside the silence. (+' + heal + ' HP, poison purged)', 'combat-heal');
+  print('You pray. Something answers - warmth, and a silence inside the silence. (+' + heal + ' HP, poison purged)', 'combat-heal');
   if (GS.inCombat) enemyTurn();
   updatePanels();
 }
@@ -191,7 +192,7 @@ function doInvokeToll() {
   const enemy = GS.currentEnemy;
   const dmg = Math.max(5, Math.floor(enemy.maxHp * 0.15));
   enemy.hp -= dmg;
-  print('You invoke the Toll. The ' + enemy.name + ' PAYS — something is simply, bureaucratically subtracted from it. (' + dmg + ' damage, defense ignored)', 'text-cyan');
+  print('You invoke the Toll. The ' + enemy.name + ' PAYS - something is simply, bureaucratically subtracted from it. (' + dmg + ' damage, defense ignored)', 'text-cyan');
   keepSays('Collected on behalf of: you. Processing fee: waived. This once.');
   if (enemy.hp <= 0) { endCombat(true); return; }
   print(enemy.name + ' HP: ' + enemy.hp + '/' + enemy.maxHp, 'combat-info');

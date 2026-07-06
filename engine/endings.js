@@ -2,7 +2,7 @@
 
 function handleShadowLordDefeat() {
   print('');
-  print('The Hollow Steward — Malchor, last of the household — lies unmade.', 'text-white');
+  print('The Hollow Steward - Malchor, last of the household - lies unmade.', 'text-white');
   print('The Toll-Rod pulses on the obsidian, humming with borrowed authority.', 'text-white');
   print('It wants a hand. Any hand. Yours would do nicely.', 'text-white');
   print('');
@@ -12,13 +12,13 @@ function handleShadowLordDefeat() {
   print('');
   print('You have a choice:', 'text-bright');
   print('');
-  print('  1. Take the Rod — Take up the collection. The Keep needs a Steward.', 'text-red');
+  print('  1. Take the Rod - Take up the collection. The Keep needs a Steward.', 'text-red');
   print('     (Type "take rod")', 'text-dim');
   print('');
-  print('  2. Enter the Sanctum — What the Steward hid is still hidden. For now.', 'text-cyan');
+  print('  2. Enter the Sanctum - What the Steward hid is still hidden. For now.', 'text-cyan');
   print('     (Go east to the Sanctum)', 'text-dim');
   print('');
-  print('  3. Sunder the Rod — Speak the Word upon the Keep\'s own authority.', 'text-amber');
+  print('  3. Sunder the Rod - Speak the Word upon the Keep\'s own authority.', 'text-amber');
   print('     (Type "cast sunder")', 'text-dim');
 
   ROOMS.throne_of_shadows.exits.east = 'sanctum';
@@ -97,7 +97,7 @@ function showEnding(type) {
   if (type === 'power') {
     print('  E N D I N G :  T H E   N E W   S T E W A R D', 'text-red text-bold');
     print('');
-    print('  You grasp the Rod. Authority floods through you — every debt', 'text-white');
+    print('  You grasp the Rod. Authority floods through you - every debt', 'text-white');
     print('  in the building, itemized, and the perfect right to collect.', 'text-white');
     print('  The throne is warm. You sit. Of course you sit.', 'text-white');
     print('');
@@ -114,8 +114,8 @@ function showEnding(type) {
   } else if (type === 'sacrifice') {
     print('  E N D I N G :  T H E   R E S T I T U T I O N', 'text-cyan text-bold');
     print('');
-    print('  You lift the Crown of Endings — every fragment the Steward', 'text-white');
-    print('  ever skimmed, grown together — and you put it on, and you', 'text-white');
+    print('  You lift the Crown of Endings - every fragment the Steward', 'text-white');
+    print('  ever skimmed, grown together - and you put it on, and you', 'text-white');
     print('  give it all back.', 'text-white');
     print('');
     print('  Through the Keep, the robbed remember. Cedric signs his own', 'text-white');
@@ -123,8 +123,8 @@ function showEnding(type) {
     print('  once sold, and laughs until he weeps. A knight reads his', 'text-white');
     print('  crest like a letter from home.', 'text-white');
     print('');
-    print('  And the gates — for one long night, for the first time in', 'text-white');
-    print('  anyone\'s stolen memory — open outward. The freed walk out', 'text-white');
+    print('  And the gates - for one long night, for the first time in', 'text-white');
+    print('  anyone\'s stolen memory - open outward. The freed walk out', 'text-white');
     print('  across the moor and do not look back. You are not among', 'text-white');
     print('  them. Restitution has a clerk, and the clerk stays.', 'text-white');
     print('');
@@ -133,7 +133,7 @@ function showEnding(type) {
   } else if (type === 'destruction') {
     print('  E N D I N G :  T H E   S U N D E R I N G', 'text-amber text-bold');
     print('');
-    print('  You speak the Word of Sundering upon the Toll-Rod — upon', 'text-white');
+    print('  You speak the Word of Sundering upon the Toll-Rod - upon', 'text-white');
     print('  the Keep\'s own lent authority. The Rod cracks, screams', 'text-white');
     print('  in a voice like tearing paper, and unravels.', 'text-white');
     print('');
@@ -144,7 +144,7 @@ function showEnding(type) {
     print('');
     print('  Then, from far below, a sound you feel in your teeth:', 'text-white');
     print('  stairs, opening. Many stairs. The Keep, unpaid, will do', 'text-white');
-    print('  its own collecting now — and it is coming up to start.', 'text-white');
+    print('  its own collecting now - and it is coming up to start.', 'text-white');
     print('');
     print('  You chose to void the ledger. The Keep chose', 'text-amber');
     print('  to stop using clerks.', 'text-amber');

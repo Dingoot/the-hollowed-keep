@@ -17,6 +17,8 @@ data/               WORLD CONTENT — pure data, no logic
   races.js          the five races (stats, affinities, perks)
   remnants.js       the fifteen remnants
   skills.js         player skill definitions + XP curve
+  classes.js        the Launch Set classes (crystallization)
+  verbs.js          flavour responses for freeform verbs
 engine/             GAME LOGIC — no content
   utils.js          rng, pick, helpers
   state.js          game state, save/load

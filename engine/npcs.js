@@ -1,10 +1,19 @@
 // === NPC INTERACTION ===
 
-// Topics visible to this player (Gravekin hear more from the dead).
-function npcTopics(npc) {
-  const t = Object.assign({}, npc.topics || {});
-  if ((GS.race === 'gravekin' || GS.class === 'grave_speaker') && npc.gravekinTopics) Object.assign(t, npc.gravekinTopics);
-  return t;
+// Topics visible to this player. Supports hidden topics that unlock when
+// other topics reveal them - conversation as exploration.
+function topicEntry(v) { return typeof v === 'string' ? { text: v } : (v || {}); }
+
+function npcTopics(npc, npcId) {
+  const all = Object.assign({}, npc.topics || {});
+  if ((GS.race === 'gravekin' || GS.class === 'grave_speaker') && npc.gravekinTopics) Object.assign(all, npc.gravekinTopics);
+  const out = {};
+  for (const [k, v] of Object.entries(all)) {
+    const e = topicEntry(v);
+    if (e.hidden && !GS.perks['topic_' + npcId + '_' + k]) continue;
+    out[k] = e.text;
+  }
+  return out;
 }
 
 function trackSkullTalk(npcId) {
@@ -33,7 +42,7 @@ function doTalk(args) {
   trackSkullTalk(npcId);
   if (npc.topics) {
     print('');
-    print('Topics: ' + Object.keys(npcTopics(npc)).join(', '), 'text-dim');
+    print('Topics: ' + Object.keys(npcTopics(npc, npcId)).join(', '), 'text-dim');
     print("(Type 'ask [topic]' to inquire)", 'text-dim');
   }
 
@@ -69,14 +78,24 @@ function doAsk(args) {
   }
   const npc = NPCS[npcId];
 
-  if (npc.topics && npc.topics[topic]) {
+  const visible = npcTopics(npc, npcId);
+  if (visible[topic]) {
     print('<span class="npc-name">' + npc.name + '</span>:', '');
-    print(npc.topics[topic], 'npc-speech');
+    print(visible[topic], 'npc-speech');
+    trackSkullTalk(npcId);
+    // Some answers open new questions.
+    const raw = (npc.topics && npc.topics[topic]) || (npc.gravekinTopics && npc.gravekinTopics[topic]);
+    const reveals = (topicEntry(raw).reveals || []).concat((npc.topicReveals && npc.topicReveals[topic]) || []);
+    let opened = false;
+    for (const r of reveals) {
+      const key = 'topic_' + npcId + '_' + r;
+      if (!GS.perks[key]) { GS.perks[key] = true; opened = true; }
+    }
+    print('');
+    print('Topics: ' + Object.keys(npcTopics(npc, npcId)).join(', ') + (opened ? '  <span class="text-cyan">(something new)</span>' : ''), 'text-dim');
   } else {
     print(npc.name + " doesn't have anything to say about that.", 'text-dim');
-    if (npc.topics) {
-      print('Try asking about: ' + Object.keys(npc.topics).join(', '), 'text-dim');
-    }
+    print('Try asking about: ' + Object.keys(visible).join(', '), 'text-dim');
   }
 }
 

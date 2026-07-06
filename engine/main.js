@@ -3,34 +3,21 @@
 function runBootSequence() {
   const bootEl = document.getElementById('boot-text');
   const lines = [
-    { text: '> Establishing connection to hollowkeep.net:6660...', cls: 'line-dim', delay: 0 },
-    { text: '> Negotiating protocol... done', cls: 'line-dim', delay: 800 },
-    { text: '> Connection established.', cls: 'line-bright', delay: 400 },
-    { text: '', cls: '', delay: 300 },
-    { text: '> Loading world state.............. done', cls: 'line-dim', delay: 1200 },
-    { text: '> Verifying structural integrity... ok', cls: 'line-dim', delay: 600 },
-    { text: '> Synchronizing shadow layer....... ok', cls: 'line-dim', delay: 500 },
     { text: '', cls: '', delay: 200 },
-    { text: '> Server uptime: ' + (1247 + Math.floor(Math.random() * 100)) + ' days', cls: 'line-dim', delay: 300 },
-    { text: '> Last world reset: never', cls: 'line-dim', delay: 200 },
-    { text: '> Active adventurers: ' + rng(3, 12), cls: 'line-dim', delay: 200 },
-    { text: '> Deaths today: ' + rng(15, 42), cls: 'line-red', delay: 200 },
-    { text: '', cls: '', delay: 400 },
-    { text: CASTLE_ART, cls: 'line-bright', delay: 100, pre: true },
+    { text: '', cls: '', delay: 100 },
+    { text: 'T H E   H O L L O W E D   K E E P', cls: 'line-bright line-center', delay: 500 },
+    { text: 'a text adventure', cls: 'line-dim line-center', delay: 300 },
     { text: '', cls: '', delay: 200 },
-    { text: '═'.repeat(56), cls: 'line-amber', delay: 100 },
-    { text: '  THE HOLLOWED KEEP  ·  A Text Adventure', cls: 'line-bright', delay: 100 },
-    { text: '  Older than its own records  ·  Version 3.0', cls: 'line-dim', delay: 100 },
-    { text: '  hollowkeep.net:6660', cls: 'line-dim', delay: 100 },
-    { text: '═'.repeat(56), cls: 'line-amber', delay: 100 },
+    { text: '─'.repeat(44), cls: 'line-amber line-center', delay: 200 },
+    { text: '', cls: '', delay: 150 },
+    { text: 'Every door demands a toll.', cls: 'line-keep line-center', delay: 500 },
     { text: '', cls: '', delay: 300 },
-    { text: '  "Every door demands a toll. The Keep\'s toll is you."', cls: 'line-white', delay: 100 },
-    { text: '   Paid at the threshold. Collected forever. The gates stand open.', cls: 'line-white', delay: 100 },
-    { text: '', cls: '', delay: 300 },
-    { text: "  Type 'begin' to enter the Keep, or 'load' to restore a save.", cls: 'line-cyan', delay: 100 },
-    { text: "  Type 'lore' for history, 'help' for commands.", cls: 'line-dim', delay: 100 },
+    { text: 'begin  ·  pay the Toll and enter', cls: 'line-white line-center', delay: 200 },
+    { text: 'load   ·  resume a delve', cls: 'line-white line-center', delay: 150 },
+    { text: 'lore   ·  what little is known', cls: 'line-white line-center', delay: 150 },
     { text: '', cls: '', delay: 200 },
   ];
+
 
   let totalDelay = 0;
   for (const line of lines) {
@@ -80,7 +67,7 @@ function handleBootInput(e) {
     const bootEl = document.getElementById('boot-text');
     const div = document.createElement('div');
     div.className = 'line line-white';
-    div.innerHTML = '\n  The Hollowed Keep surfaces where it pleases. One moonless night it\n  stood on the moor, gates open. The desperate walk in — and at the\n  threshold the Keep takes its Toll: name, past, trade, loves.\n\n  Once, a household of Stewards collected the Toll at the gate so the\n  Keep would not collect it inside. The last Steward skimmed from the\n  take. The Keep noticed. It always notices. He sits below now,\n  hollowed into a warning, still holding the Toll-Rod.\n\n  Everything the Keep has ever taken settles downward, floor upon\n  floor. Somewhere at the bottom is everything you were.\n\n  Type \'begin\' to pay the Toll.\n';
+    div.innerHTML = '\n  The Hollowed Keep surfaces where it pleases. One moonless night it\n  stood on the moor, gates open. The desperate walk in - and at the\n  threshold the Keep takes its Toll: name, past, trade, loves.\n\n  Once, a household of Stewards collected the Toll at the gate so the\n  Keep would not collect it inside. The last Steward skimmed from the\n  take. The Keep noticed. It always notices. He sits below now,\n  hollowed into a warning, still holding the Toll-Rod.\n\n  Everything the Keep has ever taken settles downward, floor upon\n  floor. Somewhere at the bottom is everything you were.\n\n  Type \'begin\' to pay the Toll.\n';
     bootEl.appendChild(div);
     bootEl.scrollTop = bootEl.scrollHeight;
   } else if (input === 'help') {
@@ -110,6 +97,7 @@ function startGame(loadSave) {
   }
 
   document.getElementById('castle-art').textContent = CASTLE_ART;
+  scatterStars();
 
   initRoomStates();
   initChronicle();
@@ -211,11 +199,31 @@ function startAmbient() {
 
   ambientTimer = setInterval(() => {
     if (!GS.gameStarted || GS.gameWon || GS.inCombat) return;
-    if (Math.random() < 0.3) {
+    // Only whisper at the idle - never interrupt someone mid-thought.
+    if (Date.now() - (GS.lastInputAt || 0) < 60000) return;
+    if (Math.random() < 0.4) {
       print('');
       print(pick(messages), 'system-msg');
     }
-  }, 90000);
+  }, 45000);
+}
+
+// Stars across the full width of the header. Various sizes, none too big.
+function scatterStars() {
+  const header = document.getElementById('ascii-header');
+  if (!header || header.querySelector('.hk-star')) return;
+  const glyphs = ['.', '·', '*', '+', '˙'];
+  const count = 34;
+  for (let i = 0; i < count; i++) {
+    const s = document.createElement('span');
+    s.className = 'hk-star';
+    s.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+    s.style.left = (Math.random() * 98) + '%';
+    s.style.top = (Math.random() * 90) + '%';
+    s.style.fontSize = (6 + Math.random() * 6) + 'px';
+    s.style.opacity = (0.35 + Math.random() * 0.55).toFixed(2);
+    header.appendChild(s);
+  }
 }
 
 // === INITIALIZATION ===
@@ -225,6 +233,10 @@ document.addEventListener('DOMContentLoaded', () => {
   startAmbient();
 
   document.body.addEventListener('click', () => {
+    // Respect text selection - refocusing the input clears highlights,
+    // which made copying impossible. Only grab focus when nothing is selected.
+    const sel = window.getSelection && window.getSelection();
+    if (sel && !sel.isCollapsed) return;
     const bootInput = document.getElementById('boot-input');
     const cmdInput = inputEl();
     if (bootInput && !document.getElementById('boot-screen').classList.contains('hidden')) {

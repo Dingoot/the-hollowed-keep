@@ -504,3 +504,27 @@ body {
 .keep-voice { color: var(--amber); font-style: italic; }
 .empty-note { color: #6b6b5a; font-style: italic; font-size: 0.85rem; }
 .line-bright { color: #fff; text-shadow: 0 0 6px rgba(255, 255, 255, 0.35); }
+
+/* === Playtest round 1 polish === */
+.line-center { text-align: center; }
+#boot-text .line-keep, .line-keep {
+  color: var(--amber);
+  font-style: italic;
+}
+#boot-text .line-keep:not(.line-center) {
+  border-left: 2px solid var(--amber);
+  padding: 2px 10px;
+  background: rgba(120, 255, 150, 0.04);
+}
+.keep-voice {
+  border-left: 2px solid var(--amber);
+  padding: 2px 10px;
+  background: rgba(120, 255, 150, 0.04);
+  display: block;
+}
+#boot-screen { overflow-y: auto; }
+#map-content { font-size: 0.78rem; line-height: 1.5; }
+#left-panel .panel-section, #right-panel .panel-section { max-height: 34vh; overflow-y: auto; }
+#ascii-header { position: relative; overflow: hidden; }
+#castle-art { position: relative; z-index: 2; white-space: pre; letter-spacing: 0; line-height: 1.1; }
+.hk-star { position: absolute; z-index: 1; color: var(--text-dim); opacity: 0.8; pointer-events: none; }

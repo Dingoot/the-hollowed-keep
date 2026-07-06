@@ -10,7 +10,16 @@ function bootPrint(text, cls) {
   div.className = 'line ' + (cls || 'line-white');
   div.innerHTML = text;
   bootEl.appendChild(div);
+  // Scroll whichever container actually scrolls.
   bootEl.scrollTop = bootEl.scrollHeight;
+  const screen = document.getElementById('boot-screen');
+  if (screen) screen.scrollTop = screen.scrollHeight;
+}
+
+// A fresh screen for each stage of the Toll. No burying the good lines.
+function bootClear() {
+  const bootEl = document.getElementById('boot-text');
+  bootEl.innerHTML = '';
 }
 
 // The bloods on offer: the gate lineup plus anything this player has unlocked.
@@ -27,13 +36,14 @@ function startCreation() {
   CREATION.race = null;
   CREATION.remnant = null;
   CREATION.statPicks = [];
+  bootClear();
   bootPrint('');
   bootPrint('You remember the moor. You remember the gate.', 'line-white');
   bootPrint('You remember beginning to step through it.', 'line-white');
   bootPrint('');
-  bootPrint('[ The Keep acknowledges receipt of: one self. ]', 'line-amber');
+  bootPrint('[ The Keep acknowledges receipt of: one self. ]', 'line-keep');
   bootPrint('');
-  bootPrint('Name, past, trade, loves, the reason you came — taken.', 'line-dim');
+  bootPrint('Name, past, trade, loves, the reason you came - taken.', 'line-dim');
   bootPrint('The Toll is not negotiable. It was written on the gate.', 'line-dim');
   bootPrint('It was written in a language you knew, before.', 'line-dim');
   bootPrint('');
@@ -43,7 +53,7 @@ function startCreation() {
   bootPrint('');
   const races = availableRaces();
   races.forEach((id, i) => {
-    bootPrint('  ' + String(i + 1).padStart(2) + '. ' + RACES[id].name.padEnd(12) + ' — ' + RACES[id].tagline, 'line-white');
+    bootPrint('  ' + String(i + 1).padStart(2) + '. ' + RACES[id].name.padEnd(12) + ' - ' + RACES[id].tagline, 'line-white');
   });
   const lockedLeft = Object.keys(LOCKED_RACES).filter(id => !META.unlocks[id]);
   if (lockedLeft.length > 0) {
@@ -56,6 +66,7 @@ function startCreation() {
 
 function raceCard(id) {
   const r = RACES[id];
+  bootClear();
   bootPrint('');
   bootPrint('  ═══ ' + r.name.toUpperCase() + ' ═══', 'line-amber');
   const mods = Object.entries(r.stats).map(([k, v]) => k.toUpperCase() + (v > 0 ? ' +' : ' ') + v);
@@ -78,10 +89,11 @@ function matchRace(input) {
 
 function showRemnantList() {
   CREATION.stage = 'remnant';
+  bootClear();
   bootPrint('');
   bootPrint('The Porter pats you down with something that is not hands.', 'line-white');
   bootPrint('');
-  bootPrint('[ Inventory of the taken: complete. Discrepancy found. ]', 'line-amber');
+  bootPrint('[ Inventory of the taken: complete. Discrepancy found. ]', 'line-keep');
   bootPrint('');
   bootPrint('One thing survived the Toll. Missed, or left. Nobody will say.', 'line-white');
   bootPrint('It is your only clue to who you were.', 'line-white');
@@ -102,6 +114,7 @@ function matchRemnant(input) {
 
 function remnantCard(id) {
   const r = REMNANTS[id];
+  bootClear();
   bootPrint('');
   bootPrint('  ═══ ' + r.name.toUpperCase() + ' ═══', 'line-amber');
   bootPrint('  "' + r.whisper + '"', 'line-amber');
@@ -115,7 +128,7 @@ function remnantCard(id) {
   bootPrint("Keep it? ('yes', or another number)", 'line-bright');
 }
 
-// Pure state application — also used by tests.
+// Pure state application - also used by tests.
 function applyRaceToState(raceId) {
   GS.race = raceId;
   const r = RACES[raceId];
@@ -159,6 +172,7 @@ function handleCreationInput(raw) {
       const r = RACES[CREATION.race];
       if (r.freeStatPoints > 0) {
         CREATION.stage = 'stats';
+        bootClear();
         bootPrint('');
         bootPrint('Human blood remembers a little of everything. Choose where it runs strongest.', 'line-white');
         bootPrint('Raise two, one at a time: str, dex, con, int, wis, cha (the same one twice is allowed)', 'line-bright');
@@ -210,6 +224,7 @@ function handleCreationInput(raw) {
 function finishCreation() {
   CREATION.stage = null;
   applyDerivedStats();
+  bootClear();
   bootPrint('');
   if (GS.race === 'vesseling') {
     bootPrint('The Porter checks your pockets twice. They are empty. They were always empty.', 'line-white');

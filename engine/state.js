@@ -20,6 +20,7 @@ const defaultState = () => ({
   litHearths: [],
   lastHearth: null,
   searchedRooms: [],
+  chronicleLog: [],
   inventory: [],
   equipped: { weapon: null, armor: null, offhand: null, light: null, amulet: null, ring: null },
   spells: [],

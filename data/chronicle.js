@@ -31,7 +31,7 @@ const CHRONICLE_EVENTS = [
   { action: "is descending the Dungeon Stairs", type: "active" },
   { action: "carved a rune on the Wall", type: "rune" },
   { action: "left a warning near the bridge", type: "rune" },
-  { action: "defeated the Animated Armor", type: "discover" },
+  { action: "defeated the Animated Armour", type: "discover" },
   { action: "claimed the Silver Dagger", type: "discover" },
   { action: "has entered the Throne of Shadows", type: "active" },
   { action: "brewed a potion with the Alchemist", type: "discover" },

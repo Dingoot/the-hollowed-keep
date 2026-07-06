@@ -7,7 +7,7 @@
 const SKILL_XP = { baseCost: 30, exponent: 1.35, maxLevel: 50 };
 
 const SKILLS = {
-  // Weapons — each family its own skill. You get good at the thing you use.
+  // Weapons - each family its own skill. You get good at the thing you use.
   daggers: { name: "Daggers", family: "weapons",
     carve: "You introduced yourself point-first. The Keep remembers manners like yours." },
   swords: { name: "Swords", family: "weapons",
@@ -19,7 +19,7 @@ const SKILLS = {
   hammers: { name: "Hammers & Maces", family: "weapons",
     carve: "Some locks are shaped like skulls. The Keep admires a universal key." },
   spears: { name: "Spears", family: "weapons",
-    carve: "Distance, the first armor. The Keep notes that you like to keep things at arm's length." },
+    carve: "Distance, the first armour. The Keep notes that you like to keep things at arm's length." },
   bows: { name: "Bows", family: "weapons",
     carve: "Death at a distance, delivered quietly. The Keep barely heard it." },
   crossbows: { name: "Crossbows", family: "weapons",
@@ -75,7 +75,7 @@ const SKILLS = {
   intimidation: { name: "Intimidation", family: "social",
     carve: "You made something afraid, in the place fear was born. Professional respect." },
 
-  // The strange ones — hidden until carved. This list will grow. Quietly.
+  // The strange ones - hidden until carved. This list will grow. Quietly.
   demolitions: { name: "Demolitions", family: "strange", hidden: true,
     carve: "You made fire your argument. The Keep finds you persuasive." },
   bone_speaking: { name: "Bone-Speaking", family: "strange", hidden: true,

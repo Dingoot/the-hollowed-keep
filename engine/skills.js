@@ -34,7 +34,8 @@ function gainSkillXP(skillId, amount) {
   if (!GS.skills[skillId]) {
     GS.skills[skillId] = { level: 1, xp: 0 };
     print('');
-    keepSays('Skill carved: ' + def.name.toUpperCase() + ' — ' + def.carve);
+    keepSays('Skill carved: ' + def.name.toUpperCase() + ' - ' + def.carve);
+    if (typeof logEvent === 'function') logEvent('carved ' + def.name, 'skill');
   }
 
   const s = GS.skills[skillId];
@@ -98,7 +99,7 @@ function doStatsCmd() {
   if (GS.class && CLASSES[GS.class]) {
     print('  Path: ' + CLASSES[GS.class].name, 'text-white');
   } else if (GS.flags && GS.flags.refusals) {
-    print('  Path: Unwritten — by choice, ' + GS.flags.refusals + ' refusal' + (GS.flags.refusals > 1 ? 's' : '') + ' and counting', 'keep-voice');
+    print('  Path: Unwritten - by choice, ' + GS.flags.refusals + ' refusal' + (GS.flags.refusals > 1 ? 's' : '') + ' and counting', 'keep-voice');
   }
   if (GS.race === 'vesseling') {
     print('  Remnant: none. The Toll found nothing to miss.', 'text-dim');

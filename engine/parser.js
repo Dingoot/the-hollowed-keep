@@ -9,8 +9,10 @@ function parseCommand(raw) {
   if (GS.commandHistory.length > 50) GS.commandHistory.pop();
   GS.historyIndex = -1;
 
+  GS.lastInputAt = Date.now();
   print('');
   print('<span class="text-dim">&gt; ' + raw + '</span>');
+  print('');
 
   if (GS.inCombat) {
     handleCombatCommand(input);
@@ -52,11 +54,13 @@ function parseCommand(raw) {
     case 'equip': case 'wear': case 'wield': doEquip(args); break;
     case 'unequip': case 'remove': doUnequip(args); break;
     case 'inventory': case 'i': case 'inv': doInventory(); break;
-    case 'attack': case 'fight': case 'kill': case 'hit': doAttack(args); break;
+    case 'attack': case 'fight': case 'kill': case 'hit':
+    case 'punch': case 'kick': case 'tackle': case 'shove': case 'slap': case 'headbutt': doAttack(args); break;
+    case 'throw': case 'hurl': case 'toss': doThrow(args); break;
     case 'talk': case 'speak': doTalk(args); break;
     case 'ask': doAsk(args); break;
     case 'answer': doAnswer(args); break;
-    case 'search': case 'investigate': doSearch(); break;
+    case 'search': case 'investigate': case 'examine room': doSearch(args); break;
     case 'skills': case 'skill': doSkillsCmd(); break;
     case 'crystallize': case 'crystalize': case 'ledger': doCrystallize(args); break;
     case 'accept': doAcceptClass(); break;
@@ -91,7 +95,14 @@ function parseCommand(raw) {
     case 'clear': case 'cls': outputEl().innerHTML = ''; printRoom(GS.currentRoom); break;
     case 'verbose': GS.flags.verbose = !GS.flags.verbose; print('Verbose mode ' + (GS.flags.verbose ? 'on' : 'off') + '.', 'system-msg'); break;
     default:
-      print("I don't understand '" + cmd + "'. Type 'help' for commands.", 'error-msg');
+      if (typeof VERB_RESPONSES !== 'undefined' && VERB_RESPONSES[cmd]) {
+        print(pick(VERB_RESPONSES[cmd]), 'text-white');
+        break;
+      }
+      if (cmd === 'yell') { print(pick(VERB_RESPONSES.shout), 'text-white'); break; }
+      if (cmd === 'sniff') { print(pick(VERB_RESPONSES.smell), 'text-white'); break; }
+      if (cmd === 'feel') { print(pick(VERB_RESPONSES.touch), 'text-white'); break; }
+      print("The Keep does not recognise that verb. It recognises more than it used to - 'help' lists the load-bearing ones.", 'error-msg');
   }
 
   updatePanels();

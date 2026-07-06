@@ -49,7 +49,7 @@ const REMNANTS = {
     perks: ["doors_notice"],
   },
   named_ring: {
-    name: "A ring with a name inside — not yours",
+    name: "A ring with a name inside - not yours",
     whisper: "You carried someone else's promise.",
     affinities: { appraisal: 0.25 },
     perks: ["the_name_recurs"],

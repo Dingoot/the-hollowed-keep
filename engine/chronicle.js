@@ -1,66 +1,65 @@
 // === CHRONICLE SYSTEM ===
-
-let chronicleTimer = null;
-let chronicleEntries = [];
+// Real events only. Your deeds, and - as the systems earn it - the deeds
+// of NPCs living their own lives. The simulated-player arrays in
+// data/chronicle.js are kept as a dormant template for the multiplayer era.
 
 function initChronicle() {
-  chronicleEntries = [];
-  for (let i = 0; i < 6; i++) {
-    addChronicleEntry();
-  }
+  if (!GS.chronicleLog) GS.chronicleLog = [];
   renderChronicle();
   renderRuneWall();
   renderServer();
-  chronicleTimer = setInterval(() => {
-    addChronicleEntry();
-    if (chronicleEntries.length > 10) chronicleEntries.shift();
-    renderChronicle();
-    renderServer();
-  }, rng(15000, 45000));
 }
 
-function addChronicleEntry() {
-  const name = pick(ADVENTURER_NAMES);
-  const event = pick(CHRONICLE_EVENTS);
-  const minutesAgo = rng(1, 120);
-  const timeStr = minutesAgo < 2 ? 'just now' : minutesAgo < 60 ? minutesAgo + 'm ago' : Math.floor(minutesAgo / 60) + 'h ago';
-  chronicleEntries.push({ name, ...event, time: timeStr });
+// Log a real deed. type: 'discover' | 'death' | 'skill' | 'quest' | 'active'
+function logEvent(action, type) {
+  if (!GS.chronicleLog) GS.chronicleLog = [];
+  GS.chronicleLog.push({ action, type, turn: GS.turnCount });
+  if (GS.chronicleLog.length > 30) GS.chronicleLog.shift();
+  renderChronicle();
+  renderServer();
 }
 
 function renderChronicle() {
   const el = document.getElementById('chronicle-content');
-  el.innerHTML = chronicleEntries.slice().reverse().map(e => {
+  if (!el) return;
+  const log = GS.chronicleLog || [];
+  if (log.length === 0) {
+    el.innerHTML = '<div class="empty-note">Your deeds will be recorded here. The Keep keeps records of everything.</div>';
+    return;
+  }
+  el.innerHTML = log.slice(-12).reverse().map(e => {
     const typeClass = e.type === 'death' ? 'chronicle-death' : e.type === 'discover' ? 'chronicle-discover' : '';
     return `<div class="chronicle-entry">
-      <span class="chronicle-name">${e.name}</span>
+      <span class="chronicle-name">You</span>
       <span class="chronicle-action ${typeClass}"> ${e.action}</span>
-      <span class="chronicle-time">${e.time}</span>
+      <span class="chronicle-time">t${e.turn}</span>
     </div>`;
   }).join('');
 }
 
 function renderRuneWall() {
   const el = document.getElementById('runewall-content');
-  const allMessages = [...RUNE_WALL_MESSAGES];
+  if (!el) return;
+  // One seeded message, placed with intent: the Porter leaves word for
+  // every new arrival. Everything else is carved by players.
+  const messages = [
+    { text: "New arrival: when your legs remember themselves, come south to the gatehouse. Orientation is part of the service.", author: "The Porter" },
+  ];
   const saved = JSON.parse(localStorage.getItem('hollowkeep_runes') || '[]');
-  for (const msg of saved) allMessages.push(msg);
-  const shuffled = allMessages.sort(() => Math.random() - 0.5).slice(0, 8);
-  el.innerHTML = shuffled.map(m =>
-    `<div class="rune-entry">"${m.text}" <span class="rune-author">— ${m.author}</span></div>`
+  for (const msg of saved) messages.push(msg);
+  el.innerHTML = messages.slice(-8).map(m =>
+    `<div class="rune-entry">"${m.text}" <span class="rune-author">- ${m.author}</span></div>`
   ).join('');
 }
 
 function renderServer() {
   const el = document.getElementById('server-content');
-  const uptime = 1247 + Math.floor((Date.now() % 86400000) / 3600000);
-  const online = rng(3, 14);
-  const deaths = rng(12, 47);
+  if (!el) return;
   el.innerHTML = `
-    <div class="server-stat"><span>Uptime</span><span class="server-value">${uptime}d</span></div>
-    <div class="server-stat"><span>Online</span><span class="server-value">${online}</span></div>
-    <div class="server-stat"><span>Deaths today</span><span class="server-value">${deaths}</span></div>
-    <div class="server-stat"><span>World resets</span><span class="server-value">0</span></div>
-    <div class="server-stat"><span>Version</span><span class="server-value">2.17</span></div>
+    <div class="server-stat"><span>Turns</span><span class="server-value">${GS.turnCount}</span></div>
+    <div class="server-stat"><span>Deaths</span><span class="server-value">${GS.deaths}</span></div>
+    <div class="server-stat"><span>Hearths lit</span><span class="server-value">${(GS.litHearths || []).length}</span></div>
+    <div class="server-stat"><span>Rooms</span><span class="server-value">${GS.roomsDiscovered}/${Object.keys(ROOMS).length}</span></div>
+    <div class="server-stat"><span>Version</span><span class="server-value">3.0</span></div>
   `;
 }
-

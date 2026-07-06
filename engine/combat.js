@@ -2,11 +2,20 @@
 
 function doAttack(args) {
   const rs = roomStates[GS.currentRoom];
+  const room = ROOMS[GS.currentRoom];
+  // People are attackable. This is rarely wise.
+  if (args && room.npcs) {
+    const nid = room.npcs.find(id => matchNpc(id, args));
+    if (nid) { attackNpc(nid); return; }
+  }
   if (rs.enemies.length === 0) {
+    if (room.npcs && room.npcs.length > 0) {
+      print('Nothing here needs killing. Someone here could be attacked, if you insist - name them.', 'text-dim');
+      return;
+    }
     print("There's nothing to attack here.", 'error-msg');
     return;
   }
-  const room = ROOMS[GS.currentRoom];
   if (room.dark && !hasLight()) {
     print("You can't fight what you can't see!", 'error-msg');
     return;
@@ -15,6 +24,42 @@ function doAttack(args) {
   if (!enemyId) { print("You don't see that enemy.", 'error-msg'); return; }
   if (GS.kills[GS.currentRoom + '_' + enemyId]) { print("It's already defeated.", 'text-dim'); return; }
   startCombat(enemyId);
+}
+
+function attackNpc(npcId) {
+  const npc = NPCS[npcId];
+  if (npcId === 'porter') {
+    GS.perks.porterStruck = (GS.perks.porterStruck || 0) + 1;
+    if (GS.perks.porterStruck === 1) {
+      print(npc.onAttackStages[0], 'npc-speech');
+      print('');
+      keepSays('The Keep pretends not to have seen that. The pretence is itself a message.');
+      return;
+    }
+    porterFlick();
+    return;
+  }
+  if (npc.onAttack) {
+    print(npc.onAttack, 'npc-speech');
+    gainSkillXP('unarmed', 2);
+    return;
+  }
+  print('You square up to ' + npc.name + ', then think better of it.', 'text-dim');
+}
+
+function porterFlick() {
+  print('');
+  print('The Porter sets down the ledger. This is the first time you have seen it set down the ledger.', 'text-white');
+  print('');
+  print("'Noted,' it says, and raises one hand, and flicks - a small, tidy gesture, like shooing a moth.", 'text-white');
+  print('');
+  print('Your vision doubles. Your knees find the flagstones without consulting you. Something warm sheets down your face, your arms, out from under your fingernails - and you understand, distantly, that it is you, all of it, leaving from everywhere at once. You did not know you contained this much. The flagstones drink it without hurry, the way they have drunk everything, always.', 'text-red');
+  print('');
+  print('The last thing you see is the Porter producing a small white cloth and beginning, patiently, to polish the ledger.', 'text-white');
+  print('');
+  keepSays('Cause of death, for the record: discourtesy.');
+  GS.perks.porterStruck = 0;
+  playerDeath('the Porter');
 }
 
 function startCombat(enemyId) {
@@ -38,7 +83,15 @@ function handleCombatCommand(input) {
   const args = parts.slice(1).join(' ');
   const enemy = GS.currentEnemy;
 
-  if (cmd === 'attack' || cmd === 'hit' || cmd === 'fight' || cmd === 'a') {
+  const UNARMED_VERBS = ['punch', 'kick', 'tackle', 'headbutt', 'shove', 'slap', 'elbow'];
+  const isUnarmedVerb = UNARMED_VERBS.includes(cmd);
+
+  if (cmd === 'throw' || cmd === 'hurl' || cmd === 'toss') {
+    doThrow(args);
+    return;
+  }
+
+  if (cmd === 'attack' || cmd === 'hit' || cmd === 'fight' || cmd === 'a' || isUnarmedVerb) {
     let playerAtk = getAttack();
     let bonusDmg = 0;
 
@@ -61,12 +114,17 @@ function handleCombatCommand(input) {
     let dmg = Math.max(1, playerAtk + bonusDmg - enemy.defense + rng(-2, 2));
     if (GS.class === 'rogue' && !GS.perks.firstStrikeDone) {
       dmg *= 2;
-      print("Opening strike — you were already where the guard wasn't.", 'text-cyan');
+      print("Opening strike - you were already where the guard wasn't.", 'text-cyan');
     }
     GS.perks.firstStrikeDone = true;
     enemy.hp -= dmg;
-    print('You strike the ' + enemy.name + ' for ' + dmg + ' damage!', 'combat-hit');
-    gainSkillXP(equippedWeaponSkill(), 5);
+    if (isUnarmedVerb) {
+      print('You ' + cmd + ' the ' + enemy.name + ' - no steel, just intent. (' + dmg + ' damage)', 'combat-hit');
+      gainSkillXP('unarmed', 5);
+    } else {
+      print('You strike the ' + enemy.name + ' for ' + dmg + ' damage!', 'combat-hit');
+      gainSkillXP(equippedWeaponSkill(), 5);
+    }
 
     if (enemy.hp <= 0) {
       endCombat(true);
@@ -100,7 +158,7 @@ function handleCombatCommand(input) {
       let dmg = (item.damage || 25) + rng(0, 10);
       if (GS.class === 'sapper') dmg = Math.floor(dmg * 1.5); // good wadding
       enemy.hp -= dmg;
-      print('You hurl the crude bomb! The blast tears through the ' + enemy.name + ' — and a fair amount of masonry. (' + dmg + ' damage)', 'combat-hit');
+      print('You hurl the crude bomb! The blast tears through the ' + enemy.name + ' - and a fair amount of masonry. (' + dmg + ' damage)', 'combat-hit');
       gainSkillXP('demolitions', 20);
       if (enemy.hp <= 0) { endCombat(true); return; }
       print(enemy.name + ' HP: ' + enemy.hp + '/' + enemy.maxHp, 'combat-info');
@@ -148,7 +206,7 @@ function handleCombatCommand(input) {
     doFlee();
 
   } else if (cmd === 'look' || cmd === 'l') {
-    print(enemy.name + ' — HP: ' + enemy.hp + '/' + enemy.maxHp, 'combat-info');
+    print(enemy.name + ' - HP: ' + enemy.hp + '/' + enemy.maxHp, 'combat-info');
     print('Your HP: ' + GS.hp + '/' + GS.maxHp, 'combat-info');
 
   } else {
@@ -200,7 +258,7 @@ function enemyTurn() {
 function endCombat(victory) {
   if (victory && GS.class === 'reaver') {
     GS.perks.reaverStacks = Math.min(5, (GS.perks.reaverStacks || 0) + 1);
-    print('You take something from the fallen — a sliver of what it was. (+' + GS.perks.reaverStacks + ' ATK until you rest)', 'text-cyan');
+    print('You take something from the fallen - a sliver of what it was. (+' + GS.perks.reaverStacks + ' ATK until you rest)', 'text-cyan');
   }
   const enemy = GS.currentEnemy;
   if (victory) {
@@ -319,6 +377,7 @@ function playerDeath(cause) {
   GS.poisonTurns = 0;
   GS.tempAttackBonus = 0;
   GS.tempAttackTurns = 0;
+  logEvent('died: ' + cause, 'death');
   const home = GS.lastHearth || 'main_courtyard';
   GS.currentRoom = home;
   print('');
@@ -341,6 +400,7 @@ function checkLevelUp() {
     GS.defense += 1;
     GS.xpToLevel = Math.floor(GS.xpToLevel * 1.5);
     print('LEVEL UP! You are now level ' + GS.level + '!', 'text-bright');
+    logEvent('reached level ' + GS.level, 'discover');
     print('  HP: ' + GS.maxHp + ' | ATK: ' + GS.attack + ' | DEF: ' + GS.defense, 'text-cyan');
   }
   announceCrystallization();

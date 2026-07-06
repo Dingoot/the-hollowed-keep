@@ -4,17 +4,18 @@ const outputEl = () => document.getElementById('output');
 const inputEl = () => document.getElementById('command-input');
 
 function print(text, className) {
-  const el = outputEl();
+  const out = outputEl();
+  const nearBottom = !out.scrollHeight || (out.scrollHeight - out.scrollTop - out.clientHeight < 80);
   const div = document.createElement('div');
-  div.className = 'output-line' + (className ? ' ' + className : '');
+  div.className = 'line ' + (className || '');
   div.innerHTML = text;
-  el.appendChild(div);
-  el.scrollTop = el.scrollHeight;
+  out.appendChild(div);
+  if (nearBottom) out.scrollTop = out.scrollHeight;
 }
 
 function printLine() { print('<span class="separator">' + '─'.repeat(50) + '</span>'); }
 
-// The Keep's voice — the bracketed system layer. Old, dry, faintly amused.
+// The Keep's voice - the bracketed system layer. Old, dry, faintly amused.
 function keepSays(text) { print('[ ' + text + ' ]', 'keep-voice'); }
 
 function printRoom(roomId) {
@@ -35,7 +36,7 @@ function printRoom(roomId) {
   if (room.dark && !hasLight()) {
     print('');
     if (GS.race === 'elf') {
-      print('Darkness pools here, but your eyes drink what little light exists. Shapes and ways out — not details. Searching needs flame.', 'text-dim');
+      print('Darkness pools here, but your eyes drink what little light exists. Shapes and ways out - not details. Searching needs flame.', 'text-dim');
     } else {
       print('It is pitch dark. You can barely see your hand in front of your face. You need a light source.', 'text-red');
     }
@@ -44,23 +45,28 @@ function printRoom(roomId) {
   const items = rs.items.filter(id => ITEMS[id]);
   if (items.length > 0 && (!room.dark || hasLight())) {
     print('');
-    print('You see: ' + items.map(id => '<span>' + ITEMS[id].name + '</span>').join(', '), 'room-items');
+    print('Your eye catches: ' + items.map(id => '<span>' + ITEMS[id].name.toLowerCase() + '</span>').join(', ') + '.', 'room-items');
   }
 
   const enemies = rs.enemies.filter(id => ENEMIES[id]);
   if (enemies.length > 0 && (!room.dark || hasLight())) {
     print('');
     for (const eid of enemies) {
-      print('! ' + ENEMIES[eid].name + ' — ' + ENEMIES[eid].desc, 'text-red');
+      print('! ' + ENEMIES[eid].name + ' - ' + ENEMIES[eid].desc, 'text-red');
     }
   }
 
   if (room.npcs && (!room.dark || hasLight())) {
-    for (const nid of room.npcs) {
-      const npc = NPCS[nid];
-      if (npc && (!npc.quest || !npc.quest.completed || nid === 'talking_skull' || nid === 'merchant_ghost' || nid === 'mad_alchemist')) {
-        print('');
-        print(npc.name + ' is here.', 'room-npcs');
+    if (room.npcIntro) {
+      print('');
+      print(room.npcIntro, 'text-amber');
+    } else {
+      for (const nid of room.npcs) {
+        const npc = NPCS[nid];
+        if (npc && (!npc.quest || !npc.quest.completed || nid === 'talking_skull' || nid === 'merchant_ghost' || nid === 'mad_alchemist')) {
+          print('');
+          print(npc.name + ' is here.', 'room-npcs');
+        }
       }
     }
   }
@@ -85,7 +91,7 @@ function printRoom(roomId) {
     print('(The sanctified ground prickles, faintly offended by your blood.)', 'text-dim');
   }
 
-  document.title = 'The Hollowed Keep — ' + room.name;
+  document.title = 'The Hollowed Keep - ' + room.name;
   updatePanels();
 }
 
@@ -114,7 +120,7 @@ function isEquipped(id) {
 
 function getAttack() {
   let atk = GS.attack;
-  atk += GS.tempAttackBonus === undefined ? 0 : 0; // (stat contribution applied at creation — see applyDerivedStats)
+  atk += GS.tempAttackBonus === undefined ? 0 : 0; // (stat contribution applied at creation - see applyDerivedStats)
   if (GS.equipped.weapon && ITEMS[GS.equipped.weapon]) atk += ITEMS[GS.equipped.weapon].attack || 0;
   if (GS.equipped.ring && ITEMS[GS.equipped.ring]) atk += ITEMS[GS.equipped.ring].attack || 0;
   atk += GS.perks && GS.perks.reaverStacks ? GS.perks.reaverStacks : 0;
@@ -134,6 +140,7 @@ function getDefense() {
 
 function updatePanels() {
   updateStats();
+  updateVessel();
   updateSkills();
   updateInventory();
   updateMap();
@@ -150,19 +157,32 @@ function updateStats() {
     <div class="hp-bar"><div class="hp-bar-fill ${hpClass}" style="width:${hpPct}%"></div></div>
     <div class="stat-line"><span class="stat-label">Level</span><span class="stat-value">${GS.level}</span></div>
     <div class="xp-bar"><div class="xp-bar-fill" style="width:${xpPct}%"></div></div>
-    <div class="stat-line"><span class="stat-label">ATK</span><span class="stat-value">${getAttack()}</span></div>
-    <div class="stat-line"><span class="stat-label">DEF</span><span class="stat-value">${getDefense()}</span></div>
     <div class="stat-line"><span class="stat-label">Gold</span><span class="stat-value">${GS.gold}</span></div>
-    <div class="stat-line"><span class="stat-label">Blood</span><span class="stat-value">${GS.race && RACES[GS.race] ? RACES[GS.race].name : '—'}</span></div>
+    <div class="stat-line"><span class="stat-label">Blood</span><span class="stat-value">${GS.race && RACES[GS.race] ? RACES[GS.race].name : ' - '}</span></div>
     ${GS.class && CLASSES[GS.class] ? '<div class="stat-line"><span class="stat-label">Path</span><span class="stat-value">' + CLASSES[GS.class].name + '</span></div>' : ''}
-    <div class="stat-line"><span class="stat-label">S/D/C</span><span class="stat-value">${GS.stats.str}/${GS.stats.dex}/${GS.stats.con}</span></div>
-    <div class="stat-line"><span class="stat-label">I/W/Ch</span><span class="stat-value">${GS.stats.int}/${GS.stats.wis}/${GS.stats.cha}</span></div>
-    ${GS.stats.hollow > 0 ? '<div class="stat-line"><span class="stat-label">Hollow</span><span class="stat-value warning">' + GS.stats.hollow + '</span></div>' : ''}
-    <div class="stat-line"><span class="stat-label">Rooms</span><span class="stat-value">${GS.roomsDiscovered}/${Object.keys(ROOMS).length}</span></div>
     ${GS.poisoned ? '<div class="stat-line"><span class="stat-value danger">POISONED</span></div>' : ''}
-    ${GS.tempAttackBonus > 0 ? '<div class="stat-line"><span class="stat-value warning">STR+' + GS.tempAttackBonus + ' (' + GS.tempAttackTurns + ')</span></div>' : ''}
+    ${GS.tempAttackBonus > 0 ? '<div class="stat-line"><span class="stat-value warning">EMBOLDENED +' + GS.tempAttackBonus + '</span></div>' : ''}
   `;
 }
+
+function updateVessel() {
+  const el = document.getElementById('vessel-content');
+  if (!el) return;
+  const st = GS.stats;
+  const rows = [
+    ['Strength', st.str], ['Dexterity', st.dex], ['Constitution', st.con],
+    ['Intelligence', st.int], ['Wisdom', st.wis], ['Charisma', st.cha],
+  ];
+  let html = rows.map(([n, v]) =>
+    '<div class="stat-line"><span class="stat-label">' + n + '</span><span class="stat-value">' + v + '</span></div>').join('');
+  if (st.hollow > 0) {
+    html += '<div class="stat-line"><span class="stat-label">Hollow</span><span class="stat-value warning">' + st.hollow + '</span></div>';
+  }
+  html += '<div class="stat-line" style="margin-top:6px"><span class="stat-label">Attack</span><span class="stat-value">' + getAttack() + '</span></div>';
+  html += '<div class="stat-line"><span class="stat-label">Defence</span><span class="stat-value">' + getDefense() + '</span></div>';
+  el.innerHTML = html;
+}
+
 
 function updateInventory() {
   const el = document.getElementById('inventory-content');
@@ -180,7 +200,7 @@ function updateInventory() {
 
 function updateMap() {
   const el = document.getElementById('map-content');
-  const regionOrder = ["The Approach", "Courtyard", "Ground Floor", "Upper Floors", "The Dungeons", "The Deep"];
+  const regionOrder = ["The Threshold", "Courtyard", "Ground Floor", "Upper Floors", "The Dungeons", "The Deep"];
   const regions = {};
   for (const [id, room] of Object.entries(ROOMS)) {
     if (!GS.visitedRooms.includes(id)) continue;
@@ -198,7 +218,8 @@ function updateMap() {
       mapText += `<span class="${cls}">${marker}${room.name}</span>\n`;
     }
   }
-  el.innerHTML = mapText || '\n  (unexplored)';
+  const tally = '<span class="text-dim"> explored: ' + GS.roomsDiscovered + '/' + Object.keys(ROOMS).length + '</span>\n';
+  el.innerHTML = tally + (mapText || '\n  (unexplored)');
 }
 
 function updateQuests() {

@@ -1,5 +1,5 @@
 // === RACES ===
-// What your blood remembers. Pure data — the engine interprets perk strings.
+// What your blood remembers. Pure data - the engine interprets perk strings.
 // Stat mods are applied once at creation. Affinities are skill-XP rate
 // modifiers (0.25 = +25%). Perks are string flags the engine implements.
 //
@@ -33,7 +33,7 @@ const RACES = {
     affinities: { bows: 0.25, stealth: 0.25, foraging: 0.25, intimidation: -0.25 },
     perks: ["twilight_eyes", "stolen_centuries"],
     perkText: [
-      "Twilight Eyes: in dark rooms you see shapes and exits without a light — details still need flame",
+      "Twilight Eyes: in dark rooms you see shapes and exits without a light - details still need flame",
       "Stolen Centuries: the Toll took four hundred years of memory. Fragments surface, unbidden, in places the Keep has taken.",
     ],
     drawbackText: [
@@ -85,7 +85,7 @@ const RACES = {
     affinities: { alchemy: 0.25, lockpicking: 0.25, appraisal: 0.25, intimidation: -0.25 },
     perks: ["gearsense"],
     perkText: [
-      "Gearsense: locks, traps, and mechanisms confide in you — expect hints the others never hear",
+      "Gearsense: locks, traps, and mechanisms confide in you - expect hints the others never hear",
     ],
     drawbackText: ["Small frame: -1 STR", "Hard to loom: slower to learn Intimidation"],
     exclusiveClass: "Wallspeaker",
@@ -100,7 +100,7 @@ const RACES = {
     affinities: { axes: 0.25, unarmed: 0.25, intimidation: 0.25, lockpicking: -0.25 },
     perks: ["blood_roar"],
     perkText: [
-      "Blood Roar: fall below a quarter health and the ancestors roar — +4 attack for 3 turns, once per rest",
+      "Blood Roar: fall below a quarter health and the ancestors roar - +4 attack for 3 turns, once per rest",
     ],
     drawbackText: [
       "The fury clouds judgment: -1 WIS",
@@ -118,7 +118,7 @@ const RACES = {
     affinities: { silver_tongue: 0.25, ritual: 0.25, firecraft: 0.25 },
     perks: ["fiends_bargain", "marked_blood"],
     perkText: [
-      "Fiend's Bargain: once per life, the blood refuses to let you die — you stand back up at 1 HP, toll unpaid",
+      "Fiend's Bargain: once per life, the blood refuses to let you die - you stand back up at 1 HP, toll unpaid",
       "The blood knows fire and old words: Firecraft, Ritual, Silver Tongue come easy",
     ],
     drawbackText: [
@@ -131,7 +131,7 @@ const RACES = {
   },
   ashborn: {
     name: "Ashborn",
-    tagline: "Moor-pyre folk. Fire in the blood.",
+    tagline: "The pyres below do not always go out.",
     stats: { dex: 1, int: 1, con: -1 },
     freeStatPoints: 0,
     xpAll: 0,
@@ -143,18 +143,18 @@ const RACES = {
     ],
     drawbackText: ["Burned thin: +25% cold and drowning damage taken"],
     exclusiveClass: "Cinderlord",
-    flavor: "The Keep likes things that burn. They remind it of the sky.",
+    flavor: "Nobody has ever walked through the gate an Ashborn. Deep in the Keep the old pyres gutter, and sometimes, instead of going out, one gets up. Soul kindled with body, Toll paid at the kindling. The Keep likes things that burn. They remind it of the sky.",
   },
   gravekin: {
     name: "Gravekin",
-    tagline: "Death-marked. The dead speak louder.",
+    tagline: "What lingers long enough, learns to walk.",
     stats: { wis: 1, int: 1, cha: -1 },
     freeStatPoints: 0,
     xpAll: 0,
     affinities: { bonecraft: 0.25, ritual: 0.25, medicine: 0.25, bone_speaking: 0.5 },
     perks: ["louder_dead", "necrotic_resist", "consecration_prickle"],
     perkText: [
-      "Louder Dead: extra words with every ghost, skull, and revenant — and this place is full of them",
+      "Louder Dead: extra words with every ghost, skull, and revenant - and this place is full of them",
       "The dead find you charming: ghost merchants give kin rates",
       "Necrotic resist: -25% necrotic damage taken",
     ],
@@ -163,7 +163,7 @@ const RACES = {
       "Consecrated ground prickles",
     ],
     exclusiveClass: "Deathward",
-    flavor: "The Keep is fond of Gravekin. Nobody has ever asked it why, and it has never volunteered.",
+    flavor: "No Gravekin has ever paid at the gate. Souls that outstay their bodies drift down here, forgetting; enough of them, settled long enough, remember being someone - approximately. A phenomenon of the Keep, which counts them as residents. The Keep is fond of Gravekin. Nobody has asked it why, and it has never volunteered.",
   },
   vesseling: {
     name: "Vesseling",
@@ -188,7 +188,7 @@ const RACES = {
   },
 };
 
-// The gate lineup — classics first, then the moor-born originals.
+// The gate lineup - classics first, then the moor-born originals.
 const RACE_ORDER = ["human", "elf", "dwarf", "halfling", "gnome", "orc", "tiefling", "ashborn", "gravekin"];
 
 // Bloods the Keep has not yet shown you. Key: race id → how it unlocks.
