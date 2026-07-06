@@ -3,24 +3,67 @@
 const outputEl = () => document.getElementById('output');
 const inputEl = () => document.getElementById('command-input');
 
+// NPC lines: what is said stays bright; what is done fades to steel.
+function formatNpcLine(text) {
+  let out = '';
+  let inQuote = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === "'") {
+      const prev = i > 0 ? text[i - 1] : ' ';
+      const next = i < text.length - 1 ? text[i + 1] : ' ';
+      const wordApostrophe = /[A-Za-z]/.test(prev) && /[A-Za-z]/.test(next);
+      if (!wordApostrophe) {
+        if (!inQuote) { inQuote = true; out += '<span class="npc-say">\''; continue; }
+        inQuote = false; out += '\'</span>'; continue;
+      }
+    }
+    out += ch;
+  }
+  if (inQuote) out += '</span>';
+  return '<span class="npc-act">' + out + '</span>';
+}
+
 // Output streams line by line - readable, never a wall slamming the view.
 const PRINT_QUEUE = [];
 
-function print(text, className) {
-  PRINT_QUEUE.push({ text, className });
+function print(text, className, pause) {
+  if (className && className.indexOf('npc-speech') !== -1 && typeof text === 'string') {
+    text = formatNpcLine(text);
+  }
+  PRINT_QUEUE.push({ text, className, pause });
+  pumpPrintQueue();
 }
 
-function flushPrintQueue() {
-  if (PRINT_QUEUE.length === 0) return;
-  const out = outputEl();
-  if (!out || !out.appendChild) return;
-  const { text, className } = PRINT_QUEUE.shift();
-  const nearBottom = !out.scrollHeight || (out.scrollHeight - out.scrollTop - out.clientHeight < 80);
-  const div = document.createElement('div');
-  div.className = 'line ' + (className || '');
-  div.innerHTML = text;
-  out.appendChild(div);
-  if (nearBottom) out.scrollTop = out.scrollHeight;
+let printPumpRunning = false;
+
+function pumpPrintQueue() {
+  if (printPumpRunning) return;
+  printPumpRunning = true;
+  const step = () => {
+    if (PRINT_QUEUE.length === 0) { printPumpRunning = false; return; }
+    const item = PRINT_QUEUE.shift();
+    const out = outputEl();
+    if (out && out.appendChild) {
+      const nearBottom = !out.scrollHeight || (out.scrollHeight - out.scrollTop - out.clientHeight < 80);
+      const div = document.createElement('div');
+      div.className = 'line ' + (item.className || '');
+      div.innerHTML = item.text;
+      out.appendChild(div);
+      if (nearBottom) out.scrollTop = out.scrollHeight;
+    }
+    setTimeout(step, item.pause != null ? item.pause : 110);
+  };
+  setTimeout(step, 0);
+}
+
+// Prose streams a sentence at a time; blocks breathe between each other.
+function streamProse(text, cls, sentencePause, endPause) {
+  const parts = String(text).split(/(?<=[.!?])\s+/).filter(Boolean);
+  parts.forEach((s, i) => {
+    const last = i === parts.length - 1;
+    print(s, cls, last ? (endPause != null ? endPause : 480) : (sentencePause != null ? sentencePause : 480));
+  });
 }
 
 function printLine() { print('<span class="separator">' + '─'.repeat(50) + '</span>'); }
@@ -35,12 +78,11 @@ function printRoom(roomId) {
 
   printLine();
   print(room.name, 'room-name');
-  print('<span class="text-dim">[' + room.region + ']</span>');
-  print(room.desc, 'room-desc');
+  print('<span class="text-dim">[' + room.region + ']</span>', '', 350);
+  streamProse(room.desc, 'room-desc', 500, 1300);
 
   if (!rs.visited && room.firstVisit) {
-    print('');
-    print(room.firstVisit, 'text-amber');
+    streamProse(room.firstVisit, 'text-amber', 500, 1000);
   }
 
   if (room.dark && !hasLight()) {
@@ -52,42 +94,37 @@ function printRoom(roomId) {
     }
   }
 
-
-
-  const enemies = rs.enemies.filter(id => ENEMIES[id]);
-  if (enemies.length > 0 && (!room.dark || hasLight())) {
-    print('');
-    for (const eid of enemies) {
-      print('! ' + ENEMIES[eid].name + ' - ' + ENEMIES[eid].desc, 'text-red');
-    }
-  }
-
-  if (room.npcs && (!room.dark || hasLight())) {
-    if (room.npcIntro) {
-      print('');
-      print(room.npcIntro, 'text-amber');
-    } else {
-      for (const nid of room.npcs) {
-        const npc = NPCS[nid];
-        if (npc && (!npc.quest || !npc.quest.completed || nid === 'talking_skull' || nid === 'merchant_ghost' || nid === 'mad_alchemist')) {
-          print('');
-          print(npc.name + ' is here.', 'room-npcs');
-        }
+  const sight = room.sight || room.npcIntro;
+  if (sight && (!room.dark || hasLight())) {
+    streamProse(sight, 'text-amber', 500, 1000);
+  } else if (room.npcs && (!room.dark || hasLight())) {
+    for (const nid of room.npcs) {
+      const npc = NPCS[nid];
+      if (npc && (!npc.quest || !npc.quest.completed || nid === 'talking_skull' || nid === 'merchant_ghost' || nid === 'mad_alchemist')) {
+        print('');
+        print(npc.name + ' is here.', 'room-npcs');
       }
     }
   }
 
-  const exits = getExits(roomId);
-  const exitNames = Object.keys(exits);
-  if (exitNames.length > 0) {
-    print('');
-    print('Exits: ' + exitNames.map(e => '<span>' + e + '</span>').join(', '), 'room-exits');
-  }
-
-  rs.visited = true;
-  if (!GS.visitedRooms.includes(roomId)) {
-    GS.visitedRooms.push(roomId);
-    GS.roomsDiscovered++;
+  const enemies = rs.enemies.filter(id => ENEMIES[id]);
+  const threatened = enemies.length > 0 && (!room.dark || hasLight());
+  if (threatened) {
+    for (const eid of enemies) {
+      const e = ENEMIES[eid];
+      if (e.emerge) {
+        streamProse(e.emerge, 'text-white', 500, 800);
+      }
+      print('! ' + e.name, 'text-red', 400);
+    }
+    print('It is between you and every way onward. Fight - or fall back the way you came.', 'text-dim');
+  } else {
+    const exits = getExits(roomId);
+    const exitNames = Object.keys(exits);
+    if (exitNames.length > 0) {
+      print('');
+      print('Exits: ' + exitNames.map(e => '<span>' + e + '</span>').join(', '), 'room-exits');
+    }
   }
 
   if (GS.race === 'dwarf' && room.search && !GS.searchedRooms.includes(roomId)) {
@@ -95,6 +132,12 @@ function printRoom(roomId) {
   }
   if (GS.race === 'gravekin' && roomId === 'chapel') {
     print('(The sanctified ground prickles, faintly offended by your blood.)', 'text-dim');
+  }
+
+  rs.visited = true;
+  if (!GS.visitedRooms.includes(roomId)) {
+    GS.visitedRooms.push(roomId);
+    GS.roomsDiscovered++;
   }
 
   document.title = 'The Hollowed Keep - ' + room.name;
@@ -170,6 +213,8 @@ function updateStats() {
 }
 
 function updateVessel() {
+  const acEl = document.getElementById('vessel-ac');
+  if (acEl) acEl.textContent = 'AC ' + playerAC();
   const el = document.getElementById('vessel-content');
   if (!el) return;
   const st = GS.stats;
@@ -178,20 +223,21 @@ function updateVessel() {
   if (GS.class && CLASSES[GS.class]) {
     html += '<div class="stat-line"><span class="stat-label">Path</span><span class="stat-value">' + CLASSES[GS.class].name + '</span></div>';
   }
+  html += '<div style="height:8px"></div>';
   const rows = [['STR', st.str], ['DEX', st.dex], ['CON', st.con], ['INT', st.int], ['WIS', st.wis], ['CHA', st.cha]];
   html += rows.map(([n, v]) =>
     '<div class="stat-line"><span class="stat-label">' + n + '</span><span class="stat-value">' + v + '</span></div>').join('');
   if (st.hollow > 0) {
     html += '<div class="stat-line"><span class="stat-label">HOLLOW</span><span class="stat-value warning">' + st.hollow + '</span></div>';
   }
-  html += '<div class="stat-line" style="margin-top:6px"><span class="stat-label">AC</span><span class="stat-value">' + playerAC() + '</span></div>';
-  html += '<div class="stat-line"><span class="stat-label">Gold</span><span class="stat-value">' + GS.gold + '</span></div>';
   el.innerHTML = html;
 }
 
 
 
 function updateInventory() {
+  const goldEl = document.getElementById('inv-gold');
+  if (goldEl) goldEl.textContent = GS.gold + 'g';
   const el = document.getElementById('inventory-content');
   if (GS.inventory.length === 0) {
     el.innerHTML = '<div class="text-dim">  (empty)</div>';
@@ -225,8 +271,9 @@ function updateMap() {
       mapText += `<span class="${cls}">${marker}${room.name}</span>\n`;
     }
   }
-  const tally = '<span class="text-dim"> explored: ' + GS.roomsDiscovered + '/' + Object.keys(ROOMS).length + '</span>\n';
-  el.innerHTML = tally + (mapText || '\n  (unexplored)');
+  const countEl = document.getElementById('map-count');
+  if (countEl) countEl.textContent = GS.roomsDiscovered + '/' + Object.keys(ROOMS).length;
+  el.innerHTML = mapText || '\n  (unexplored)';
 }
 
 function updateQuests() {

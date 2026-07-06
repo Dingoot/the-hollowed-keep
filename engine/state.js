@@ -21,6 +21,7 @@ const defaultState = () => ({
   lastHearth: null,
   searchedRooms: [],
   chronicleLog: [],
+  enteredFrom: {},
   runeMessages: [],
   companion: null,
   awaitingDeath: false,
@@ -99,6 +100,10 @@ function loadGame() {
     const data = JSON.parse(raw);
     GS = { ...defaultState(), ...data.gs };
     roomStates = data.rooms;
+    if (!Array.isArray(GS.runeMessages)) GS.runeMessages = [];
+    if (!GS.runeMessages.some(m => m && m.author === 'The Porter')) {
+      GS.runeMessages.unshift({ text: 'New arrival: when your legs remember themselves, come south to the gatehouse. Orientation is part of the service.', author: 'The Porter' });
+    }
     print('Game loaded.', 'success-msg');
     printRoom(GS.currentRoom);
     return true;

@@ -212,15 +212,15 @@ function startAmbient() {
 function scatterStars() {
   const header = document.getElementById('ascii-header');
   if (!header || header.querySelector('.hk-star')) return;
-  const glyphs = ['.', '·', '*', '+', '˙', '.', '·'];
-  const count = 80;
+  const glyphs = ['.', '·', '˙'];
+  const count = 70;
   for (let i = 0; i < count; i++) {
     const s = document.createElement('span');
     s.className = 'hk-star';
     s.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
     s.style.left = (Math.random() * 99) + '%';
-    s.style.top = (Math.random() * 92) + '%';
-    s.style.fontSize = (5 + Math.random() * 8) + 'px';
+    s.style.top = (Math.random() * 36) + '%'; // sky only - roofline and above
+    s.style.fontSize = (5 + Math.random() * 7) + 'px';
     s.style.opacity = (0.25 + Math.random() * 0.6).toFixed(2);
     s.style.animationDuration = (3 + Math.random() * 6).toFixed(1) + 's';
     s.style.animationDelay = (Math.random() * 5).toFixed(1) + 's';
@@ -233,7 +233,6 @@ function scatterStars() {
 document.addEventListener('DOMContentLoaded', () => {
   runBootSequence();
   startAmbient();
-  setInterval(flushPrintQueue, 26);
 
   document.body.addEventListener('click', () => {
     // Respect text selection - refocusing the input clears highlights,

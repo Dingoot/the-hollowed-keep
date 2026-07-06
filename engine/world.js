@@ -1,5 +1,7 @@
 // === MOVEMENT ===
 
+const OPPOSITE_DIR = { north: 'south', south: 'north', east: 'west', west: 'east', up: 'down', down: 'up' };
+
 function doMove(dir) {
   if (!dir) { print('Go where? Specify a direction.', 'error-msg'); return; }
   const room = ROOMS[GS.currentRoom];
@@ -9,6 +11,17 @@ function doMove(dir) {
   if (!target) {
     print("You can't go " + dir + " from here.", 'error-msg');
     return;
+  }
+
+  // A living threat holds the room. Forward is through it; back is allowed.
+  const rsHere = roomStates[GS.currentRoom];
+  const living = rsHere.enemies.filter(id => ENEMIES[id]);
+  if (living.length > 0 && !GS.inCombat) {
+    const back = GS.enteredFrom[GS.currentRoom];
+    if (dir !== back) {
+      print('The ' + ENEMIES[living[0]].name.toLowerCase() + ' is between you and that way. Deal with it - or fall back ' + (back ? back : 'the way you came') + '.', 'error-msg');
+      return;
+    }
   }
 
   const targetRoom = ROOMS[target];
@@ -31,6 +44,7 @@ function doMove(dir) {
     }
   }
 
+  GS.enteredFrom[target] = OPPOSITE_DIR[dir] || null;
   GS.currentRoom = target;
   printRoom(target);
 
@@ -135,8 +149,9 @@ function matchItem(id, query) {
 function matchNpc(id, query) {
   const npc = NPCS[id];
   if (!npc) return false;
-  const q = query.toLowerCase();
-  return id.toLowerCase().replace(/_/g, ' ').includes(q) || npc.name.toLowerCase().includes(q);
+  const q = query.toLowerCase().trim();
+  if (id.toLowerCase().replace(/_/g, ' ').includes(q) || npc.name.toLowerCase().includes(q)) return true;
+  return (npc.aliases || []).some(a => a.includes(q) || q.includes(a));
 }
 
 function matchEnemy(id, query) {

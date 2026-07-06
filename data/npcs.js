@@ -3,6 +3,7 @@
 const NPCS = {
   porter: {
     name: "The Porter",
+    aliases: ["gatekeeper", "keeper", "tall figure", "clerk"],
     desc: "A tall figure in a gatekeeper's coat mended so many times the original cloth is a rumour. Its face is not hidden, merely difficult - the way a word can be difficult to recall. It stands by the portcullis chains with a closed ledger, and it stands the way furniture stands: as if it has always been exactly here.",
     greeting: "'Ah. The new arrival.' The Porter inclines its head by one measured degree. 'Welcome, formally, to the Hollowed Keep. Received at threshold: one self, complete. The Toll is paid in full.' It does not open the ledger. It has never needed to. 'You will have questions. That is usual. Ask them - orientation is part of the service.'",
     topics: {
@@ -21,6 +22,7 @@ const NPCS = {
   },
   wick: {
     name: "Wick",
+    aliases: ["hooded figure", "hooded shape", "hooded man", "figure", "lantern bearer", "lantern"],
     desc: "A small hooded shape holding a lantern that burns without oil. Whatever Wick was, it was so long ago that personhood has worn off like paint; what remains is helpfulness, a lamp, and a memory of manners. It borrows its sentences from selves the Keep has digested.",
     onAttack: "Your hand passes through Wick's hood and out the other side, trailing cold. The lantern tuts at you - actually tuts. 'The last one who tried that,' Wick says, borrowing a schoolteacher's voice, 'is a smell now.'",
     greeting: "The lantern rises. A voice like a draft under a door assembles itself from borrowed pieces: 'Welcome - my lord - to the - DON'T TOUCH THAT - humble hearth.' A pause. 'Apologies. The words come secondhand. Wick greets you. Wick lights things. It is enough to be going on with.'",
@@ -33,6 +35,7 @@ const NPCS = {
   },
   wounded_knight: {
     name: "Wounded Knight",
+    aliases: ["injured man", "wounded man", "man in armour", "armoured man"],
     desc: "A knight in battered plate slumps against the fountain, hand pressed to a wound in his side. His tabard bears a crest he keeps glancing at, the way you would study a stranger's luggage.",
     onAttack: "The knight catches your fist without looking up. 'Three days in this place,' he says, 'and that is the first thing that has made sense to me.' He lets go. 'Don't. I'd hate to be killed by the only other person here with a pulse.'",
     greeting: "'Don't bother asking my name. I checked. It's gone.' He shifts, wincing. 'Three days in here. The body remembers its war even if I don't get to. And there's a thing in the guard room that remembers its own.'",

@@ -22,6 +22,7 @@ const LOAD_ORDER = [
   "data/classes.js",
   "data/verbs.js",
   "data/ambience.js",
+  "data/combat_flavour.js",
   "engine/utils.js",
   "engine/state.js",
   "engine/skills.js",
@@ -337,6 +338,40 @@ const driver = `
     Math.random = realRandom;
     assert(GS.currentEnemy.pinnedTurns === 2, "tackle did not pin: " + GS.currentEnemy.pinnedTurns);
     GS.inCombat = false; GS.currentEnemy = null;
+  });
+
+  step("a living threat gates the exits", () => {
+    GS = defaultState();
+    applyRaceToState("human");
+    applyDerivedStats();
+    initRoomStates();
+    GS.gameStarted = true;
+    GS.currentRoom = "main_courtyard";
+    parseCommand("east"); // into the hound's garden
+    assert(GS.currentRoom === "east_garden", "did not enter garden: " + GS.currentRoom);
+    parseCommand("north"); // blocked - the hound holds the room
+    assert(GS.currentRoom === "east_garden", "exit should be gated by the hound");
+    parseCommand("west"); // retreat the way you came
+    assert(GS.currentRoom === "main_courtyard", "retreat should be allowed: " + GS.currentRoom);
+  });
+  step("attack flavour resolves for every type and group", () => {
+    const dummyTypes = ["beast", "undead", "construct", "shadow", "mystery"];
+    for (const t of dummyTypes) {
+      for (const g of ["punch", "kick", "strike", "throw"]) {
+        const line = attackFlavourLine(g, { type: t, name: "Test Thing" }, 2);
+        assert(line.includes("2"), "low line missing dmg for " + t + "/" + g);
+        const line2 = attackFlavourLine(g, { type: t, name: "Test Thing" }, 9);
+        assert(line2.includes("9"), "mid line missing dmg for " + t + "/" + g);
+      }
+    }
+  });
+  step("stage lines fire once per stage", () => {
+    const e = { type: "beast", name: "Feral Hound", hp: 14, maxHp: 30 };
+    maybeStageLine(e);
+    assert(e.stage === "worn", "worn stage not set: " + e.stage);
+    e.hp = 5;
+    maybeStageLine(e);
+    assert(e.stage === "bloody", "bloody stage not set: " + e.stage);
   });
 
   step("meta unlock: vesseling at 5 deaths", () => {

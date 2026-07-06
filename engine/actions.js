@@ -343,8 +343,9 @@ function doThrow(args) {
     if (isRock) {
       const dmg = 3 + rng(0, 4);
       enemy.hp -= dmg;
-      print('You snatch up a fist-sized piece of the Keep and hurl it. It connects. (' + dmg + ' damage)', 'combat-hit');
+      print(attackFlavourLine('throw', enemy, dmg), 'combat-hit');
       gainSkillXP('thrown', 8);
+      maybeStageLine(enemy);
       keepSays('The Keep notes, without rancour, that you are throwing it at things.');
       if (enemy.hp <= 0) { endCombat(true); return; }
       print(enemy.name + ' HP: ' + enemy.hp + '/' + enemy.maxHp, 'combat-info');

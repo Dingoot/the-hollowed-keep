@@ -1,5 +1,29 @@
 // === COMBAT ===
 
+// Pick a described blow for this verb, this victim, this much hurt.
+function attackFlavourLine(group, enemy, dmg) {
+  const tier = dmg <= 3 ? 'low' : 'mid';
+  const byType = (ATTACK_FLAVOUR[enemy.type] && ATTACK_FLAVOUR[enemy.type][group]) || {};
+  const pool = byType[tier] || (ATTACK_FLAVOUR.generic[group] && ATTACK_FLAVOUR.generic[group][tier]) || null;
+  if (!pool || pool.length === 0) return 'You strike the ' + enemy.name + ' (' + dmg + ' damage).';
+  const line = pool[rng(0, pool.length - 1)];
+  return line.replace('{dmg}', dmg).replace('{name}', enemy.name.toLowerCase());
+}
+
+// One-time reactions as the fight turns.
+function maybeStageLine(enemy) {
+  if (!enemy || enemy.hp <= 0) return;
+  const pct = enemy.hp / enemy.maxHp;
+  const pool = STAGE_LINES[enemy.type] || STAGE_LINES.generic;
+  if (pct <= 0.25 && enemy.stage !== 'bloody') {
+    enemy.stage = 'bloody';
+    print(pool.bloody[rng(0, pool.bloody.length - 1)], 'text-amber', 500);
+  } else if (pct <= 0.5 && !enemy.stage) {
+    enemy.stage = 'worn';
+    print(pool.worn[rng(0, pool.worn.length - 1)], 'text-amber', 500);
+  }
+}
+
 // - Combat math: d20 to-hit against AC, damage from weapon + stat + skill -
 function skillLv(id) { return GS.skills[id] ? GS.skills[id].level : 0; }
 
@@ -271,13 +295,10 @@ function handleCombatCommand(input) {
       enemy.hp -= 3;
       print('The hound darts in low and worries at it. (+3 damage)', 'text-cyan');
     }
-    if (isUnarmedVerb) {
-      print('You drive a ' + cmd + ' into the ' + enemy.name + ' - no steel, just intent. (' + dmg + ' damage)', 'combat-hit');
-      gainSkillXP(info.skill, 5);
-    } else {
-      print('You strike the ' + enemy.name + ' for ' + dmg + ' damage!', 'combat-hit');
-      gainSkillXP(info.skill, 5);
-    }
+    const group = isUnarmedVerb ? ((cmd === 'kick' || cmd === 'knee') ? 'kick' : 'punch') : 'strike';
+    print(attackFlavourLine(group, enemy, dmg), 'combat-hit');
+    gainSkillXP(info.skill, 5);
+    maybeStageLine(enemy);
 
     if (enemy.hp <= 0) {
       endCombat(true);
@@ -463,32 +484,23 @@ function endCombat(victory) {
 function doFlee() {
   if (!GS.inCombat) { print("You're not in combat.", 'text-dim'); return; }
   if (GS.currentEnemy && GS.currentEnemy.boss) {
-    print("You cannot flee from this battle!", 'error-msg');
+    print('You cannot flee from this battle!', 'error-msg');
     enemyTurn();
     return;
   }
   if (rng(1, 3) <= 2) {
-    print('You manage to disengage and retreat!', 'text-amber');
+    print('You disengage, giving ground until it stops pressing.', 'text-amber');
     GS.inCombat = false;
-    const enemy = GS.currentEnemy;
-    if (enemy) {
-      const template = ENEMIES[enemy.id];
-      if (template) roomStates[GS.currentRoom].enemies = [enemy.id];
-    }
     GS.currentEnemy = null;
-    const exits = getExits(GS.currentRoom);
-    const dirs = Object.keys(exits);
-    if (dirs.length > 0) {
-      const dir = dirs[0];
-      GS.currentRoom = exits[dir];
-      printRoom(GS.currentRoom);
-    }
+    const back = GS.enteredFrom[GS.currentRoom];
+    print('Exits available: ' + (back ? back : 'the way you came') + '.', 'room-exits');
+    updatePanels();
   } else {
-    print('You fail to escape!', 'error-msg');
+    print('It cuts off your retreat!', 'error-msg');
     enemyTurn();
   }
-  updatePanels();
 }
+
 
 const DEATH_TOLL_LINES = [
   'The rat, it should be said, was also having a bad day.',

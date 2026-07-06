@@ -13,7 +13,7 @@ const ROOMS = {
   gatehouse: {
     name: "The Gatehouse",
     region: "The Threshold",
-    npcIntro: "The Porter stands by the portcullis chains, ledger closed, its head turning to you at the exact moment you enter. Not before. Not after. On the table, a guttering candle and a closed book. Something small glints on a wall hook, catching what light there is.",
+    sight: "A tall figure stands at the portcullis chains - a gatekeeper's coat of grey wool gone greyer with mending, gloved hands at rest, and a face your eyes accept and immediately lose, like a word from the tip of the tongue. Its head turns to you at the exact moment you enter. Not before, not after. One gloved hand rests on a thick ledger, closed, beside the guttering candle. Higher on the wall, something small glints on an iron hook.",
     desc: "A cramped stone chamber beneath a murder hole, hung with chains for a portcullis nobody has lowered in living memory - the Keep does not need one. A wooden table holds a guttering candle and a closed ledger. The Porter stands where the shadows are most convenient. A hook on the wall holds a key that is, pointedly, not the key to the gates.",
     exits: { south: "outer_gate", north: "main_courtyard" },
     items: ["torch", "iron_key", "flint_and_tinder"],
@@ -29,7 +29,7 @@ const ROOMS = {
   main_courtyard: {
     name: "The Main Courtyard",
     region: "Courtyard",
-    npcIntro: "Against the fountain's rim a knight in dented plate lies slumped, one gauntlet pressed to his side, so still you cannot tell at this distance whether he breathes. Closer by, a small hooded figure notices you rise to your feet, and lifts its lantern.",
+    npcIntro: "Against the fountain's rim a knight in dented plate lies slumped, one gauntlet pressed to his side, so still you cannot tell at this distance whether he breathes. Closer by, a small hooded figure notices you rise to your feet, and lifts its lantern in invitation.",
     desc: "An open expanse of cracked flagstones surrounded by the Keep's oppressive walls. A dry fountain stands at the centre, its stone figure eroded beyond recognition - though it seems to be reaching upward in supplication or horror. Doors and archways lead in every direction. A well sits in the northeast corner, its stones green with moss.",
     exits: { south: "gatehouse", north: "great_hall", east: "east_garden", west: "west_garden" },
     items: [],
@@ -45,6 +45,7 @@ const ROOMS = {
   east_garden: {
     name: "The East Garden",
     region: "Courtyard",
+    sight: "Thorned vines have taken the beds whole, strangling the stone benches into green-black mounds. The pale fungi crowding the path edges are plump and faintly wet, and their sweetness sits at the back of your throat like something you should not have swallowed. In her alcove, the faceless statue holds her cupped hands out over all of it, offering nothing.",
     desc: "Once a formal garden, now a tangle of thorned vines and pale, bloated fungi. Stone benches are overturned and cracked. A statue of a woman with no face stands in an alcove, her hands cupped as if holding something long taken. The air here is thick and sweet with decay.",
     exits: { west: "main_courtyard", north: "stables" },
     items: ["healing_herb"],
