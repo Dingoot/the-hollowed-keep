@@ -5,6 +5,12 @@ Tracks the game from 2026-07-08 onward. Changes made before this date live in gi
 ## World/game model
 _(Filled in as systems are touched. When a change involves an existing mechanic, document that mechanic here as part of the change.)_
 
+### NPC conversations
+- `talk [person]` engages that NPC (`GS.conversationWith`, saved with the game). While engaged, `ask [topic]` always goes to them — never to whoever happens to be first in the room. `topics` re-lists their topics. `goodbye`/`bye`/`farewell` ends the conversation (NPCs may have a custom `farewell` line); walking to another room, using the well rope, or entering combat ends it implicitly.
+- `talk` with no name: engages the only NPC present, re-greets your current partner, or asks "Talk to whom?" if several are present. `ask [person] about [topic]` switches partners. Topic matching strips articles and accepts close matches (≥3 chars).
+- Quest state lives ONLY on GS (`questLog`, `completedQuests`) — never on NPC objects, so it survives save/load. The chapel riddle uses `GS.flags.riddleSolved`.
+- NPC room display: a room's `sight`/`npcIntro` prose plays on first visit only. Afterwards each present NPC shows a `presence` line (`postQuestPresence` once their quest is done; fallback "X is here."). NPCs with `leavesAfterQuest: true` (the thief) vanish from the room — display and interaction — once their quest completes; everyone else stays and can get `postQuestGreeting`/`postQuestTopics` (the Wounded Knight has them).
+
 ### Combat math (d20)
 - Player attack: `d20 + 4 + stat mod (STR, or DEX for finesse weapons) + skill/3 + remnant to-hit bonus` vs enemy AC `8 + DEF/2`. Natural 20 always hits and crits (double damage). Misses grant a small amount of weapon-skill XP (2; hits grant 5), so whiffing still trains the skill.
 - Player damage: `weapon base (unarmed 2) + stat mod + skill/4 + flat bonuses + rng(0-2)`, min 1.
@@ -29,10 +35,12 @@ _(Only entries added or modified since 2026-07-08 are listed. Anything not liste
 
 - Text speed setting (`speed instant|brisk|slow`, default brisk), Enter-to-skip, instant re-render of visited rooms. The dead `verbose` command was replaced by `speed`.
 - Combat formulas retuned (see Combat math above); smoke test's AC assertion updated to the new base.
+- Conversation engagement system (see NPC conversations above); all NPCs gained `presence` + `farewell` lines; knight gained post-quest greeting/topics; quest flags moved off NPC data into GS.
 
 ## Changelog
 _(Newest on top. One dated line per change; commit messages match these lines.)_
 
+- 2026-07-08 — NPC conversations: talk engages one NPC, ask routes to them (fixes Wick's topics answered by the knight), goodbye/walking away ends it, presence lines replace repeated intros, knight reacts to being healed, quest state moved into the save.
 - 2026-07-08 — Combat retune: hitting is the norm — to-hit +4 base and skill/3, enemy AC uses half DEF, player AC base 10, misses teach skill XP, adaptation counts only landed blows and resets on slip, scar remnant aids to-hit, unarmed base damage 2.
 - 2026-07-08 — Text pacing: brisk default speed, `speed` command (instant/brisk/slow), Enter skips streaming, visited rooms print instantly.
 - 2026-07-08 — Start living spec; entries begin from this date forward.

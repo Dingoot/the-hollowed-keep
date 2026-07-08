@@ -26,6 +26,7 @@ const defaultState = () => ({
     { text: "New arrival: when your legs remember themselves, come south to the gatehouse. Orientation is part of the service.", author: "The Porter" },
   ],
   companion: null,
+  conversationWith: null,
   awaitingDeath: false,
   inventory: [],
   equipped: { weapon: null, armor: null, offhand: null, light: null, amulet: null, ring: null },

@@ -67,6 +67,8 @@ function parseCommand(raw) {
     case 'throw': case 'hurl': case 'toss': doThrow(args); break;
     case 'talk': case 'speak': case 'approach': case 'greet': doTalk(args); break;
     case 'ask': doAsk(args); break;
+    case 'goodbye': case 'bye': case 'farewell': doGoodbye(); break;
+    case 'topics': doTopics(); break;
     case 'answer': doAnswer(args); break;
     case 'search': case 'investigate': case 'examine room': doSearch(args); break;
     case 'skills': case 'skill': doSkillsCmd(); break;

@@ -62,11 +62,11 @@ function doAttack(args) {
   const room = ROOMS[GS.currentRoom];
   // People are attackable. This is rarely wise.
   if (args && room.npcs) {
-    const nid = room.npcs.find(id => matchNpc(id, args));
+    const nid = npcsPresent(GS.currentRoom).find(id => matchNpc(id, args));
     if (nid) { attackNpc(nid); return; }
   }
   if (rs.enemies.length === 0) {
-    if (room.npcs && room.npcs.length > 0) {
+    if (npcsPresent(GS.currentRoom).length > 0) {
       print('Nothing here needs killing. Someone here could be attacked, if you insist - name them.', 'text-dim');
       return;
     }
@@ -182,8 +182,7 @@ function doSoothe() {
 function doTackleCommand(args) {
   if (GS.inCombat) { doTackle(); return; }
   const rs = roomStates[GS.currentRoom];
-  const room = ROOMS[GS.currentRoom];
-  if (args && room.npcs && room.npcs.find(id => matchNpc(id, args))) { doAttack(args); return; }
+  if (args && npcsPresent(GS.currentRoom).find(id => matchNpc(id, args))) { doAttack(args); return; }
   if (!rs.enemies.length) { print('Nothing here to tackle. The furniture forgives you.', 'text-dim'); return; }
   doAttack(args);
   if (GS.inCombat) doTackle();
@@ -205,6 +204,7 @@ function porterFlick() {
 }
 
 function startCombat(enemyId) {
+  endConversation(true); // violence outranks small talk
   GS.currentEnemyId = enemyId;
   GS.combatMemory = {};
   GS.perks.firstStrikeDone = false;
@@ -561,6 +561,7 @@ function playerDeath(cause) {
 
   GS.inCombat = false;
   GS.currentEnemy = null;
+  GS.conversationWith = null;
   GS.deaths++;
   META.totalDeaths++;
   if (META.totalDeaths >= 5 && !META.unlocks.vesseling) {

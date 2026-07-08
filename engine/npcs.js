@@ -1,19 +1,90 @@
 // === NPC INTERACTION ===
 
+// Quest state lives on GS (questLog/completedQuests), which is what the
+// save file keeps - never on the NPC objects, which reset on reload.
+function questDone(npc) { return !!(npc.quest && GS.completedQuests.includes(npc.quest.id)); }
+
+// Who is actually in a room right now. NPCs marked leavesAfterQuest are
+// gone once their business with you concludes.
+function npcsPresent(roomId) {
+  const room = ROOMS[roomId];
+  return (room.npcs || []).filter(id => {
+    const npc = NPCS[id];
+    return npc && !(npc.leavesAfterQuest && questDone(npc));
+  });
+}
+
+function npcPresenceLine(npc) {
+  if (questDone(npc) && npc.postQuestPresence) return npc.postQuestPresence;
+  return npc.presence || (npc.name + ' is here.');
+}
+
+function npcGreeting(npc) {
+  return (questDone(npc) && npc.postQuestGreeting) ? npc.postQuestGreeting : npc.greeting;
+}
+
 // Topics visible to this player. Supports hidden topics that unlock when
 // other topics reveal them - conversation as exploration.
 function topicEntry(v) { return typeof v === 'string' ? { text: v } : (v || {}); }
 
-function npcTopics(npc, npcId) {
+function npcAllTopics(npc) {
   const all = Object.assign({}, npc.topics || {});
+  if (questDone(npc) && npc.postQuestTopics) Object.assign(all, npc.postQuestTopics);
   if ((GS.race === 'gravekin' || GS.class === 'grave_speaker') && npc.gravekinTopics) Object.assign(all, npc.gravekinTopics);
+  return all;
+}
+
+function npcTopics(npc, npcId) {
   const out = {};
-  for (const [k, v] of Object.entries(all)) {
+  for (const [k, v] of Object.entries(npcAllTopics(npc))) {
     const e = topicEntry(v);
     if (e.hidden && !GS.perks['topic_' + npcId + '_' + k]) continue;
     out[k] = e.text;
   }
   return out;
+}
+
+// === CONVERSATION STATE ===
+// Talking to someone engages them; 'ask' goes to them until you say
+// goodbye, walk away, or someone starts a fight.
+
+function conversationPartner() {
+  const id = GS.conversationWith;
+  if (id && npcsPresent(GS.currentRoom).includes(id)) return id;
+  return null;
+}
+
+// 'the Wounded Knight', 'the Porter', but plain 'Wick'.
+function npcRef(npc) {
+  if (/^the\s/i.test(npc.name)) return npc.name.replace(/^The\s/, 'the ');
+  return npc.name.includes(' ') ? 'the ' + npc.name : npc.name;
+}
+
+function endConversation(quietly) {
+  const id = conversationPartner();
+  GS.conversationWith = null;
+  if (!id || quietly) return;
+  print('(You take your leave of ' + npcRef(NPCS[id]) + '.)', 'text-dim');
+}
+
+function doGoodbye() {
+  const id = conversationPartner();
+  if (!id) {
+    GS.conversationWith = null;
+    print('You are not talking to anyone. The stones accept the farewell on file.', 'text-dim');
+    return;
+  }
+  const npc = NPCS[id];
+  GS.conversationWith = null;
+  if (npc.farewell) print(npc.farewell, 'npc-speech');
+  else print('You take your leave of ' + npcRef(npc) + '.', 'text-dim');
+}
+
+function doTopics() {
+  const id = conversationPartner();
+  if (!id) { print("You're not in a conversation. (talk [person] to start one)", 'text-dim'); return; }
+  const npc = NPCS[id];
+  print('Topics for ' + npc.name + ': ' + Object.keys(npcTopics(npc, id)).join(', '), 'text-dim');
 }
 
 function trackSkullTalk(npcId) {
@@ -26,70 +97,89 @@ function trackSkullTalk(npcId) {
 }
 
 function doTalk(args) {
-  const room = ROOMS[GS.currentRoom];
-  if (!room.npcs || room.npcs.length === 0) {
+  const present = npcsPresent(GS.currentRoom);
+  if (present.length === 0) {
     print("There's nobody to talk to here.", 'error-msg');
     return;
   }
-  const npcId = args ? room.npcs.find(id => matchNpc(id, args)) : room.npcs[0];
-  if (!npcId || !NPCS[npcId]) {
-    print("You don't see that person.", 'error-msg');
+  let npcId;
+  if (args) {
+    npcId = present.find(id => matchNpc(id, args));
+    if (!npcId) { print("You don't see that person.", 'error-msg'); return; }
+  } else if (present.length === 1) {
+    npcId = present[0];
+  } else if (conversationPartner()) {
+    npcId = conversationPartner();
+  } else {
+    print('Talk to whom? ' + present.map(id => NPCS[id].name).join(', or ') + '.', 'text-dim');
     return;
   }
   const npc = NPCS[npcId];
+  GS.conversationWith = npcId;
   print('<span class="npc-name">' + npc.name + '</span>', '');
-  print(npc.greeting, 'npc-speech');
+  print(npcGreeting(npc), 'npc-speech');
   trackSkullTalk(npcId);
   if (npc.topics) {
     print('');
     print('Topics: ' + Object.keys(npcTopics(npc, npcId)).join(', '), 'text-dim');
-    print("(Type 'ask [topic]' to inquire)", 'text-dim');
+    print("(ask [topic] to inquire - 'goodbye' when you're done)", 'text-dim');
   }
 
-  if (npc.quest && !npc.quest.active && !npc.quest.completed && !GS.questLog.includes(npc.quest.id)) {
+  if (npc.quest && !GS.questLog.includes(npc.quest.id)) {
     GS.questLog.push(npc.quest.id);
-    npc.quest.active = true;
     print('');
     print('New quest: ' + npc.quest.name, 'text-amber');
   }
 }
 
 function doAsk(args) {
-  const room = ROOMS[GS.currentRoom];
-  if (!room.npcs || room.npcs.length === 0) {
+  const present = npcsPresent(GS.currentRoom);
+  if (present.length === 0) {
     print("There's nobody to ask.", 'error-msg');
     return;
   }
+  if (!args) { print('Ask about what? (ask [topic])', 'error-msg'); return; }
 
   const parts = args.split(/\s+about\s+/i);
   let npcQuery, topic;
-  if (parts.length > 1) {
+  if (parts.length > 1 && parts[0]) {
     npcQuery = parts[0];
     topic = parts[1];
   } else {
-    topic = args;
+    topic = parts.length > 1 ? parts[1] : args;
     npcQuery = null;
   }
 
-  const npcId = npcQuery ? room.npcs.find(id => matchNpc(id, npcQuery)) : room.npcs[0];
-  if (!npcId || !NPCS[npcId]) {
-    print("You don't see that person.", 'error-msg');
-    return;
+  // Questions go to whoever you're talking to; naming someone else
+  // turns the conversation to them instead.
+  let npcId;
+  if (npcQuery) {
+    npcId = present.find(id => matchNpc(id, npcQuery));
+    if (!npcId) { print("You don't see that person.", 'error-msg'); return; }
+  } else {
+    npcId = conversationPartner() || (present.length === 1 ? present[0] : null);
+    if (!npcId) {
+      print("You're not talking to anyone yet. (talk [person] first, or 'ask [person] about [topic]')", 'text-dim');
+      return;
+    }
   }
   const npc = NPCS[npcId];
+  GS.conversationWith = npcId;
 
   const visible = npcTopics(npc, npcId);
-  if (visible[topic]) {
+  const t = topic.replace(/^(the|a|an)\s+/, '').trim().toLowerCase();
+  const key = visible[t] !== undefined ? t
+    : Object.keys(visible).find(k => t.length >= 3 && (k.includes(t) || t.includes(k)));
+  if (key) {
     print('<span class="npc-name">' + npc.name + '</span>:', '');
-    print(visible[topic], 'npc-speech');
+    print(visible[key], 'npc-speech');
     trackSkullTalk(npcId);
     // Some answers open new questions.
-    const raw = (npc.topics && npc.topics[topic]) || (npc.gravekinTopics && npc.gravekinTopics[topic]);
-    const reveals = (topicEntry(raw).reveals || []).concat((npc.topicReveals && npc.topicReveals[topic]) || []);
+    const reveals = (topicEntry(npcAllTopics(npc)[key]).reveals || []).concat((npc.topicReveals && npc.topicReveals[key]) || []);
     let opened = false;
     for (const r of reveals) {
-      const key = 'topic_' + npcId + '_' + r;
-      if (!GS.perks[key]) { GS.perks[key] = true; opened = true; }
+      const perkKey = 'topic_' + npcId + '_' + r;
+      if (!GS.perks[perkKey]) { GS.perks[perkKey] = true; opened = true; }
     }
     print('');
     print('Topics: ' + Object.keys(npcTopics(npc, npcId)).join(', ') + (opened ? '  <span class="text-cyan">(something new)</span>' : ''), 'text-dim');
@@ -105,12 +195,11 @@ function doAnswer(args) {
 
   if (room.npcs.includes('spectral_guardian')) {
     const guardian = NPCS.spectral_guardian;
-    if (guardian.riddleSolved) {
+    if (GS.flags.riddleSolved) {
       print("The guardian nods. 'You have already answered correctly.'", 'npc-speech');
       return;
     }
     if (args.toLowerCase().includes(guardian.riddleAnswer)) {
-      guardian.riddleSolved = true;
       print("The guardian's stern expression softens. 'Correct. The simplest answers are often the truest.' The silver dagger materializes in your hands, cold and thrumming with power.", 'npc-speech');
       GS.inventory.push(guardian.riddleReward);
       GS.itemsFound++;
@@ -126,64 +215,40 @@ function doAnswer(args) {
 }
 
 function doGive(args) {
-  const room = ROOMS[GS.currentRoom];
-  if (!room.npcs || room.npcs.length === 0) {
+  const present = npcsPresent(GS.currentRoom);
+  if (present.length === 0) {
     print("There's nobody to give things to.", 'error-msg');
     return;
   }
 
-  for (const npcId of room.npcs) {
+  for (const npcId of present) {
     const npc = NPCS[npcId];
-    if (!npc || !npc.quest || npc.quest.completed) continue;
+    if (!npc.quest || questDone(npc)) continue;
 
-    const req = npc.quest.requires;
-    if (Array.isArray(req)) {
-      if (req.every(id => hasItem(id))) {
-        for (const id of req) {
-          GS.inventory = GS.inventory.filter(i => i !== id);
-        }
-        npc.quest.completed = true;
-        GS.completedQuests.push(npc.quest.id);
-        print(npc.quest.onComplete, 'npc-speech');
-        if (npc.quest.reward) {
-          for (const r of npc.quest.reward) { GS.inventory.push(r); GS.itemsFound++; }
-        }
-        if (npc.quest.rewardText) print(npc.quest.rewardText, 'text-amber');
-        if (npc.quest.statBonus) {
-          if (npc.quest.statBonus.attack) GS.perks.flatDamage = (GS.perks.flatDamage || 0) + npc.quest.statBonus.attack;
-          if (npc.quest.statBonus.defense) GS.perks.flatAC = (GS.perks.flatAC || 0) + npc.quest.statBonus.defense;
-        }
-        if (npc.quest.teachesSpell && !GS.spells.includes(npc.quest.teachesSpell)) {
-          GS.spells.push(npc.quest.teachesSpell);
-          print('Learned spell: ' + npc.quest.teachesSpell, 'text-cyan');
-        }
-        if (npc.quest.revealsHidden) {
-          roomStates[npc.quest.revealsHidden].hiddenExitRevealed = true;
-          print('Secret passage revealed in the ' + ROOMS[npc.quest.revealsHidden].name + '!', 'text-amber');
-        }
-        return;
-      }
-    } else if (typeof req === 'string') {
-      if (hasItem(req)) {
-        GS.inventory = GS.inventory.filter(i => i !== req);
-        npc.quest.completed = true;
-        GS.completedQuests.push(npc.quest.id);
-        print(npc.quest.onComplete, 'npc-speech');
-        if (npc.quest.reward) {
-          for (const r of npc.quest.reward) { GS.inventory.push(r); GS.itemsFound++; }
-        }
-        if (npc.quest.rewardText) print(npc.quest.rewardText, 'text-amber');
-        if (npc.quest.statBonus) {
-          if (npc.quest.statBonus.attack) GS.perks.flatDamage = (GS.perks.flatDamage || 0) + npc.quest.statBonus.attack;
-          if (npc.quest.statBonus.defense) GS.perks.flatAC = (GS.perks.flatAC || 0) + npc.quest.statBonus.defense;
-        }
-        if (npc.quest.revealsHidden) {
-          roomStates[npc.quest.revealsHidden].hiddenExitRevealed = true;
-          print('Secret passage revealed in the ' + ROOMS[npc.quest.revealsHidden].name + '!', 'text-amber');
-        }
-        return;
-      }
+    const req = Array.isArray(npc.quest.requires) ? npc.quest.requires : [npc.quest.requires];
+    if (!req.every(id => hasItem(id))) continue;
+
+    GS.inventory = GS.inventory.filter(i => !req.includes(i));
+    GS.completedQuests.push(npc.quest.id);
+    print(npc.quest.onComplete, 'npc-speech');
+    if (npc.quest.reward) {
+      for (const r of npc.quest.reward) { GS.inventory.push(r); GS.itemsFound++; }
     }
+    if (npc.quest.rewardText) print(npc.quest.rewardText, 'text-amber');
+    if (npc.quest.statBonus) {
+      if (npc.quest.statBonus.attack) GS.perks.flatDamage = (GS.perks.flatDamage || 0) + npc.quest.statBonus.attack;
+      if (npc.quest.statBonus.defense) GS.perks.flatAC = (GS.perks.flatAC || 0) + npc.quest.statBonus.defense;
+    }
+    if (npc.quest.teachesSpell && !GS.spells.includes(npc.quest.teachesSpell)) {
+      GS.spells.push(npc.quest.teachesSpell);
+      print('Learned spell: ' + npc.quest.teachesSpell, 'text-cyan');
+    }
+    if (npc.quest.revealsHidden) {
+      roomStates[npc.quest.revealsHidden].hiddenExitRevealed = true;
+      print('Secret passage revealed in the ' + ROOMS[npc.quest.revealsHidden].name + '!', 'text-amber');
+    }
+    if (npc.leavesAfterQuest) endConversation(true);
+    return;
   }
 
   print("They don't seem interested in what you're offering.", 'text-dim');

@@ -44,6 +44,7 @@ function doMove(dir) {
     }
   }
 
+  endConversation(); // walking off is its own goodbye
   GS.enteredFrom[target] = OPPOSITE_DIR[dir] || null;
   GS.currentRoom = target;
   printRoom(target);
@@ -86,7 +87,7 @@ function doExamine(args) {
   }
 
   if (room.npcs) {
-    const npcId = room.npcs.find(id => matchNpc(id, args));
+    const npcId = npcsPresent(GS.currentRoom).find(id => matchNpc(id, args));
     if (npcId && NPCS[npcId]) {
       print(NPCS[npcId].desc, 'text-white');
       if (!GS.perks['met_' + npcId]) {

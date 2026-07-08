@@ -152,16 +152,16 @@ function printRoom(roomId) {
     }
   }
 
+  // The staged introduction plays once; afterwards, whoever is still
+  // around gets a line of presence that keeps up with their story.
   const sight = room.sight || room.npcIntro;
-  if (sight && (!room.dark || hasLight())) {
-    if (rs.visited) print(sight, 'text-amber', 0);
-    else streamProse(sight, 'text-amber', 500, 1000);
-  } else if (room.npcs && (!room.dark || hasLight())) {
-    for (const nid of room.npcs) {
-      const npc = NPCS[nid];
-      if (npc && (!npc.quest || !npc.quest.completed || nid === 'talking_skull' || nid === 'merchant_ghost' || nid === 'mad_alchemist')) {
+  if (!room.dark || hasLight()) {
+    if (sight && !rs.visited) {
+      streamProse(sight, 'text-amber', 500, 1000);
+    } else {
+      for (const nid of npcsPresent(roomId)) {
         print('');
-        print(npc.name + ' is here.', 'room-npcs');
+        print(npcPresenceLine(NPCS[nid]), 'room-npcs');
       }
     }
   }

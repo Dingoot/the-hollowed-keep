@@ -124,6 +124,7 @@ function doUse(args) {
   }
 
   if (id === 'rope' && GS.currentRoom === 'main_courtyard') {
+    endConversation();
     print('You tie the rope to the well\'s crossbar and lower yourself down into the darkness...', 'text-amber');
     if (!ROOMS.underground_river.exits.up_well) {
       ROOMS.underground_river.exits.up_well = 'main_courtyard';
@@ -624,8 +625,10 @@ function doHelp() {
   print('  read [item]      - Read a document or book', 'text-green');
   print('');
   print('INTERACTION', 'text-amber');
-  print('  talk [person]    - Talk to someone', 'text-green');
-  print('  ask [topic]      - Ask about a topic', 'text-green');
+  print('  talk [person]    - Start a conversation', 'text-green');
+  print("  ask [topic]      - Ask the person you're talking to", 'text-green');
+  print('  topics           - List what they will speak about', 'text-green');
+  print('  goodbye          - End the conversation', 'text-green');
   print('  answer [text]    - Answer a question', 'text-green');
   print('  give [item]      - Give an item to someone', 'text-green');
   print('  trade/buy/sell   - Trade with merchants', 'text-green');
@@ -661,14 +664,14 @@ function doOpen(args) {
     if (hasItem('iron_key')) {
       rs.unlocked = true;
       print('The iron key turns with a grinding protest. The cell door swings open.', 'success-msg');
-      if (NPCS.imprisoned_thief.quest && !NPCS.imprisoned_thief.quest.completed) {
+      if (!questDone(NPCS.imprisoned_thief)) {
         doGive('');
       }
     } else if (hasItem('lockpicks')) {
       rs.unlocked = true;
       print('You work the lockpicks with care. After a tense minute, the mechanism yields.', 'success-msg');
       gainSkillXP('lockpicking', 12);
-      if (NPCS.imprisoned_thief.quest && !NPCS.imprisoned_thief.quest.completed) {
+      if (!questDone(NPCS.imprisoned_thief)) {
         doGive('');
       }
     } else {
