@@ -35,11 +35,13 @@ _(Only entries added or modified since 2026-07-08 are listed. Anything not liste
 
 - Text speed setting (`speed instant|brisk|slow`, default brisk), Enter-to-skip, instant re-render of visited rooms. The dead `verbose` command was replaced by `speed`.
 - Combat formulas retuned (see Combat math above); smoke test's AC assertion updated to the new base.
-- Conversation engagement system (see NPC conversations above); all NPCs gained `presence` + `farewell` lines; knight gained post-quest greeting/topics; quest flags moved off NPC data into GS.
+- Conversation engagement system (see NPC conversations above); all NPCs gained `presence` + `farewell` lines; knight gained post-quest greeting/topics/name; quest flags moved off NPC data into GS.
+- Main Courtyard polish: room desc hints at the footprints, `examine well` no longer contradicts `search well` (the rope is gone in both), `examine` falls back to a room's searchTargets so examine/search agree, and throwing a coin down the well earns a Keep remark.
 
 ## Changelog
 _(Newest on top. One dated line per change; commit messages match these lines.)_
 
+- 2026-07-08 — Courtyard polish: footprints hinted in the room desc, well examine/search agree that the rope is gone, examine reaches searchTargets, coin down the well gets a Keep remark, healed knight renamed The Knight.
 - 2026-07-08 — NPC conversations: talk engages one NPC, ask routes to them (fixes Wick's topics answered by the knight), goodbye/walking away ends it, presence lines replace repeated intros, knight reacts to being healed, quest state moved into the save.
 - 2026-07-08 — Combat retune: hitting is the norm — to-hit +4 base and skill/3, enemy AC uses half DEF, player AC base 10, misses teach skill XP, adaptation counts only landed blows and resets on slip, scar remnant aids to-hit, unarmed base damage 2.
 - 2026-07-08 — Text pacing: brisk default speed, `speed` command (instant/brisk/slow), Enter skips streaming, visited rooms print instantly.

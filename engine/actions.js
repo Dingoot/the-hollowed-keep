@@ -372,6 +372,13 @@ function doThrow(args) {
     return;
   }
 
+  if (GS.currentRoom === 'main_courtyard' && /\b(coin|coins|gold|offering)\b/.test(target)) {
+    print('You take one of the corroded offerings from the fountain\'s litter and flick it out over the well. You count the fall. Four. Five. Six. You never hear it land.', 'text-white');
+    print('', '', 300);
+    keepSays('Received: one coin, value negligible. Logged under: hope, miscellaneous.');
+    return;
+  }
+
   if (isRock) {
     print('You find a loose piece of the Keep and throw it down the way. The clatter is deeply satisfying and accomplishes nothing at all.', 'text-dim');
     return;

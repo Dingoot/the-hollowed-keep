@@ -23,6 +23,10 @@ function npcGreeting(npc) {
   return (questDone(npc) && npc.postQuestGreeting) ? npc.postQuestGreeting : npc.greeting;
 }
 
+function npcDisplayName(npc) {
+  return (questDone(npc) && npc.postQuestName) ? npc.postQuestName : npc.name;
+}
+
 // Topics visible to this player. Supports hidden topics that unlock when
 // other topics reveal them - conversation as exploration.
 function topicEntry(v) { return typeof v === 'string' ? { text: v } : (v || {}); }
@@ -111,12 +115,12 @@ function doTalk(args) {
   } else if (conversationPartner()) {
     npcId = conversationPartner();
   } else {
-    print('Talk to whom? ' + present.map(id => NPCS[id].name).join(', or ') + '.', 'text-dim');
+    print('Talk to whom? ' + present.map(id => npcDisplayName(NPCS[id])).join(', or ') + '.', 'text-dim');
     return;
   }
   const npc = NPCS[npcId];
   GS.conversationWith = npcId;
-  print('<span class="npc-name">' + npc.name + '</span>', '');
+  print('<span class="npc-name">' + npcDisplayName(npc) + '</span>', '');
   print(npcGreeting(npc), 'npc-speech');
   trackSkullTalk(npcId);
   if (npc.topics) {
@@ -171,7 +175,7 @@ function doAsk(args) {
   const key = visible[t] !== undefined ? t
     : Object.keys(visible).find(k => t.length >= 3 && (k.includes(t) || t.includes(k)));
   if (key) {
-    print('<span class="npc-name">' + npc.name + '</span>:', '');
+    print('<span class="npc-name">' + npcDisplayName(npc) + '</span>:', '');
     print(visible[key], 'npc-speech');
     trackSkullTalk(npcId);
     // Some answers open new questions.

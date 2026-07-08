@@ -39,6 +39,7 @@ const NPCS = {
   },
   wounded_knight: {
     name: "Wounded Knight",
+    postQuestName: "The Knight",
     aliases: ["injured man", "wounded man", "man in armour", "armoured man", "knight"],
     presence: "The wounded knight sits propped against the fountain's rim, hand pressed to his side, watching the archways the way soldiers watch doors.",
     postQuestPresence: "The knight is on his feet by the fountain, testing his weight, folding and refolding a hand-drawn map.",

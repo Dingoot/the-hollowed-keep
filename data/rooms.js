@@ -30,7 +30,7 @@ const ROOMS = {
     name: "The Main Courtyard",
     region: "Courtyard",
     npcIntro: "Against the fountain's rim a knight in dented plate lies slumped, one gauntlet pressed to his side, so still you cannot tell at this distance whether he breathes. Closer by, a small hooded figure notices you rise to your feet, and lifts its lantern in invitation.",
-    desc: "An open expanse of cracked flagstones surrounded by the Keep's oppressive walls. A dry fountain stands at the centre, its stone figure eroded beyond recognition - though it seems to be reaching upward in supplication or horror. Doors and archways lead in every direction. A well sits in the northeast corner, its stones green with moss.",
+    desc: "An open expanse of cracked flagstones, worn smooth by centuries of footprints, surrounded by the Keep's oppressive walls. A dry fountain stands at the centre, its stone figure eroded beyond recognition - though it seems to be reaching upward in supplication or horror. Doors and archways lead in every direction. A well sits in the northeast corner, its stones green with moss.",
     exits: { south: "gatehouse", north: "great_hall", east: "east_garden", west: "west_garden" },
     items: [],
     npcs: ["wounded_knight", "wick"],

@@ -108,7 +108,7 @@ function doExamine(args) {
   }
 
   if (args.includes('well') && GS.currentRoom === 'main_courtyard') {
-    print('A deep stone well, its interior swallowed by darkness. A bucket on a frayed rope hangs over the edge. You hear water far below. With proper rope, you might be able to descend.', 'text-white');
+    print('A deep stone well, its mouth exhaling cold. Whatever rope it had is long gone - though the pulley above gleams with fresh oil, which is its own kind of unsettling. Far below, water moves. With rope of your own, you could descend.', 'text-white');
     return;
   }
 
@@ -135,6 +135,13 @@ function doExamine(args) {
   if (args.includes('fountain') && GS.currentRoom === 'main_courtyard') {
     print('The fountain is dry, its basin cracked. The central figure was once a person - now eroded to abstraction. One arm reaches skyward, the other clutches something to its chest. Water stains suggest it once ran with something other than water - the residue is a dark, iridescent red.', 'text-white');
     return;
+  }
+
+  // Anything the room rewards searching, a close examination finds too.
+  if (room.searchTargets) {
+    const target = args.replace(/^(the|a|an)\s+/, '').trim();
+    const key = Object.keys(room.searchTargets).find(k => target.includes(k) || k.includes(target));
+    if (key) { print(room.searchTargets[key], 'text-white'); return; }
   }
 
   print("You don't see anything special about that.", 'text-dim');
