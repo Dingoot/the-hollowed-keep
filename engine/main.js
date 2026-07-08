@@ -136,6 +136,10 @@ function handleGameInput(e) {
   if (e.key === 'Enter') {
     const input = inputEl().value;
     inputEl().value = '';
+    // Enter always skips whatever is still streaming; an empty line is
+    // purely a skip, a command flushes first so its output isn't queued
+    // behind old text.
+    flushPrintQueue();
     if (input.trim()) parseCommand(input);
   } else if (e.key === 'ArrowUp') {
     e.preventDefault();

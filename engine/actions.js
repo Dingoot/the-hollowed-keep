@@ -646,7 +646,7 @@ function doHelp() {
   print('  hint             - Consult the spirits for guidance', 'text-green');
   print('  save / load      - Save or load your game', 'text-green');
   print('  clear            - Clear the screen', 'text-green');
-  print('  verbose          - Toggle verbose descriptions', 'text-green');
+  print('  speed            - Text pace: instant, brisk, slow (Enter skips)', 'text-green');
   print('  help (?)         - Show this list', 'text-green');
 }
 
