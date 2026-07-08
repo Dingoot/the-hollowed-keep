@@ -171,6 +171,9 @@ function showMobilePanel(panelId) {
   const panel = document.getElementById(panelId);
   if (panelId !== 'center-panel') {
     panel.classList.add('mobile-visible');
+    // One column on mobile: the game panel would otherwise fill the
+    // viewport and push the side panel off-screen below it.
+    document.getElementById('center-panel').style.display = 'none';
   }
   document.querySelector(`.tab-btn[data-panel="${panelId}"]`).classList.add('active');
 
