@@ -434,7 +434,7 @@ function doStats() {
   print('  HP: ' + GS.hp + '/' + GS.maxHp, 'text-green');
   print('  AC: ' + playerAC(), 'text-green');
   const wInfo = weaponInfo(null);
-  print('  Damage: ~' + Math.max(1, wInfo.base + statMod(GS.stats[wInfo.stat]) + Math.floor(skillLv(wInfo.skill) / 5) + (GS.perks.flatDamage || 0)) + ' (' + (GS.equipped.weapon ? ITEMS[GS.equipped.weapon].name : 'unarmed') + ')', 'text-green');
+  print('  Damage: ~' + Math.max(1, wInfo.base + statMod(GS.stats[wInfo.stat]) + Math.floor(skillLv(wInfo.skill) / 4) + (GS.perks.flatDamage || 0)) + ' (' + (GS.equipped.weapon ? ITEMS[GS.equipped.weapon].name : 'unarmed') + ')', 'text-green');
   print('  Gold: ' + GS.gold, 'text-green');
   print('  Rooms discovered: ' + GS.roomsDiscovered + '/' + Object.keys(ROOMS).length, 'text-green');
   print('  Items found: ' + GS.itemsFound, 'text-green');

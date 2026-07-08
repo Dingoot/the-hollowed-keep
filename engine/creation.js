@@ -113,7 +113,7 @@ function remnantCard(id) {
   bootPrint('  "' + r.whisper + '"', 'line-amber');
   const aff = Object.entries(r.affinities || {}).map(([k, v]) =>
     '+' + Math.round(v * 100) + '% ' + (SKILLS[k] ? SKILLS[k].name : k) + ' XP');
-  if (r.bonusAttack) aff.push('+' + r.bonusAttack + ' attack');
+  if (r.bonusAttack) aff.push('+' + r.bonusAttack + ' to hit and damage');
   if (r.bonusCon) aff.push('+' + r.bonusCon + ' CON');
   if (aff.length) bootPrint('  ' + aff.join('  ·  '), 'line-white');
   if (r.perks.length) bootPrint('  Something more sleeps in it. You will find out what.', 'line-dim');
@@ -143,7 +143,9 @@ function applyDerivedStats() {
   GS.maxHp = 100 + (GS.stats.con - 10) * 5;
   GS.hp = GS.maxHp;
   const rem = REMNANTS[GS.remnant];
+  // A fighting past helps you land blows as well as hurt with them.
   GS.perks.flatDamage = (rem && rem.bonusAttack) ? rem.bonusAttack : 0;
+  GS.perks.hitBonus = (rem && rem.bonusAttack) ? rem.bonusAttack : 0;
   GS.perks.flatAC = 0;
 }
 
