@@ -134,9 +134,9 @@ function printRoom(roomId) {
   print('<span class="text-dim">[' + room.region + ']</span>', '', rs.visited ? 0 : 350);
   // First arrivals get the slow reveal; ground already walked prints at once.
   if (rs.visited) {
-    print(room.desc, 'room-desc', 0);
+    print(roomDesc(roomId), 'room-desc', 0);
   } else {
-    streamProse(room.desc, 'room-desc', 500, 1300);
+    streamProse(roomDesc(roomId), 'room-desc', 500, 1300);
   }
 
   if (!rs.visited && room.firstVisit) {
@@ -161,7 +161,7 @@ function printRoom(roomId) {
     } else {
       for (const nid of npcsPresent(roomId)) {
         print('');
-        print(npcPresenceLine(NPCS[nid]), 'room-npcs');
+        print(npcPresenceLine(NPCS[nid], nid), 'room-npcs');
       }
     }
   }

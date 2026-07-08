@@ -58,6 +58,26 @@ function doMove(dir) {
   }
 }
 
+// === ROOM DESCRIPTION ===
+// A room may promise updated prose once the world has moved on. Each entry
+// in descUpdates lists conditions that must ALL hold; the first entry that
+// matches wins. Supported: enemiesCleared, questDone, hearthLit, itemGone,
+// hiddenExitRevealed.
+function roomDesc(roomId) {
+  const room = ROOMS[roomId];
+  const rs = roomStates[roomId];
+  for (const u of room.descUpdates || []) {
+    const ok =
+      (!u.enemiesCleared || rs.enemies.filter(id => ENEMIES[id]).length === 0) &&
+      (!u.questDone || GS.completedQuests.includes(u.questDone)) &&
+      (!u.hearthLit || GS.litHearths.includes(roomId)) &&
+      (!u.itemGone || !rs.items.includes(u.itemGone)) &&
+      (!u.hiddenExitRevealed || rs.hiddenExitRevealed);
+    if (ok) return u.text;
+  }
+  return room.desc;
+}
+
 // === LOOK & EXAMINE ===
 
 function doLook(args) {
@@ -90,10 +110,9 @@ function doExamine(args) {
     const npcId = npcsPresent(GS.currentRoom).find(id => matchNpc(id, args));
     if (npcId && NPCS[npcId]) {
       print(NPCS[npcId].desc, 'text-white');
-      if (!GS.perks['met_' + npcId]) {
-        GS.perks['met_' + npcId] = true;
+      if (!hasMet(npcId)) {
         print('');
-        doTalk(args);
+        doTalk(args); // first close look starts the introduction
       }
       return;
     }
@@ -108,7 +127,11 @@ function doExamine(args) {
   }
 
   if (args.includes('well') && GS.currentRoom === 'main_courtyard') {
-    print('A deep stone well, its mouth exhaling cold. Whatever rope it had is long gone - though the pulley above gleams with fresh oil, which is its own kind of unsettling. Far below, water moves. With rope of your own, you could descend.', 'text-white');
+    if (GS.flags.wellRopeTied) {
+      print('Your rope is knotted fast to the crossbar, running down past where the light gives up. The way down stands open - the well accepted the arrangement without comment.', 'text-white');
+    } else {
+      print('A deep stone well, its mouth exhaling cold. Whatever rope it had is long gone - though the pulley above gleams with fresh oil, which is its own kind of unsettling. Far below, water moves. With rope of your own, you could descend.', 'text-white');
+    }
     return;
   }
 
