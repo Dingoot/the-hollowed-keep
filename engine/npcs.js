@@ -14,16 +14,39 @@ function npcsPresent(roomId) {
   });
 }
 
-function npcPresenceLine(npc) {
+// Meeting someone is a fact the text respects: names appear only once
+// they are given, and greetings know whether you are a stranger, a
+// regular, or the recently deceased.
+function hasMet(npcId) { return !!GS.perks['met_' + npcId]; }
+
+function markMet(npcId) {
+  if (hasMet(npcId)) return;
+  GS.perks['met_' + npcId] = true;
+  // Deaths before you knew each other are not theirs to remark on.
+  GS.deathsGreetedBy[npcId] = GS.deaths;
+}
+
+function npcPresenceLine(npc, npcId) {
+  if (!hasMet(npcId) && npc.presenceUnmet) return npc.presenceUnmet;
   if (questDone(npc) && npc.postQuestPresence) return npc.postQuestPresence;
-  return npc.presence || (npc.name + ' is here.');
+  return npc.presence || (npcDisplayName(npc, npcId) + ' is here.');
 }
 
-function npcGreeting(npc) {
-  return (questDone(npc) && npc.postQuestGreeting) ? npc.postQuestGreeting : npc.greeting;
+// First meeting: the full introduction. After that: a return greeting,
+// or an after-death one when the Keep has collected you since you last
+// spoke (only NPCs close enough to notice carry one).
+function npcGreeting(npc, npcId) {
+  if (!hasMet(npcId)) return npc.greeting;
+  if (npc.deathGreeting && GS.deaths > (GS.deathsGreetedBy[npcId] || 0)) {
+    GS.deathsGreetedBy[npcId] = GS.deaths;
+    return npc.deathGreeting;
+  }
+  if (questDone(npc) && npc.postQuestGreeting) return npc.postQuestGreeting;
+  return npc.returnGreeting || npc.greeting;
 }
 
-function npcDisplayName(npc) {
+function npcDisplayName(npc, npcId) {
+  if (npcId && !hasMet(npcId) && npc.unmetName) return npc.unmetName;
   return (questDone(npc) && npc.postQuestName) ? npc.postQuestName : npc.name;
 }
 
@@ -115,13 +138,17 @@ function doTalk(args) {
   } else if (conversationPartner()) {
     npcId = conversationPartner();
   } else {
-    print('Talk to whom? ' + present.map(id => npcDisplayName(NPCS[id])).join(', or ') + '.', 'text-dim');
+    print('Talk to whom? ' + present.map(id => npcDisplayName(NPCS[id], id)).join(', or ') + '.', 'text-dim');
     return;
   }
   const npc = NPCS[npcId];
   GS.conversationWith = npcId;
-  print('<span class="npc-name">' + npcDisplayName(npc) + '</span>', '');
-  print(npcGreeting(npc), 'npc-speech');
+  // Pick the greeting and header before marking them met - the header may
+  // still be a stranger's ('Hooded Figure' until Wick has introduced itself).
+  const greeting = npcGreeting(npc, npcId);
+  print('<span class="npc-name">' + npcDisplayName(npc, npcId) + '</span>', '');
+  markMet(npcId);
+  print(greeting, 'npc-speech');
   trackSkullTalk(npcId);
   if (npc.topics) {
     print('');
@@ -169,13 +196,14 @@ function doAsk(args) {
   }
   const npc = NPCS[npcId];
   GS.conversationWith = npcId;
+  markMet(npcId);
 
   const visible = npcTopics(npc, npcId);
   const t = topic.replace(/^(the|a|an)\s+/, '').trim().toLowerCase();
   const key = visible[t] !== undefined ? t
     : Object.keys(visible).find(k => t.length >= 3 && (k.includes(t) || t.includes(k)));
   if (key) {
-    print('<span class="npc-name">' + npcDisplayName(npc) + '</span>:', '');
+    print('<span class="npc-name">' + npcDisplayName(npc, npcId) + '</span>:', '');
     print(visible[key], 'npc-speech');
     trackSkullTalk(npcId);
     // Some answers open new questions.

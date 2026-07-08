@@ -5,6 +5,13 @@ Tracks the game from 2026-07-08 onward. Changes made before this date live in gi
 ## World/game model
 _(Filled in as systems are touched. When a change involves an existing mechanic, document that mechanic here as part of the change.)_
 
+### Continuity (text respects what has happened)
+- **Met state**: interacting with an NPC (talk/ask/examine) marks them met (`GS.perks.met_*`). Names appear only once given: unmet NPCs use `unmetName` in headers ("Hooded Figure" until Wick introduces itself) and `presenceUnmet` in room lines; met NPCs use their name.
+- **Greeting tiers**: first meeting → `greeting`; met → `returnGreeting` (all NPCs have one; never repeats the introduction); if the player has died since last speaking → `deathGreeting` once per death (only Porter, Wick, and the Talking Skull carry one — NPCs close enough to notice); quest done → `postQuestGreeting` where defined.
+- **Description aliases**: every NPC is reachable by description before you know their name (e.g. `talk portly figure` / `talk merchant` / `talk ghost` for Bartholomew).
+- **Room desc updates** (`descUpdates` on a room; first entry whose conditions ALL hold wins; conditions: `enemiesCleared`, `questDone`, `hearthLit`, `itemGone`, `hiddenExitRevealed`): armory (armour destroyed), throne of shadows (Steward defeated), cell block (thief freed), kitchen (hearth lit / lantern taken), great hall + library (hearth lit), reading nook (passage open).
+- **Well rope**: `GS.flags.wellRopeTied` persists the courtyard↔river exits through save/load, and `examine well` acknowledges the tied rope.
+
 ### NPC conversations
 - `talk [person]` engages that NPC (`GS.conversationWith`, saved with the game). While engaged, `ask [topic]` always goes to them — never to whoever happens to be first in the room. `topics` re-lists their topics. `goodbye`/`bye`/`farewell` ends the conversation (NPCs may have a custom `farewell` line); walking to another room, using the well rope, or entering combat ends it implicitly.
 - `talk` with no name: engages the only NPC present, re-greets your current partner, or asks "Talk to whom?" if several are present. `ask [person] about [topic]` switches partners. Topic matching strips articles and accepts close matches (≥3 chars).
@@ -38,10 +45,12 @@ _(Only entries added or modified since 2026-07-08 are listed. Anything not liste
 - Conversation engagement system (see NPC conversations above); all NPCs gained `presence` + `farewell` lines; knight gained post-quest greeting/topics/name; quest flags moved off NPC data into GS.
 - Main Courtyard polish: room desc hints at the footprints, `examine well` no longer contradicts `search well` (the rope is gone in both), `examine` falls back to a room's searchTargets so examine/search agree, and throwing a coin down the well earns a Keep remark.
 - Mobile: tapping Status/Chronicle now hides the game panel (single-column layout was pushing side panels below the viewport).
+- Continuity pass (see Continuity above): return/death greetings, unmet-name handling, description aliases for every NPC, room descs that update with events, well-rope persistence.
 
 ## Changelog
 _(Newest on top. One dated line per change; commit messages match these lines.)_
 
+- 2026-07-08 — Continuity pass: return greetings for every NPC, after-death lines for Porter/Wick/Skull, names shown only once learned, description aliases (talk to the merchant as "portly figure"), room descs update after kills/quests/hearths/taken items, well rope survives save/load.
 - 2026-07-08 — Mobile fix: Status/Chronicle tabs hide the game panel so the side panels actually appear on-screen.
 - 2026-07-08 — Courtyard polish: footprints hinted in the room desc, well examine/search agree that the rope is gone, examine reaches searchTargets, coin down the well gets a Keep remark, healed knight renamed The Knight.
 - 2026-07-08 — NPC conversations: talk engages one NPC, ask routes to them (fixes Wick's topics answered by the knight), goodbye/walking away ends it, presence lines replace repeated intros, knight reacts to being healed, quest state moved into the save.

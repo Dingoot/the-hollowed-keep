@@ -126,6 +126,7 @@ function doUse(args) {
   if (id === 'rope' && GS.currentRoom === 'main_courtyard') {
     endConversation();
     print('You tie the rope to the well\'s crossbar and lower yourself down into the darkness...', 'text-amber');
+    GS.flags.wellRopeTied = true; // survives save/load - see loadGame
     if (!ROOMS.underground_river.exits.up_well) {
       ROOMS.underground_river.exits.up_well = 'main_courtyard';
       ROOMS.main_courtyard.exits.down = 'underground_river';

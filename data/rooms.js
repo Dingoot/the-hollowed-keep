@@ -87,6 +87,9 @@ const ROOMS = {
       banners: "The household sigil on every banner: a door, crowned. On the last banner in the row, someone has unpicked the crown, thread by thread, and re-stitched it beneath the door. Falling. It is very fine work. It must have taken months.",
     },
     desc: "A vast chamber with vaulted ceilings lost in shadow. A long banquet table runs its length, set for a feast that was never eaten - plates of petrified food, goblets of dust. Tattered banners hang from the walls, their heraldry: a door, crowned, on a field of grey. Massive hearths at each end hold nothing but cold ash. The hall feels like it's waiting.",
+    descUpdates: [
+      { hearthLit: true, text: "A vast chamber with vaulted ceilings lost in shadow. A long banquet table runs its length, set for a feast that was never eaten - plates of petrified food, goblets of dust. Tattered banners hang from the walls, their heraldry: a door, crowned, on a field of grey. In one of the massive end hearths your fire burns low and steady, and the hall arranges itself around the light like something remembering how to host. It is still waiting - but more politely now." },
+    ],
     exits: { south: "main_courtyard", east: "library", west: "kitchen", north: "chapel", up: "grand_staircase" },
     items: ["tarnished_goblet"],
     npcs: ["merchant_ghost"],
@@ -98,6 +101,10 @@ const ROOMS = {
     region: "Ground Floor",
     hearth: true,
     desc: "Blackened pots still hang over cold hearths. Knives rust in a block. The pantry door hangs open, and something has been at the stores - tooth marks in petrified bread, claw marks on shelving. A lantern sits on the prep table, its glass intact, oil still sloshing inside. Someone was here recently.",
+    descUpdates: [
+      { hearthLit: true, text: "Blackened pots hang over the hearths - one of which burns now, low and steady, your fire throwing honest shadows for the first time in centuries. Knives rust in a block. The pantry door hangs open, and something has been at the stores - tooth marks in petrified bread, claw marks on shelving." },
+      { itemGone: "lantern", text: "Blackened pots still hang over cold hearths. Knives rust in a block. The pantry door hangs open, and something has been at the stores - tooth marks in petrified bread, claw marks on shelving. On the prep table, a clean ring in the dust marks where a lantern stood until recently. That someone is you, now." },
+    ],
     exits: { east: "great_hall", north: "pantry", west: "servants_quarters" },
     items: ["lantern", "lamp_oil"],
     search: "In a drawer: a kitchen knife still sharp, and a note reading 'The new lord takes his meals below. Do not ask what is served.'",
@@ -125,6 +132,9 @@ const ROOMS = {
     npcIntro: "At a reading desk near the cold fireplace, a translucent scholar writes without pause in a book that is not there.",
     hearth: true,
     desc: "Towering shelves of books stretch into darkness above. Many volumes have decayed to mulch, but others are preserved - bound in materials that resist time. The smell of old paper and leather is overwhelming. A reading area with armchairs sits near a cold fireplace. The shelves are organized by a system you don't recognise - the categories seem to include 'Things That Were', 'Things That Are', and 'Things That Should Not Be'.",
+    descUpdates: [
+      { hearthLit: true, text: "Towering shelves of books stretch into darkness above. Many volumes have decayed to mulch, but others are preserved - bound in materials that resist time. The smell of old paper and leather is overwhelming. A reading area with armchairs sits near the fireplace, where your fire mutters companionably over the pages nobody is reading. The shelves are organized by a system you don't recognise - the categories seem to include 'Things That Were', 'Things That Are', and 'Things That Should Not Be'." },
+    ],
     exits: { west: "great_hall", north: "reading_nook" },
     items: ["ancient_tome"],
     npcs: ["ghost_scribe"],
@@ -135,6 +145,9 @@ const ROOMS = {
     name: "The Reading Nook",
     region: "Ground Floor",
     desc: "A small alcove off the library, furnished with a desk and a high-backed chair. Candles in iron holders line the walls, long since burned to nubs. The desk holds an inkwell (dry) and quills (brittle). A shelf of identically bound red books covers the east wall - their spines are blank. One binding is slightly different from the rest, its leather a deeper shade of crimson.",
+    descUpdates: [
+      { hiddenExitRevealed: true, text: "A small alcove off the library, furnished with a desk and a high-backed chair. Candles in iron holders line the walls, long since burned to nubs. The desk holds an inkwell (dry) and quills (brittle). The east wall's shelf of red books stands swung open like the door it always was, the deep crimson binding still angled where it was pushed, cold air breathing up the passage beyond." },
+    ],
     exits: { south: "library" },
     items: ["journal_page_2"],
     hiddenExits: { east: "hidden_passage" },
@@ -174,6 +187,9 @@ const ROOMS = {
     name: "The Armory",
     region: "Ground Floor",
     desc: "Walls lined with weapon racks, most empty or holding rusted remnants. A suit of plate armour stands in the centre on a wooden stand, polished to a mirror shine - impossible given the age of this place. Its visor seems to track you as you move. A locked cage in the corner holds the better weapons, its lock crusted but intact.",
+    descUpdates: [
+      { enemiesCleared: true, text: "Walls lined with weapon racks, most empty or holding rusted remnants. In the centre, the wooden stand stands vacant; the plate armour that kept it lies strewn across the flagstones, inert, its mirror shine already dulling to the colour of everything else here. A locked cage in the corner holds the better weapons, its lock crusted but intact." },
+    ],
     exits: { west: "chapel", north: "guard_room" },
     items: ["chain_mail", "crossbow"],
     enemies: ["animated_armor"],
@@ -268,6 +284,9 @@ const ROOMS = {
     region: "The Dungeons",
     npcIntro: "From the locked cell, sharp eyes track you between the bars, unhurried, taking inventory of everything you carry.",
     desc: "A row of iron-barred cells, most standing open and empty. Straw bedding has composted to black earth. Names and tallies are scratched into every surface - some counting days, others counting something else. One cell in the middle is still locked, and from within comes the sound of breathing. A figure shifts in the darkness.",
+    descUpdates: [
+      { questDone: "free_thief", text: "A row of iron-barred cells, all standing open now. Straw bedding has composted to black earth. Names and tallies are scratched into every surface - some counting days, others counting something else. The middle cell's door hangs wide where the thief walked out of it. Whatever bargains are struck in here now, they are struck with the dark." },
+    ],
     exits: { west: "dungeon_stairs" },
     items: [],
     npcs: ["imprisoned_thief"],
@@ -372,6 +391,9 @@ const ROOMS = {
     name: "The Throne of Shadows",
     region: "The Deep",
     desc: "The heart of the Keep. A cathedral-sized chamber of black stone, its ceiling lost in perpetual darkness. At its centre, on a dais of fused obsidian, sits a throne carved from a single piece of shadow - solid darkness given form. Seated upon it is a figure in the tatters of household finery, the Toll-Rod laid across its knees like a rule about to be enforced. Pale script scrolls where its eyes should be. It has been waiting. It has all the patience of arithmetic.",
+    descUpdates: [
+      { enemiesCleared: true, text: "The heart of the Keep. A cathedral-sized chamber of black stone, its ceiling lost in perpetual darkness. At its centre, on a dais of fused obsidian, the throne of solid shadow sits empty. The tatters of household finery lie across the seat like a shed skin, already forgetting the shape of what wore them. The arithmetic patience has gone out of the room; what remains is only architecture, waiting to be read." },
+    ],
     exits: { south: "abyssal_chamber" },
     items: [],
     enemies: ["shadow_lord"],

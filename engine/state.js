@@ -27,6 +27,7 @@ const defaultState = () => ({
   ],
   companion: null,
   conversationWith: null,
+  deathsGreetedBy: {},
   awaitingDeath: false,
   inventory: [],
   equipped: { weapon: null, armor: null, offhand: null, light: null, amulet: null, ring: null },
@@ -106,6 +107,11 @@ function loadGame() {
     if (!Array.isArray(GS.runeMessages)) GS.runeMessages = [];
     if (!GS.runeMessages.some(m => m && m.author === 'The Porter')) {
       GS.runeMessages.unshift({ text: 'New arrival: when your legs remember themselves, come south to the gatehouse. Orientation is part of the service.', author: 'The Porter' });
+    }
+    // Exits carved at runtime live on ROOMS, which reloads fresh - re-carve them.
+    if (GS.flags.wellRopeTied) {
+      ROOMS.underground_river.exits.up_well = 'main_courtyard';
+      ROOMS.main_courtyard.exits.down = 'underground_river';
     }
     print('Game loaded.', 'success-msg');
     printRoom(GS.currentRoom);
