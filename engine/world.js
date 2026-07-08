@@ -164,7 +164,7 @@ function doExamine(args) {
   if (room.searchTargets) {
     const target = args.replace(/^(the|a|an)\s+/, '').trim();
     const key = Object.keys(room.searchTargets).find(k => target.includes(k) || k.includes(target));
-    if (key) { print(room.searchTargets[key], 'text-white'); return; }
+    if (key) { doSearch(args); return; }
   }
 
   print("You don't see anything special about that.", 'text-dim');

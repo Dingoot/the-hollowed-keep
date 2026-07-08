@@ -194,7 +194,7 @@ function printRoom(roomId) {
     }
   }
 
-  if (GS.race === 'dwarf' && room.search && !GS.searchedRooms.includes(roomId)) {
+  if (GS.race === 'dwarf' && roomHasUnclaimedFinds(roomId)) {
     print('(Your bones itch. Something here rewards a closer look.)', 'text-dim');
   }
   if (GS.race === 'gravekin' && roomId === 'chapel') {

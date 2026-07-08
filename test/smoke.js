@@ -217,7 +217,7 @@ const driver = `
     assert(ROOMS.gatehouse.npcs && ROOMS.gatehouse.npcs.includes("porter"), "porter not at the gate");
     assert(ROOMS.main_courtyard.npcs.includes("wick"), "wick not in courtyard");
     assert(NPCS.porter && NPCS.wick, "new NPC defs missing");
-    assert(ROOMS.outer_gate.items.includes("journal_page_1"), "journal page 1 lost in the move");
+    assert(ROOMS.outer_gate.searchTargets.gouges.finds.includes("journal_page_1"), "journal page 1 lost in the move");
   });
   step("old lore gone from data", () => {
     const blob = JSON.stringify(ROOMS) + JSON.stringify(ITEMS) + JSON.stringify(NPCS) + JSON.stringify(ENEMIES);

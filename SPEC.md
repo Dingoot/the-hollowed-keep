@@ -5,6 +5,14 @@ Tracks the game from 2026-07-08 onward. Changes made before this date live in gi
 ## World/game model
 _(Filled in as systems are touched. When a change involves an existing mechanic, document that mechanic here as part of the change.)_
 
+### Search (aimed, not blanket)
+- `search` with no target never dumps results: it lists the room's searchable things in the Keep's voice ("Curiosity is billed by the object. Name it: ..."), or notes everything's been picked over. Rooms with nothing searchable say so plainly.
+- Every searchable thing is a `searchTargets` entry keyed by a noun that appears in the room's own prose (verified by an automated audit) — the room description is the search menu, plus the bare-`search` list.
+- Target entries: string, or `{ text, finds: [itemIds], again, loreXP }`. Each target searches once; `finds` surface then ("Found: X", added to the room for `take`); re-searching gives `again` or a dry generic. Lore-flavored discoveries (carvings, letters, documents) grant Lore XP.
+- Most items now live inside the targets they'd realistically be found in (36 items across 104 targets in 39 rooms) — searching is the discovery loop. Items visible in plain sight (torch in its bracket, kitchen lantern, pantry potion/bread, armory chain mail/crossbow, sanctum crown) stay as room items, and are all mentioned in their room descs.
+- `examine X` routes into the same target logic (finds included). Dark rooms still require light. Dwarf bone-itch hint now fires exactly when a room holds unclaimed finds.
+- Jarring search texts fixed: transitions are narrated (the gatehouse table crouch, the great-hall kneel, the gallery cloth moment of hesitation).
+
 ### Continuity (text respects what has happened)
 - **Met state**: interacting with an NPC (talk/ask/examine) marks them met (`GS.perks.met_*`). Names appear only once given: unmet NPCs use `unmetName` in headers ("Hooded Figure" until Wick introduces itself) and `presenceUnmet` in room lines; met NPCs use their name.
 - **Greeting tiers**: first meeting → `greeting`; met → `returnGreeting` (all NPCs have one; never repeats the introduction); if the player has died since last speaking → `deathGreeting` once per death (only Porter, Wick, and the Talking Skull carry one — NPCs close enough to notice); quest done → `postQuestGreeting` where defined.
@@ -46,10 +54,12 @@ _(Only entries added or modified since 2026-07-08 are listed. Anything not liste
 - Main Courtyard polish: room desc hints at the footprints, `examine well` no longer contradicts `search well` (the rope is gone in both), `examine` falls back to a room's searchTargets so examine/search agree, and throwing a coin down the well earns a Keep remark.
 - Mobile: tapping Status/Chronicle now hides the game panel (single-column layout was pushing side panels below the viewport).
 - Continuity pass (see Continuity above): return/death greetings, unmet-name handling, description aliases for every NPC, room descs that update with events, well-rope persistence.
+- Search overhaul (see Search above): aimed searching with 104 targets across all rooms, once-per-target with again-lines, finds-based item discovery, Lore XP on written discoveries. Legacy blanket `search`/`searchItems` fields removed.
 
 ## Changelog
 _(Newest on top. One dated line per change; commit messages match these lines.)_
 
+- 2026-07-08 — Search overhaul: bare search asks what to search and lists the room's targets, every target is named in room prose, items found inside what plausibly holds them, once-per-target with tailored repeat lines, lore XP for written finds, jarring under-the-table transitions narrated.
 - 2026-07-08 — Continuity pass: return greetings for every NPC, after-death lines for Porter/Wick/Skull, names shown only once learned, description aliases (talk to the merchant as "portly figure"), room descs update after kills/quests/hearths/taken items, well rope survives save/load.
 - 2026-07-08 — Mobile fix: Status/Chronicle tabs hide the game panel so the side panels actually appear on-screen.
 - 2026-07-08 — Courtyard polish: footprints hinted in the room desc, well examine/search agree that the rope is gone, examine reaches searchTargets, coin down the well gets a Keep remark, healed knight renamed The Knight.
