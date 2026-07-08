@@ -4,6 +4,8 @@ const NPCS = {
   porter: {
     name: "The Porter",
     aliases: ["gatekeeper", "keeper", "tall figure", "clerk"],
+    presence: "The Porter stands at the portcullis chains, ledger closed, exactly where it has always stood.",
+    farewell: "'Orientation concludes.' The Porter inclines its head by one degree. 'It resumes whenever you wish. The gate is patient, and so, professionally, am I.'",
     desc: "A tall figure in a gatekeeper's coat mended so many times the original cloth is a rumour. Its face is not hidden, merely difficult - the way a word can be difficult to recall. It stands by the portcullis chains with a closed ledger, and it stands the way furniture stands: as if it has always been exactly here.",
     greeting: "'Ah. The new arrival.' The Porter inclines its head by one measured degree. 'Welcome, formally, to the Hollowed Keep. Received at threshold: one self, complete. The Toll is paid in full.' It does not open the ledger. It has never needed to. 'You will have questions. That is usual. Ask them - orientation is part of the service.'",
     topics: {
@@ -23,6 +25,8 @@ const NPCS = {
   wick: {
     name: "Wick",
     aliases: ["hooded figure", "hooded shape", "hooded man", "figure", "lantern bearer", "lantern"],
+    presence: "Wick drifts near the fountain, lantern up, lighting nothing in particular on purpose.",
+    farewell: "The lantern dips - a small bow of light. 'Wick will be about. Wick is always about. Mind the dark corners, friend, or better: bring them to Wick.'",
     desc: "A small hooded shape holding a lantern that burns without oil. Whatever Wick was, it was so long ago that personhood has worn off like paint; what remains is helpfulness, a lamp, and a memory of manners. It borrows its sentences from selves the Keep has digested.",
     onAttack: "Your hand passes through Wick's hood and out the other side, trailing cold. The lantern tuts at you - actually tuts. 'The last one who tried that,' Wick says, borrowing a schoolteacher's voice, 'is a smell now.'",
     greeting: "The lantern rises. A voice like a draft under a door assembles itself from borrowed pieces: 'Welcome - my lord - to the - DON'T TOUCH THAT - humble hearth.' A pause. 'Apologies. The words come secondhand. Wick greets you. Wick lights things. It is enough to be going on with.'",
@@ -35,10 +39,19 @@ const NPCS = {
   },
   wounded_knight: {
     name: "Wounded Knight",
-    aliases: ["injured man", "wounded man", "man in armour", "armoured man"],
+    postQuestName: "The Knight",
+    aliases: ["injured man", "wounded man", "man in armour", "armoured man", "knight"],
+    presence: "The wounded knight sits propped against the fountain's rim, hand pressed to his side, watching the archways the way soldiers watch doors.",
+    postQuestPresence: "The knight is on his feet by the fountain, testing his weight, folding and refolding a hand-drawn map.",
+    farewell: "'Go carefully.' The knight settles back against the fountain. 'Whatever else we forgot, the body remembers its war. Trust yours.'",
     desc: "A knight in battered plate slumps against the fountain, hand pressed to a wound in his side. His tabard bears a crest he keeps glancing at, the way you would study a stranger's luggage.",
     onAttack: "The knight catches your fist without looking up. 'Three days in this place,' he says, 'and that is the first thing that has made sense to me.' He lets go. 'Don't. I'd hate to be killed by the only other person here with a pulse.'",
     greeting: "'Don't bother asking my name. I checked. It's gone.' He shifts, wincing. 'Three days in here. The body remembers its war even if I don't get to. And there's a thing in the guard room that remembers its own.'",
+    postQuestGreeting: "'Still standing. Both of us.' The knight flexes his sword hand, studying it like borrowed kit. 'Ask what you like. Debts make honest men of strangers.'",
+    postQuestTopics: {
+      wound: "'Closed, or close enough. Whatever was in that potion, it knew its trade.' He presses two fingers to his side, testing. 'I owe you the rest of a life. In here, that may not be worth much. The debt stands anyway.'",
+      help: "'You have everything I promised - the key, the technique, the warnings. Feint the skeleton; it answers the war it remembers. Silver for the catacombs.' He looks toward the gates, then down. 'When I can walk a full circuit of this yard, I go after my name. Perhaps we meet at the bottom.'",
+    },
     topics: {
       keep: "'The geometry shifts when you're not looking. Corridors bend. I map it anyway - habit from a war I can't name.' He taps his temple. 'The hands remember. That's the Keep's one mercy, if you'd call it that.'",
       crest: "'A gryphon and a broken wheel. I've stared at it three days. Nothing. Whoever I swore it to went with the Toll.' A short, bleak laugh. 'Hell of a thing, owing a stranger your scars.'",
@@ -50,8 +63,6 @@ const NPCS = {
       id: "heal_knight",
       name: "Heal the Wounded Knight",
       requires: "healing_potion",
-      active: false,
-      completed: false,
       onComplete: "The knight drinks deeply. Colour returns to his face. 'You have my thanks - whoever we both are.' He stands, testing his weight. 'The dungeon stairs: a skeleton warrior holds them. It fights like a soldier, so don't fight it like one - feint. It answers the war it remembers, not the one in front of it. And in the catacombs - ' he lowers his voice, ' - bring silver. Steel is a rumor down there.' He presses a key into your hand. 'Lower levels. Fair inheritance.'",
       reward: ["iron_key_2"],
       rewardText: "The knight gives you a dungeon key and shares hard-won technique. Your combat effectiveness increases.",
@@ -60,6 +71,8 @@ const NPCS = {
   },
   ghost_scribe: {
     name: "Ghost of the Scribe",
+    presence: "Cedric hunches at the reading desk, writing without pause in the book that is not there.",
+    farewell: "'Yes, yes, go.' The quill does not stop. 'Paper waits better than people. It is the only thing here that does.'",
     desc: "A translucent figure hunches over a reading desk, eternally writing in a book that does not exist. His robes mark him as a scholar. His expression is one of desperate concentration.",
     onAttack: "Your hand passes through Cedric. He looks down at where it went, more disappointed than alarmed. 'Nineteen places,' he says. 'My name survives in nineteen places, and you have just put your fist through several decades of filing.'",
     greeting: "'Can you see me? Truly see me? So few can.' The quill pauses. 'Cedric. Keeper of the household ledgers - the name survived because it is written in nineteen places, and the Keep respects paperwork. I wrote the truth about this place, once. The last Steward tore out the five pages that mattered and scattered them. Find them, and I should like to finish being right.'",
@@ -73,8 +86,6 @@ const NPCS = {
       id: "find_pages",
       name: "Collect the Five Journal Pages",
       requires: ["journal_page_1", "journal_page_2", "journal_page_3", "journal_page_4", "journal_page_5"],
-      active: false,
-      completed: false,
       onComplete: "'Yes... YES. Whole again.' Cedric brightens, becoming almost solid. He reads his own pages through, and the relief in his face goes grave. 'It is as I wrote. The Rod. The Crown. The choice.' He speaks a word that skips your ears entirely and lodges in your mind like a splinter of cold. 'The Word of Sundering. It unpicks anything the Keep stitched from shadow. Including, if it comes to that, what the Steward carries.'",
       reward: [],
       rewardText: "Cedric teaches you the Word of Sundering spell.",
@@ -83,6 +94,9 @@ const NPCS = {
   },
   imprisoned_thief: {
     name: "Imprisoned Thief",
+    leavesAfterQuest: true,
+    presence: "From the locked cell, Wren's eyes follow you between the bars, unhurried, still taking inventory of everything you carry.",
+    farewell: "'Off you go, then.' Wren settles back into the dark of the cell. 'Shout if you find a key. Or a guard to lift one from. I'm flexible.'",
     desc: "A wiry figure in dark clothing crouches in the locked cell. Sharp eyes evaluate you from the shadows. Despite apparent captivity, there's no fear in those eyes - only calculation.",
     onAttack: "Wren doesn't flinch behind the bars. 'Bold. Hitting someone in a cage.' A slow grin. 'When I'm out of here, remind me to teach you where to aim.'",
     greeting: "'Well, well. A living soul in this tomb. I don't suppose you've got a key? Lockpicks? No? Then we negotiate.' The thief grins. 'Get me out and I'll make it worth your while.'",
@@ -96,8 +110,6 @@ const NPCS = {
       id: "free_thief",
       name: "Free the Imprisoned Thief",
       requires: "iron_key",
-      active: false,
-      completed: false,
       onComplete: "'Freedom at last.' Wren stretches like a cat. 'A deal's a deal.' The thief produces a set of lockpicks from a hidden pocket. 'These have gotten me into places you wouldn't believe. They're yours now. And a tip: the bookcase in the reading nook. There's a red-bound book that isn't a book. Push it, and the shelf swings open. You're welcome.'",
       reward: ["lockpicks"],
       rewardText: "Wren gives you lockpicks and reveals the location of a hidden passage.",
@@ -106,6 +118,8 @@ const NPCS = {
   },
   spectral_guardian: {
     name: "Spectral Guardian",
+    presence: "The Spectral Guardian stands before the altar, sword point-down, patient as the stone it guards.",
+    farewell: "'Go in what light remains.' The guardian returns to its watch, and the silver fire of its blade banks low.",
     desc: "A figure of blue-white light stands before the chapel altar. It wears armour of an ancient design and carries a sword that gleams with silver fire. Its face is stern but not unkind. It radiates an aura of sanctity that pushes back the Keep's pervasive wrongness.",
     greeting: "'Halt, seeker. This chapel is the last sanctified ground in the Keep. I guard it and the weapon it holds. Answer my riddle truthfully, and the Silver Dagger is yours. Lie or fail, and you leave empty-handed.' The guardian raises a gauntleted hand. 'I have cities, but no houses. I have mountains, but no trees. I have water, but no fish. I have roads, but no cars. What am I?'",
     topics: {
@@ -114,11 +128,12 @@ const NPCS = {
       chapel: "'This is the one floor of the Keep that has never digested. It cannot. Consecration disagrees with it. The saints whose statues line the walls have turned their faces away. Only I remain.'",
     },
     riddleAnswer: "map",
-    riddleSolved: false,
     riddleReward: "silver_dagger",
   },
   mad_alchemist: {
     name: "The Mad Alchemist",
+    presence: "The Mad Alchemist mutters over the bubbling apparatus, one brown eye on the work and the white one, somehow, on you.",
+    farewell: "'Yes, go, go - come back with ingredients! Or symptoms!' The alchemist is already talking to the retort again. 'Either is data.'",
     desc: "An elderly figure in a stained robe, muttering over bubbling apparatus. Their eyes are mismatched - one brown, one entirely white - and they seem to exist at a slight angle to reality, as if not fully in this world.",
     onAttack: "The alchemist sways out of reach with the ease of someone who has been swung at professionally. 'Test subjects usually volunteer,' they say, delighted. 'But do write down your aggression levels. It's all data.'",
     greeting: "'Customers! Or test subjects? Both? Both is good.' The alchemist cackles. 'I've been here for... time is different here. Years? Centuries? The work continues regardless. What do you need? Potions? Poisons? The distinction is mostly dosage.'",
@@ -132,6 +147,8 @@ const NPCS = {
   },
   merchant_ghost: {
     name: "Ghost Merchant",
+    presence: "Bartholomew presides at the head of the banquet table, arranging wares only half of which exist, and brightens as you pass.",
+    farewell: "'Do come again! Repeat custom is the soul of commerce.' Bartholomew polishes something invisible. 'And in my case, the only soul on offer.'",
     desc: "A portly, translucent figure sits at the head of the banquet table, examining spectral wares only partially visible. Unlike other ghosts here, this one seems cheerful - even content.",
     onAttack: "Your fist passes through Bartholomew and disturbs his spectral inventory. 'Striking the shopkeep,' he says mildly, 'voids the returns policy. And I have an eternal memory for faces, friend.'",
     greeting: "'Ah, a customer! Living, even! How delightful. Call me Bartholomew - the Toll took the real one, but a merchant needs a name the way a shop needs a sign, so I bought this one off a dying man. Fair price, before you ask. My goods are genuine and my return policy is eternal.' He chuckles at his own joke.",
@@ -149,6 +166,8 @@ const NPCS = {
   },
   talking_skull: {
     name: "Talking Skull",
+    presence: "On the shelf of skulls, the talkative one has already noticed you. It is visibly composing remarks.",
+    farewell: "'Yes, wander off, they all do.' The skull's glow dims to a sulk. 'The shelf and I will be here. We're very committed.'",
     desc: "A human skull resting on a shelf of other skulls, distinguished only by the faint green glow in its eye sockets and the fact that it won't shut up.",
     onAttack: "You flick the skull off its shelf. It clatters, rolls, and comes to rest facing you. 'Ow,' it says, flatly. 'Centuries of dignity. Put me back and we shall never speak of this. The shelf, however, judges you.'",
     greeting: "'Oh wonderful, another hollow hero. Let me guess - down to the bottom, take back what the gate took. Everyone's on the same errand. Nobody's here for the charming company. Nobody asks how the skull is doing. Fine, thanks for asking.'",
@@ -165,6 +184,8 @@ const NPCS = {
   },
   ancient_spirit: {
     name: "Ancient Spirit",
+    presence: "The air at the shrine's centre is still thicker than air has any right to be. It is still aware of you.",
+    farewell: "The pressure behind your eyes eases, one word arriving as it goes: 'DESCEND WISELY.'",
     desc: "Not a ghost but something older - a presence without form, felt rather than seen. The air in the shrine thickens around a central point, and when it speaks, the words appear in your mind rather than your ears.",
     greeting: "A pressure builds behind your eyes. Words form, not heard but understood: 'YOU COME TO THE OLD PLACE. HOLLOW ONE. SEEKER. FOOL. PERHAPS ALL THREE. SPEAK YOUR PURPOSE.'",
     topics: {

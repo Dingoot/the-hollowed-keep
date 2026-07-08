@@ -26,6 +26,7 @@ const defaultState = () => ({
     { text: "New arrival: when your legs remember themselves, come south to the gatehouse. Orientation is part of the service.", author: "The Porter" },
   ],
   companion: null,
+  conversationWith: null,
   awaitingDeath: false,
   inventory: [],
   equipped: { weapon: null, armor: null, offhand: null, light: null, amulet: null, ring: null },
@@ -59,12 +60,12 @@ let roomStates = {};
 // === META SAVE ===
 // Persists across characters and restarts: race unlocks, lifetime tallies.
 const META_KEY = 'hollowkeep_meta';
-let META = { totalDeaths: 0, unlocks: {} };
+let META = { totalDeaths: 0, unlocks: {}, textSpeed: 'brisk' };
 
 function loadMeta() {
   try {
     const m = JSON.parse(localStorage.getItem(META_KEY));
-    if (m) META = { totalDeaths: m.totalDeaths || 0, unlocks: m.unlocks || {} };
+    if (m) META = { totalDeaths: m.totalDeaths || 0, unlocks: m.unlocks || {}, textSpeed: m.textSpeed || 'brisk' };
   } catch (e) { /* fresh meta */ }
 }
 

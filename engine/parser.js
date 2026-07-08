@@ -67,6 +67,8 @@ function parseCommand(raw) {
     case 'throw': case 'hurl': case 'toss': doThrow(args); break;
     case 'talk': case 'speak': case 'approach': case 'greet': doTalk(args); break;
     case 'ask': doAsk(args); break;
+    case 'goodbye': case 'bye': case 'farewell': doGoodbye(); break;
+    case 'topics': doTopics(); break;
     case 'answer': doAnswer(args); break;
     case 'search': case 'investigate': case 'examine room': doSearch(args); break;
     case 'skills': case 'skill': doSkillsCmd(); break;
@@ -101,7 +103,7 @@ function parseCommand(raw) {
     case 'brew': doBrew(); break;
     case 'give': doGive(args); break;
     case 'clear': case 'cls': outputEl().innerHTML = ''; printRoom(GS.currentRoom); break;
-    case 'verbose': GS.flags.verbose = !GS.flags.verbose; print('Verbose mode ' + (GS.flags.verbose ? 'on' : 'off') + '.', 'system-msg'); break;
+    case 'speed': case 'textspeed': doSpeed(args); break;
     default:
       if (typeof VERB_RESPONSES !== 'undefined' && VERB_RESPONSES[cmd]) {
         print(pick(VERB_RESPONSES[cmd]), 'text-white');

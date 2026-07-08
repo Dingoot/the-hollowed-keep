@@ -124,6 +124,7 @@ function doUse(args) {
   }
 
   if (id === 'rope' && GS.currentRoom === 'main_courtyard') {
+    endConversation();
     print('You tie the rope to the well\'s crossbar and lower yourself down into the darkness...', 'text-amber');
     if (!ROOMS.underground_river.exits.up_well) {
       ROOMS.underground_river.exits.up_well = 'main_courtyard';
@@ -371,6 +372,13 @@ function doThrow(args) {
     return;
   }
 
+  if (GS.currentRoom === 'main_courtyard' && /\b(coin|coins|gold|offering)\b/.test(target)) {
+    print('You take one of the corroded offerings from the fountain\'s litter and flick it out over the well. You count the fall. Four. Five. Six. You never hear it land.', 'text-white');
+    print('', '', 300);
+    keepSays('Received: one coin, value negligible. Logged under: hope, miscellaneous.');
+    return;
+  }
+
   if (isRock) {
     print('You find a loose piece of the Keep and throw it down the way. The clatter is deeply satisfying and accomplishes nothing at all.', 'text-dim');
     return;
@@ -434,7 +442,7 @@ function doStats() {
   print('  HP: ' + GS.hp + '/' + GS.maxHp, 'text-green');
   print('  AC: ' + playerAC(), 'text-green');
   const wInfo = weaponInfo(null);
-  print('  Damage: ~' + Math.max(1, wInfo.base + statMod(GS.stats[wInfo.stat]) + Math.floor(skillLv(wInfo.skill) / 5) + (GS.perks.flatDamage || 0)) + ' (' + (GS.equipped.weapon ? ITEMS[GS.equipped.weapon].name : 'unarmed') + ')', 'text-green');
+  print('  Damage: ~' + Math.max(1, wInfo.base + statMod(GS.stats[wInfo.stat]) + Math.floor(skillLv(wInfo.skill) / 4) + (GS.perks.flatDamage || 0)) + ' (' + (GS.equipped.weapon ? ITEMS[GS.equipped.weapon].name : 'unarmed') + ')', 'text-green');
   print('  Gold: ' + GS.gold, 'text-green');
   print('  Rooms discovered: ' + GS.roomsDiscovered + '/' + Object.keys(ROOMS).length, 'text-green');
   print('  Items found: ' + GS.itemsFound, 'text-green');
@@ -624,8 +632,10 @@ function doHelp() {
   print('  read [item]      - Read a document or book', 'text-green');
   print('');
   print('INTERACTION', 'text-amber');
-  print('  talk [person]    - Talk to someone', 'text-green');
-  print('  ask [topic]      - Ask about a topic', 'text-green');
+  print('  talk [person]    - Start a conversation', 'text-green');
+  print("  ask [topic]      - Ask the person you're talking to", 'text-green');
+  print('  topics           - List what they will speak about', 'text-green');
+  print('  goodbye          - End the conversation', 'text-green');
   print('  answer [text]    - Answer a question', 'text-green');
   print('  give [item]      - Give an item to someone', 'text-green');
   print('  trade/buy/sell   - Trade with merchants', 'text-green');
@@ -646,7 +656,7 @@ function doHelp() {
   print('  hint             - Consult the spirits for guidance', 'text-green');
   print('  save / load      - Save or load your game', 'text-green');
   print('  clear            - Clear the screen', 'text-green');
-  print('  verbose          - Toggle verbose descriptions', 'text-green');
+  print('  speed            - Text pace: instant, brisk, slow (Enter skips)', 'text-green');
   print('  help (?)         - Show this list', 'text-green');
 }
 
@@ -661,14 +671,14 @@ function doOpen(args) {
     if (hasItem('iron_key')) {
       rs.unlocked = true;
       print('The iron key turns with a grinding protest. The cell door swings open.', 'success-msg');
-      if (NPCS.imprisoned_thief.quest && !NPCS.imprisoned_thief.quest.completed) {
+      if (!questDone(NPCS.imprisoned_thief)) {
         doGive('');
       }
     } else if (hasItem('lockpicks')) {
       rs.unlocked = true;
       print('You work the lockpicks with care. After a tense minute, the mechanism yields.', 'success-msg');
       gainSkillXP('lockpicking', 12);
-      if (NPCS.imprisoned_thief.quest && !NPCS.imprisoned_thief.quest.completed) {
+      if (!questDone(NPCS.imprisoned_thief)) {
         doGive('');
       }
     } else {
