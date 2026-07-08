@@ -25,7 +25,28 @@ function formatNpcLine(text) {
 }
 
 // Output streams line by line - readable, never a wall slamming the view.
+// Pacing is a preference: 'instant' dumps everything, 'brisk' (default)
+// keeps a light rhythm, 'slow' is the original theatrical pace. Enter on
+// an empty line always skips straight to the end of whatever is queued.
 const PRINT_QUEUE = [];
+const TEXT_SPEEDS = { instant: 0, brisk: 0.35, slow: 1 };
+
+function textSpeedFactor() {
+  const f = TEXT_SPEEDS[META.textSpeed];
+  return f != null ? f : TEXT_SPEEDS.brisk;
+}
+
+function doSpeed(args) {
+  const choice = (args || '').trim();
+  if (TEXT_SPEEDS[choice] == null) {
+    print('Text speed is ' + (META.textSpeed || 'brisk') + '. Options: speed instant, speed brisk, speed slow.', 'system-msg');
+    print('(Enter on an empty line always skips ahead.)', 'text-dim');
+    return;
+  }
+  META.textSpeed = choice;
+  saveMeta();
+  print('Text speed set to ' + choice + '.', 'system-msg');
+}
 
 function print(text, className, pause) {
   if (className && className.indexOf('npc-speech') !== -1 && typeof text === 'string') {
@@ -36,31 +57,45 @@ function print(text, className, pause) {
 }
 
 let printPumpRunning = false;
+let printPumpTimer = null;
 let openBlock = null; // { id, el } - the paragraph currently being fed
+
+function renderPrintItem(item) {
+  const out = outputEl();
+  if (!out || !out.appendChild) return;
+  const nearBottom = !out.scrollHeight || (out.scrollHeight - out.scrollTop - out.clientHeight < 80);
+  if (item.block && openBlock && openBlock.id === item.block && openBlock.el) {
+    openBlock.el.innerHTML += ' ' + item.text;
+  } else {
+    const div = document.createElement('div');
+    div.className = 'line ' + (item.className || '');
+    div.innerHTML = item.text;
+    out.appendChild(div);
+    openBlock = item.block ? { id: item.block, el: div } : null;
+  }
+  if (nearBottom) out.scrollTop = out.scrollHeight;
+}
 
 function pumpPrintQueue() {
   if (printPumpRunning) return;
   printPumpRunning = true;
   const step = () => {
-    if (PRINT_QUEUE.length === 0) { printPumpRunning = false; openBlock = null; return; }
+    if (PRINT_QUEUE.length === 0) { printPumpRunning = false; printPumpTimer = null; openBlock = null; return; }
     const item = PRINT_QUEUE.shift();
-    const out = outputEl();
-    if (out && out.appendChild) {
-      const nearBottom = !out.scrollHeight || (out.scrollHeight - out.scrollTop - out.clientHeight < 80);
-      if (item.block && openBlock && openBlock.id === item.block && openBlock.el) {
-        openBlock.el.innerHTML += ' ' + item.text;
-      } else {
-        const div = document.createElement('div');
-        div.className = 'line ' + (item.className || '');
-        div.innerHTML = item.text;
-        out.appendChild(div);
-        openBlock = item.block ? { id: item.block, el: div } : null;
-      }
-      if (nearBottom) out.scrollTop = out.scrollHeight;
-    }
-    setTimeout(step, item.pause != null ? item.pause : 110);
+    renderPrintItem(item);
+    printPumpTimer = setTimeout(step, Math.round((item.pause != null ? item.pause : 110) * textSpeedFactor()));
   };
-  setTimeout(step, 0);
+  printPumpTimer = setTimeout(step, 0);
+}
+
+// Skip the wait: render everything queued, right now.
+function flushPrintQueue() {
+  if (printPumpTimer) { clearTimeout(printPumpTimer); printPumpTimer = null; }
+  while (PRINT_QUEUE.length > 0) renderPrintItem(PRINT_QUEUE.shift());
+  printPumpRunning = false;
+  openBlock = null;
+  const out = outputEl();
+  if (out) out.scrollTop = out.scrollHeight;
 }
 
 // Prose streams a sentence at a time INTO one paragraph; blocks breathe
@@ -96,8 +131,13 @@ function printRoom(roomId) {
 
   printLine();
   print(room.name, 'room-name');
-  print('<span class="text-dim">[' + room.region + ']</span>', '', 350);
-  streamProse(room.desc, 'room-desc', 500, 1300);
+  print('<span class="text-dim">[' + room.region + ']</span>', '', rs.visited ? 0 : 350);
+  // First arrivals get the slow reveal; ground already walked prints at once.
+  if (rs.visited) {
+    print(room.desc, 'room-desc', 0);
+  } else {
+    streamProse(room.desc, 'room-desc', 500, 1300);
+  }
 
   if (!rs.visited && room.firstVisit) {
     streamProse(room.firstVisit, 'text-amber', 500, 1000);
@@ -114,7 +154,8 @@ function printRoom(roomId) {
 
   const sight = room.sight || room.npcIntro;
   if (sight && (!room.dark || hasLight())) {
-    streamProse(sight, 'text-amber', 500, 1000);
+    if (rs.visited) print(sight, 'text-amber', 0);
+    else streamProse(sight, 'text-amber', 500, 1000);
   } else if (room.npcs && (!room.dark || hasLight())) {
     for (const nid of room.npcs) {
       const npc = NPCS[nid];
@@ -131,7 +172,8 @@ function printRoom(roomId) {
     for (const eid of enemies) {
       const e = ENEMIES[eid];
       if (e.emerge) {
-        streamProse(e.emerge, 'text-white', 130, 800);
+        if (rs.visited) print(e.emerge, 'text-white', 0);
+        else streamProse(e.emerge, 'text-white', 130, 800);
       }
       print('! ' + e.name, 'text-red', 400);
     }
