@@ -101,7 +101,7 @@ function parseCommand(raw) {
     case 'brew': doBrew(); break;
     case 'give': doGive(args); break;
     case 'clear': case 'cls': outputEl().innerHTML = ''; printRoom(GS.currentRoom); break;
-    case 'verbose': GS.flags.verbose = !GS.flags.verbose; print('Verbose mode ' + (GS.flags.verbose ? 'on' : 'off') + '.', 'system-msg'); break;
+    case 'speed': case 'textspeed': doSpeed(args); break;
     default:
       if (typeof VERB_RESPONSES !== 'undefined' && VERB_RESPONSES[cmd]) {
         print(pick(VERB_RESPONSES[cmd]), 'text-white');

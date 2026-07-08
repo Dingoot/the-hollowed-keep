@@ -118,7 +118,7 @@ const driver = `
   step("creation: derived", () => {
     applyDerivedStats();
     assert(GS.maxHp === 115, "maxHp wrong: " + GS.maxHp);
-    assert(playerAC() === 7, "dwarf AC (8 + dex mod -1): " + playerAC());
+    assert(playerAC() === 9, "dwarf AC (10 + dex mod -1): " + playerAC());
   });
 
   step("start state", () => { GS.gameStarted = true; assert(GS.currentRoom === "main_courtyard", "bad start room: " + GS.currentRoom); });

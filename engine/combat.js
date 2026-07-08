@@ -32,17 +32,17 @@ function weaponInfo(verb) {
     let skill = 'unarmed';
     if ((verb === 'kick' || verb === 'knee') && GS.skills.boot_heel) skill = 'boot_heel';
     if ((verb === 'punch' || verb === 'slap' || verb === 'elbow' || verb === 'headbutt') && GS.skills.pugilism) skill = 'pugilism';
-    return { base: 1, stat: 'str', skill };
+    return { base: 2, stat: 'str', skill };
   }
   const w = GS.equipped.weapon && ITEMS[GS.equipped.weapon];
-  if (!w) return { base: 1, stat: 'str', skill: 'unarmed' };
+  if (!w) return { base: 2, stat: 'str', skill: 'unarmed' };
   const finesse = ['daggers', 'bows', 'crossbows', 'thrown'];
   const fam = w.family || 'unarmed';
   return { base: w.attack || 1, stat: finesse.includes(fam) ? 'dex' : 'str', skill: fam };
 }
 
 function playerAC() {
-  let ac = 8 + statMod(GS.stats.dex);
+  let ac = 10 + statMod(GS.stats.dex);
   for (const slot of ['armor', 'offhand', 'ring']) {
     const id = GS.equipped[slot];
     if (id && ITEMS[id]) ac += ITEMS[id].defense || 0;
@@ -51,8 +51,10 @@ function playerAC() {
   return ac;
 }
 
-function enemyAC(e) { return 8 + (e.defense || 0); }
-function playerHitBonus(info) { return 2 + statMod(GS.stats[info.stat]) + Math.floor(skillLv(info.skill) / 4); }
+// Hitting should be the norm; missing the exception. Enemy DEF feeds AC at
+// half weight so tough foes are hard to hurt, not impossible to touch.
+function enemyAC(e) { return 8 + Math.floor((e.defense || 0) / 2); }
+function playerHitBonus(info) { return 4 + statMod(GS.stats[info.stat]) + Math.floor(skillLv(info.skill) / 3) + (GS.perks.hitBonus || 0); }
 function enemyHitBonus(e) { return 2 + Math.floor((e.attack || 4) / 3); }
 
 function doAttack(args) {
@@ -213,7 +215,7 @@ function startCombat(enemyId) {
   printLine();
   print('COMBAT: ' + template.name, 'text-red text-bold');
   print(template.desc, 'text-white');
-  print('HP: ' + template.hp + '/' + template.maxHp + ' | ATK: ' + template.attack + ' | DEF: ' + template.defense, 'combat-info');
+  print('HP: ' + template.hp + '/' + template.maxHp + ' | ATK: ' + template.attack + ' | AC: ' + enemyAC(template), 'combat-info');
   print('');
   print("Commands: attack, use [item], cast [spell], flee", 'text-dim');
   printLine();
@@ -236,12 +238,13 @@ function handleCombatCommand(input) {
   if (cmd === 'attack' || cmd === 'hit' || cmd === 'fight' || cmd === 'a' || isUnarmedVerb) {
     const info = weaponInfo(isUnarmedVerb ? cmd : null);
 
-    // The mob reads repetition - the same move too many times running gets learnt.
+    // The mob reads repetition - the same move LANDING too many times
+    // running gets learnt. Misses teach it nothing, and a slip resets the
+    // lesson, so adaptation nudges variety instead of locking a verb out.
     GS.combatMemory = GS.combatMemory || {};
     const verbKey = isUnarmedVerb ? cmd : 'strike';
     for (const k of Object.keys(GS.combatMemory)) if (k !== verbKey) GS.combatMemory[k] = 0;
-    GS.combatMemory[verbKey] = (GS.combatMemory[verbKey] || 0) + 1;
-    const reps = GS.combatMemory[verbKey];
+    const reps = GS.combatMemory[verbKey] || 0;
 
     // Devotion to a technique carves its own craft.
     if (isUnarmedVerb) {
@@ -251,8 +254,9 @@ function handleCombatCommand(input) {
       if (bucket === 'punchCount' && GS.perks.punchCount >= 8 && !GS.skills.pugilism) gainSkillXP('pugilism', 10);
     }
 
-    if (reps >= 4 && rng(1, 100) <= Math.min(50, (reps - 3) * 15)) {
-      print('The ' + enemy.name + ' has your rhythm now - it slips the ' + (isUnarmedVerb ? cmd : 'blow') + ' entirely.', 'text-amber');
+    if (reps >= 3 && rng(1, 100) <= Math.min(45, (reps - 2) * 15)) {
+      print('The ' + enemy.name + ' has your rhythm now - it slips the ' + (isUnarmedVerb ? cmd : 'blow') + ' entirely. Vary your attacks.', 'text-amber');
+      GS.combatMemory[verbKey] = 0;
       GS.perks.firstStrikeDone = true;
       enemyTurn();
       updatePanels();
@@ -268,6 +272,7 @@ function handleCombatCommand(input) {
         'A miss, close enough to feel the heat of almost.',
       ];
       print('&rsaquo; ' + missLines[rng(0, missLines.length - 1)], 'you-line you-miss');
+      gainSkillXP(info.skill, 2); // a miss still teaches the hands something
       GS.perks.firstStrikeDone = true;
       enemyTurn();
       updatePanels();
@@ -281,9 +286,10 @@ function handleCombatCommand(input) {
     }
     if (enemy.undead && GS.class === 'cleric') bonusDmg += 3; // radiant edge
 
-    let dmg = info.base + statMod(GS.stats[info.stat]) + Math.floor(skillLv(info.skill) / 5)
+    let dmg = info.base + statMod(GS.stats[info.stat]) + Math.floor(skillLv(info.skill) / 4)
       + bonusDmg + (GS.perks.flatDamage || 0) + (GS.perks.reaverStacks || 0) + GS.tempAttackBonus + rng(0, 2);
     dmg = Math.max(1, dmg);
+    GS.combatMemory[verbKey] = reps + 1;
 
     if (enemy.physicalResist && !(GS.equipped.weapon && ITEMS[GS.equipped.weapon] && ITEMS[GS.equipped.weapon].undeadBonus)) {
       dmg = Math.max(1, Math.floor(dmg / 3));
