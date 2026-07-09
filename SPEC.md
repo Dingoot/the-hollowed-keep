@@ -41,6 +41,12 @@ _(Filled in as systems are touched. When a change involves an existing mechanic,
 - Enemy move tables live in `data/enemies.js` (`moves: [{type, weight, telegraph}]`); each enemy's mix expresses its character (armour = heavy/guard wall; ghoul = reckless hunger; skeleton = drilled guard the knight tells you to feint).
 - Enemy HP retuned ~30% down across the board (rats 12, hound 22, skeleton 32, armour 40, spider 26, ghoul 40, wraith 48, shadow knight 64, Steward 115) so read fights run ~4–10 turns. Verified by simulation: spam still beats early enemies (slower, bloodier); deep enemies effectively require reading (shadow knight: 1% spam vs 72% reactive at test level).
 
+### Attack styles, aimed shots, damage kinds
+- **Weapon styles** (`WEAPON_STYLES` in combat.js): a weapon family offers named attacks, each with a damage **kind** (slash/pierce/blunt). Swords: slash/slice/cut (slash), stab/thrust (pierce), pommel (blunt). Daggers: stab default + slash. Axes: chop/cleave/hack (slash). Maces: bash/smash/crush (blunt). `attack` uses the family default. Unarmed punch/kick = blunt. Each style verb tracks separately for the adaptation system, so mixing styles avoids the "reads your rhythm" slip.
+- **Ranged** (crossbows/bows): `shoot` (or `fire`/`aim`), with an aim: `shoot head` (-4 to hit, ×1.75 damage — a gamble), `shoot legs` (×0.6 damage, but cripples a flesh-and-blood foe: it loses its next move ONCE per fight, then shields the wound — no leg-lock loop), `shoot` = body. Requires the weapon's ammo in inventory (crossbow → bolts; possession checked, not consumed).
+- **Damage kinds vs enemy `damageProfile`** (in enemies.js, e.g. skeleton `{slash:0.8, pierce:0.5, blunt:1.5}`): incoming damage of each kind is multiplied by the profile. A resist (≤0.7) or weakness (≥1.3) prints a one-time note per kind per enemy, teaching the matchup without nagging. Signature matchups: skeletons shrug off pierce and hate blunt; armour resists slash/pierce and dents to blunt; flesh (hound/spider/ghoul/rats) is soft to slash. `canHobble` marks the flesh-and-blood foes that leg shots can cripple.
+- **Enemy attack variety**: each enemy has `attacks: {strike:[...], heavy:[...], reckless:[...]}` — 2-3 lines per move type, picked at random, so the same foe never repeats one attack line. Falls back to the legacy single `attackMsg` if a pool is missing.
+
 ### Combat math (d20)
 - Player attack: `d20 + 4 + stat mod (STR, or DEX for finesse weapons) + skill/3 + remnant to-hit bonus` vs enemy AC `8 + DEF/2`. Natural 20 always hits and crits (double damage). Misses grant a small amount of weapon-skill XP (2; hits grant 5), so whiffing still trains the skill.
 - Player damage: `weapon base (unarmed 2) + stat mod + skill/4 + flat bonuses + rng(0-2)`, min 1.
@@ -72,10 +78,12 @@ _(Only entries added or modified since 2026-07-08 are listed. Anything not liste
 - Search overhaul (see Search above): aimed searching with 104 targets across all rooms, once-per-target with again-lines, finds-based item discovery, Lore XP on written discoveries. Legacy blanket `search`/`searchItems` fields removed.
 - Dialogue overhaul (see Dialogue format & voices above): all NPC dialogue rewritten to per-character voice bibles, beat-rendered speech/action lines, self-introductions in first greetings.
 - Combat intents (see Combat intents above): telegraphs, block/dodge/feint reactions, stagger, momentum, edge; enemy HP retuned down ~30%.
+- Attack styles / aimed shots / damage kinds (see section above): weapon-family attack verbs, ranged aiming, per-enemy damage profiles, varied enemy attack lines.
 
 ## Changelog
 _(Newest on top. One dated line per change; commit messages match these lines.)_
 
+- 2026-07-09 — Attack styles: weapons offer typed attacks (stab/slash/bash, crossbows shoot head/legs), enemies resist or fear slash/pierce/blunt differently, leg shots cripple flesh once per fight, every enemy gained 2-3 varied attack lines per move type.
 - 2026-07-09 — Combat intents: enemies telegraph their next move, block/dodge/feint answer it, staggers and momentum reward reading the fight, enemy HP cut ~30% so fights run 4-10 turns instead of attrition.
 - 2026-07-08 — Dialogue overhaul: every NPC rewritten to a distinct voice, speech and action split onto their own lines (bright quotes vs dim italics), every NPC introduces an addressable name, engine-side NPC lines converted to the same format.
 - 2026-07-08 — Search overhaul: bare search asks what to search and lists the room's targets, every target is named in room prose, items found inside what plausibly holds them, once-per-target with tailored repeat lines, lore XP for written finds, jarring under-the-table transitions narrated.
