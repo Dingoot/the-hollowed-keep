@@ -20,6 +20,12 @@ _(Filled in as systems are touched. When a change involves an existing mechanic,
 - **Room desc updates** (`descUpdates` on a room; first entry whose conditions ALL hold wins; conditions: `enemiesCleared`, `questDone`, `hearthLit`, `itemGone`, `hiddenExitRevealed`): armory (armour destroyed), throne of shadows (Steward defeated), cell block (thief freed), kitchen (hearth lit / lantern taken), great hall + library (hearth lit), reading nook (passage open).
 - **Well rope**: `GS.flags.wellRopeTied` persists the courtyard↔river exits through save/load, and `examine well` acknowledges the tied rope.
 
+### Dialogue format & voices
+- **Beat rendering**: dialogue is written with speech in DOUBLE quotes; everything outside them is action. The engine (`printNpcBeats` in ui.js) renders each beat on its own line — actions in dim italic, speech bright cyan in typographic quotes. Never mix speech and action on one line. Attributions ("he says") are avoided; write full-sentence beats. A lint checks every dialogue string has an even number of `"`.
+- Dialogue strings in `data/npcs.js` use backticks (template literals) so quotes need no escaping — this is the one place backtick strings are the convention.
+- **Self-introduction rule**: every NPC's first greeting introduces a name the player can address them by (Porter, Wick, Knight, Cedric/Scribe, Wren, Guardian, Alchemist, Bartholomew/Merchant, Talking Skull, Spirit).
+- **Voice bible** (keep these consistent): Porter — immaculate clerk, measured, formally kind, sorry about everything exactly once. Wick — small earnest lantern-ghost, third person, short sentences, loves fire; occasionally a sentence belonging to someone else escapes the lantern and Wick owns up to it. Knight — dry soldier, deadpan gallows humour, deals in practicalities. Cedric — pedant with a cause; documentation is the only working immortality. Wren — charm as a lockpick; everything is a negotiation, nothing personal. Guardian — liturgical, grave, kind underneath. Alchemist — delighted empiricist, no sense of danger, everything is data. Bartholomew — warm salesman patter; death was a change of premises; never audits a miracle. Skull — sardonic and lonely; every insult is an invitation to stay. Spirit — ALL CAPS bedrock; vast, deliberate, courteous; words cost it effort.
+
 ### NPC conversations
 - `talk [person]` engages that NPC (`GS.conversationWith`, saved with the game). While engaged, `ask [topic]` always goes to them — never to whoever happens to be first in the room. `topics` re-lists their topics. `goodbye`/`bye`/`farewell` ends the conversation (NPCs may have a custom `farewell` line); walking to another room, using the well rope, or entering combat ends it implicitly.
 - `talk` with no name: engages the only NPC present, re-greets your current partner, or asks "Talk to whom?" if several are present. `ask [person] about [topic]` switches partners. Topic matching strips articles and accepts close matches (≥3 chars).
@@ -55,10 +61,12 @@ _(Only entries added or modified since 2026-07-08 are listed. Anything not liste
 - Mobile: tapping Status/Chronicle now hides the game panel (single-column layout was pushing side panels below the viewport).
 - Continuity pass (see Continuity above): return/death greetings, unmet-name handling, description aliases for every NPC, room descs that update with events, well-rope persistence.
 - Search overhaul (see Search above): aimed searching with 104 targets across all rooms, once-per-target with again-lines, finds-based item discovery, Lore XP on written discoveries. Legacy blanket `search`/`searchItems` fields removed.
+- Dialogue overhaul (see Dialogue format & voices above): all NPC dialogue rewritten to per-character voice bibles, beat-rendered speech/action lines, self-introductions in first greetings.
 
 ## Changelog
 _(Newest on top. One dated line per change; commit messages match these lines.)_
 
+- 2026-07-08 — Dialogue overhaul: every NPC rewritten to a distinct voice, speech and action split onto their own lines (bright quotes vs dim italics), every NPC introduces an addressable name, engine-side NPC lines converted to the same format.
 - 2026-07-08 — Search overhaul: bare search asks what to search and lists the room's targets, every target is named in room prose, items found inside what plausibly holds them, once-per-target with tailored repeat lines, lore XP for written finds, jarring under-the-table transitions narrated.
 - 2026-07-08 — Continuity pass: return greetings for every NPC, after-death lines for Porter/Wick/Skull, names shown only once learned, description aliases (talk to the merchant as "portly figure"), room descs update after kills/quests/hearths/taken items, well rope survives save/load.
 - 2026-07-08 — Mobile fix: Status/Chronicle tabs hide the game panel so the side panels actually appear on-screen.

@@ -228,17 +228,17 @@ function doAnswer(args) {
   if (room.npcs.includes('spectral_guardian')) {
     const guardian = NPCS.spectral_guardian;
     if (GS.flags.riddleSolved) {
-      print("The guardian nods. 'You have already answered correctly.'", 'npc-speech');
+      print(`The Guardian inclines its head. "You have already answered truly. The chapel does not forget - and neither, seeker, do I."`, 'npc-speech');
       return;
     }
     if (args.toLowerCase().includes(guardian.riddleAnswer)) {
-      print("The guardian's stern expression softens. 'Correct. The simplest answers are often the truest.' The silver dagger materializes in your hands, cold and thrumming with power.", 'npc-speech');
+      print(`The stern light softens - the nearest thing to a smile the armour allows. "Truly answered. The simplest answers were always the truest." The Guardian opens one gauntleted hand, and the Silver Dagger materializes across your palms, cold and thrumming with its last blessing. "Carry it below. It remembers what it is for."`, 'npc-speech');
       GS.inventory.push(guardian.riddleReward);
       GS.itemsFound++;
       print('Obtained: ' + ITEMS[guardian.riddleReward].name, 'text-amber');
       GS.flags.riddleSolved = true;
     } else {
-      print("The guardian shakes its head. 'Incorrect. Think carefully. I have cities, but no houses. Mountains, but no trees...'", 'npc-speech');
+      print(`The Guardian is unmoved, and unhurried. "No. Think again, seeker - the answer is a humble thing. I have cities, but no houses. Mountains, but no trees." A pause. "Truth rarely announces itself."`, 'npc-speech');
     }
     return;
   }

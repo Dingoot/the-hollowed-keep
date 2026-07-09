@@ -532,8 +532,12 @@ body {
 /* === Playtest round 3 === */
 .panel-title { display: flex; justify-content: space-between; align-items: baseline; }
 .title-val { color: var(--green); font-size: 1em; letter-spacing: 0; }
-.npc-act { color: var(--cyan); font-weight: 700; }
-.npc-act .npc-say { color: var(--cyan); font-weight: 400; }
+/* Dialogue beats: actions recede, speech carries. */
+.line.npc-act { color: var(--text-dim); font-style: italic; padding-left: 14px; }
+.line.npc-say { color: var(--cyan); padding-left: 14px; }
+/* Legacy inline-format lines */
+.npc-act { color: var(--text-dim); font-style: italic; }
+.npc-act .npc-say { color: var(--cyan); font-style: normal; }
 
 /* === Playtest round 4 === */
 .you-line { color: #d9f7d9; }
