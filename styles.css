@@ -532,6 +532,9 @@ body {
 /* === Playtest round 3 === */
 .panel-title { display: flex; justify-content: space-between; align-items: baseline; }
 .title-val { color: var(--green); font-size: 1em; letter-spacing: 0; }
+/* Enemy intent telegraphs: the line you read before you choose. */
+.combat-intent { color: var(--amber); font-style: italic; }
+
 /* Dialogue beats: actions recede, speech carries. */
 .line.npc-act { color: var(--text-dim); font-style: italic; padding-left: 14px; }
 .line.npc-say { color: var(--cyan); padding-left: 14px; }

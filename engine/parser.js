@@ -64,6 +64,9 @@ function parseCommand(raw) {
     case 'attack': case 'fight': case 'kill': case 'hit':
     case 'punch': case 'kick': case 'shove': case 'slap': case 'headbutt': doAttack(args); break;
     case 'tackle': case 'grapple': doTackleCommand(args); break;
+    case 'block': case 'brace': case 'parry': doBlock(); break;
+    case 'dodge': case 'duck': case 'evade': doDodge(); break;
+    case 'feint': doFeint(); break;
     case 'throw': case 'hurl': case 'toss': doThrow(args); break;
     case 'talk': case 'speak': case 'approach': case 'greet': doTalk(args); break;
     case 'ask': doAsk(args); break;
