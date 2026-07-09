@@ -19,7 +19,6 @@ const defaultState = () => ({
   perks: {},
   litHearths: [],
   lastHearth: null,
-  searchedRooms: [],
   chronicleLog: [],
   enteredFrom: {},
   runeMessages: [
@@ -83,7 +82,7 @@ function initRoomStates() {
       items: room.items ? [...room.items] : [],
       enemies: room.enemies ? [...room.enemies] : [],
       visited: false,
-      searched: false,
+      searchedTargets: [],
       hiddenExitRevealed: room.hiddenExitRevealed || false,
     };
   }

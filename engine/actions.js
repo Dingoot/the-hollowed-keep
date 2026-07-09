@@ -172,6 +172,20 @@ function doUse(args) {
 
 // === SEARCH, PUSH, READ ===
 
+// Searching is aimed, not blanket: every room lists what invites a look
+// (its searchTargets - nouns from the room's own prose). Each target is
+// searched once; what it holds ('finds') surfaces then. Bare 'search'
+// asks you to choose.
+function targetEntry(v) { return typeof v === 'string' ? { text: v } : (v || {}); }
+
+function roomHasUnclaimedFinds(roomId) {
+  const room = ROOMS[roomId];
+  const rs = roomStates[roomId];
+  const done = rs.searchedTargets || [];
+  return Object.entries(room.searchTargets || {}).some(([k, v]) =>
+    (targetEntry(v).finds || []).length > 0 && !done.includes(k));
+}
+
 function doSearch(args) {
   const room = ROOMS[GS.currentRoom];
   const rs = roomStates[GS.currentRoom];
@@ -181,41 +195,49 @@ function doSearch(args) {
     return;
   }
 
-  // Search a specific thing: "search table", "search fountain".
-  if (args) {
-    const target = args.replace(/^(the|a|an)\s+/, '').trim();
-    if (room.searchTargets) {
-      const key = Object.keys(room.searchTargets).find(k => target.includes(k) || k.includes(target));
-      if (key) { print(room.searchTargets[key], 'text-white'); return; }
+  const targets = room.searchTargets || {};
+  const keys = Object.keys(targets);
+  rs.searchedTargets = rs.searchedTargets || [];
+
+  if (!args) {
+    if (keys.length === 0) {
+      print('You cast about, but nothing here invites a closer look.', 'text-dim');
+      return;
     }
-    if ((room.desc + ' ' + (room.search || '')).toLowerCase().includes(target)) {
-      print('You go over the ' + target + ' carefully, but its secrets - if it keeps any - stay kept for now.', 'text-dim');
+    print('You take the room in, considering where to begin.', 'text-dim');
+    const listed = keys.map(k => 'the ' + k).join(', ');
+    if (keys.every(k => rs.searchedTargets.includes(k))) {
+      keepSays('Everything here has been picked over: ' + listed + '. The Keep admires thoroughness, within reason.');
     } else {
-      print("There's no " + target + ' here worth the searching.', 'text-dim');
+      keepSays('Curiosity is billed by the object. Name it: ' + listed + '.');
     }
     return;
   }
 
-  if (!GS.searchedRooms.includes(GS.currentRoom)) GS.searchedRooms.push(GS.currentRoom);
-
-  if (room.search) {
-    print(room.search, 'text-white');
-    if (room.searchItems && !rs.searched) {
-      for (const id of room.searchItems) {
-        if (ITEMS[id]) {
-          rs.items.push(id);
-          print('Found: ' + ITEMS[id].name, 'text-amber');
-        }
+  const target = args.replace(/^(the|a|an)\s+/, '').trim();
+  const key = keys.find(k => k === target) || keys.find(k => target.includes(k) || k.includes(target));
+  if (key) {
+    const t = targetEntry(targets[key]);
+    if (rs.searchedTargets.includes(key)) {
+      print(t.again || ('You have been over the ' + key + ' already. It offers nothing further, and manages to seem pointed about it.'), 'text-dim');
+      return;
+    }
+    rs.searchedTargets.push(key);
+    print(t.text, 'text-white');
+    for (const id of t.finds || []) {
+      if (ITEMS[id]) {
+        rs.items.push(id);
+        print('Found: ' + ITEMS[id].name, 'text-amber');
       }
     }
-    if (rs.items.length > 0) {
-      print('');
-      print('Within reach: ' + rs.items.filter(id => ITEMS[id]).map(id => ITEMS[id].name.toLowerCase()).join(', ') + '.', 'text-amber');
-    }
-    rs.searched = true;
+    if (t.loreXP) gainSkillXP('lore', t.loreXP);
+    return;
+  }
+
+  if (roomDesc(GS.currentRoom).toLowerCase().includes(target)) {
+    print('You go over the ' + target + ' carefully, but its secrets - if it keeps any - stay kept for now.', 'text-dim');
   } else {
-    print("You search the area thoroughly but find nothing of note.", 'text-dim');
-    rs.searched = true;
+    print("There's no " + target + ' here worth the searching.', 'text-dim');
   }
 }
 
@@ -613,7 +635,7 @@ function doHelp() {
   print('EXPLORATION', 'text-amber');
   print('  look (l)        - Describe current room', 'text-green');
   print('  examine (x) [thing] - Examine something closely', 'text-green');
-  print('  search           - Search the room thoroughly', 'text-green');
+  print("  search [thing]   - Search something specific ('search' alone lists what invites a look)", 'text-green');
   print('  map (m)          - Show explored areas', 'text-green');
   print('  skills           - What the hollow holds', 'text-green');
   print('  stats            - The vessel: blood, remnant, stats', 'text-green');
