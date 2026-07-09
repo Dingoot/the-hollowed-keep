@@ -3,7 +3,7 @@
 function doTake(args) {
   // Some things are spoken for.
   if (GS.currentRoom === 'gatehouse' && /ledger/.test(args || '')) {
-    print("'That stays with me.' The Porter has not moved, has not looked up, and is somehow already between you and the table. 'It is the only copy. There is a waiting list.'", 'npc-speech');
+    print(`"That stays with me." The Porter has not moved, has not looked up, and is somehow already between you and the table. "It is the only copy. There is a waiting list."`, 'npc-speech');
     return;
   }
 
@@ -610,18 +610,18 @@ function doBrew() {
     GS.inventory = GS.inventory.filter(i => i !== 'healing_herb' && i !== 'holy_water');
     GS.inventory.push('antidote');
     GS.itemsFound++;
-    print("The alchemist combines the moonpetal and holy water with practiced hands. The mixture fizzes, turns green, then settles. 'An Antidote of Warding. Cures shadow corruption. You'll want that where you're going.'", 'npc-speech');
+    print(`The Alchemist combines the moonpetal and holy water with hands that are suddenly, briefly, completely steady. The mixture fizzes, turns green, then settles. "An Antidote of Warding. Purges shadow corruption." The vial is pressed into your hands. "You will WANT that where you're going. Try to want it before you need it."`, 'npc-speech');
     print('Obtained: Antidote', 'text-amber');
     gainSkillXP('brewing', 15);
   } else if (hasItem('healing_herb') && hasItem('empty_vial')) {
     GS.inventory = GS.inventory.filter(i => i !== 'healing_herb' && i !== 'empty_vial');
     GS.inventory.push('healing_potion');
     GS.itemsFound++;
-    print("The alchemist crushes the moonpetal into the vial and adds a catalyst. 'Simple but effective. A healing draught.'", 'npc-speech');
+    print(`The Alchemist crushes the moonpetal into the vial, adds a pinch of something from an unlabeled jar, and swirls. "A healing draught. Simple, honest work." A sniff. "My least interesting product, and my most popular. There is a lesson in that I refuse to learn."`, 'npc-speech');
     print('Obtained: Healing Potion', 'text-amber');
     gainSkillXP('brewing', 12);
   } else {
-    print("'Bring me ingredients! Moonpetal and holy water for an antidote. Moonpetal and an empty vial for a healing potion.'", 'npc-speech');
+    print(`"Ingredients, ingredients!" The Alchemist waves an empty retort at you, hopefully. "Moonpetal and holy water for the antidote. Moonpetal and an empty vial for a healing draught. The garden grows the moonpetal, the chapel keeps the water, and I supply the genius. Division of labour."`, 'npc-speech');
   }
 }
 
