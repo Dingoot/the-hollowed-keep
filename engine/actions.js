@@ -123,6 +123,16 @@ function doUse(args) {
     return;
   }
 
+  if (id === 'minor_healing_tome') {
+    const knightHere = (ROOMS[GS.currentRoom].npcs || []).includes('wounded_knight') && !GS.completedQuests.includes('heal_knight');
+    if (knightHere) { doGive('minor healing tome'); return; }
+    if (GS.hp >= GS.maxHp) { print("You are whole enough. The tome's one mending is worth more spent on someone who is not.", 'text-dim'); return; }
+    GS.hp = Math.min(GS.maxHp, GS.hp + 25);
+    GS.inventory.splice(idx, 1);
+    print('You read the mending-cant aloud. The words go warm in your mouth and the worst of your hurts knit closed. The page comes away blank - one use, as promised. (+25 HP)', 'combat-heal');
+    return;
+  }
+
   if (id === 'rope' && GS.currentRoom === 'main_courtyard') {
     endConversation();
     print('You tie the rope to the well\'s crossbar and lower yourself down into the darkness...', 'text-amber');
@@ -528,7 +538,7 @@ function doHint() {
   if (!hasLight() && GS.visitedRooms.includes('gatehouse')) hints.push("You'll need a light source for dark areas. Check the gatehouse or kitchen.");
   if (!GS.equipped.weapon) hints.push('Find a weapon before engaging enemies. The training yard might have something.');
   if (GS.questLog.length === 0) hints.push('Talk to the people you meet. They may need help - and help you in return.');
-  if (GS.questLog.includes('heal_knight') && !GS.completedQuests.includes('heal_knight')) hints.push('The wounded knight needs a healing potion. Check the pantry.');
+  if (GS.questLog.includes('heal_knight') && !GS.completedQuests.includes('heal_knight')) hints.push('The wounded knight needs mending. The Porter pressed a healing tome on you at the gate - use it on him. A healing potion from the pantry would serve too.');
   if (GS.questLog.includes('free_thief') && !GS.completedQuests.includes('free_thief')) hints.push('The thief needs a key. There should be one in the gatehouse.');
   if (!GS.flags.hiddenPassageFound && GS.visitedRooms.includes('reading_nook')) hints.push("The reading nook has a peculiar red-bound book. Try pushing it.");
   if (GS.visitedRooms.includes('rune_chamber') && !GS.flags.runesSolved) hints.push('The rune chamber pattern matches the star charts from the observatory.');

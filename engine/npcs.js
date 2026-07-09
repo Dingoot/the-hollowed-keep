@@ -150,6 +150,17 @@ function doTalk(args) {
   markMet(npcId);
   print(greeting, 'npc-speech');
   trackSkullTalk(npcId);
+
+  // Some NPCs press a gift on you the first time you speak - once, ever.
+  if (npc.givesOnFirstMeet && !GS.flags['gift_' + npcId]) {
+    GS.flags['gift_' + npcId] = true;
+    const giftId = npc.givesOnFirstMeet;
+    if (!hasItem(giftId)) { GS.inventory.push(giftId); GS.itemsFound++; }
+    print('');
+    if (npc.giftText) print(npc.giftText, 'npc-speech');
+    print('Received: ' + ITEMS[giftId].name, 'text-amber');
+  }
+
   if (npc.topics) {
     print('');
     print('Topics: ' + Object.keys(npcTopics(npc, npcId)).join(', '), 'text-dim');
@@ -257,10 +268,20 @@ function doGive(args) {
     const npc = NPCS[npcId];
     if (!npc.quest || questDone(npc)) continue;
 
-    const req = Array.isArray(npc.quest.requires) ? npc.quest.requires : [npc.quest.requires];
-    if (!req.every(id => hasItem(id))) continue;
+    // requiresAny: any ONE of the listed items satisfies it (and only that
+    // one is consumed). requires: needs ALL listed items.
+    let consume;
+    if (npc.quest.requiresAny) {
+      const have = npc.quest.requiresAny.find(id => hasItem(id));
+      if (!have) continue;
+      consume = [have];
+    } else {
+      const req = Array.isArray(npc.quest.requires) ? npc.quest.requires : [npc.quest.requires];
+      if (!req.every(id => hasItem(id))) continue;
+      consume = req;
+    }
 
-    GS.inventory = GS.inventory.filter(i => !req.includes(i));
+    GS.inventory = GS.inventory.filter(i => !consume.includes(i));
     GS.completedQuests.push(npc.quest.id);
     print(npc.quest.onComplete, 'npc-speech');
     if (npc.quest.reward) {

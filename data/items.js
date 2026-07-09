@@ -14,6 +14,7 @@ const ITEMS = {
   shield: { name: "Iron Shield", desc: "A battered but solid iron shield bearing the faded emblem of the Keep's guard.", type: "armor", defense: 2, equippable: true, slot: "offhand" },
   healing_potion: { name: "Healing Potion", desc: "A vial of luminous red liquid that smells of herbs and honey. Restores vitality.", type: "consumable", healing: 40 },
   healing_herb: { name: "Moonpetal", desc: "A pale flower that glows faintly in darkness. Known for its healing and purifying properties.", type: "ingredient" },
+  minor_healing_tome: { name: "Minor Healing Tome", desc: "A slim vellum book, its single page inked with a mending-cant that reads itself faintly warm to the touch. One use in it, no more. The Porter implied it was meant for someone worse off than you.", type: "quest" },
   holy_water: { name: "Holy Water", desc: "Water from the chapel font, blessed by whatever saints once watched over this place. Burns the unholy.", type: "consumable", damage: 30, undeadOnly: true },
   antidote: { name: "Antidote", desc: "A bitter green tincture that purges poison and corruption from the body.", type: "consumable", curesPoison: true },
   strength_elixir: { name: "Strength Elixir", desc: "A shimmering golden liquid. Temporarily enhances physical power.", type: "consumable", tempAttack: 5, duration: 3 },
