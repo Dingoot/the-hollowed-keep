@@ -203,22 +203,58 @@ function porterFlick() {
   playerDeath('the Porter');
 }
 
+// - Intents: the enemy telegraphs its next move, and reading it is the
+// game. strike = normal blow (block halves, dodge may avoid). heavy =
+// big telegraphed hit (BLOCK negates it and staggers them; dodging works
+// too). guard = a set defence (attacks mostly bounce; FEINT breaks it).
+// reckless = an opening (hit it hard). A staggered enemy loses its turn
+// and takes worse from everything.
+const DEFAULT_MOVES = [
+  { type: 'strike', weight: 3, telegraph: 'It shifts its weight, watching for an opening.' },
+  { type: 'heavy', weight: 1, telegraph: 'It gathers itself for one heavy blow.' },
+];
+
+function chooseEnemyMove(enemy) {
+  const moves = enemy.moves || DEFAULT_MOVES;
+  const total = moves.reduce((s, m) => s + m.weight, 0);
+  let r = rng(1, total);
+  for (const m of moves) {
+    r -= m.weight;
+    if (r <= 0) { enemy.nextMove = m; return; }
+  }
+  enemy.nextMove = moves[0];
+}
+
+function printIntent(enemy) {
+  if (!enemy || enemy.hp <= 0 || !GS.inCombat) return;
+  if ((enemy.staggerTurns || 0) > 0) {
+    print('&#9656; It reels, guard in pieces - strike now.', 'combat-intent', 400);
+    return;
+  }
+  print('&#9656; ' + enemy.nextMove.telegraph, 'combat-intent', 400);
+}
+
 function startCombat(enemyId) {
   endConversation(true); // violence outranks small talk
   GS.currentEnemyId = enemyId;
   GS.combatMemory = {};
+  GS.momentum = 0;
+  GS.edge = 0;
+  GS.reaction = null;
   GS.perks.firstStrikeDone = false;
   GS.perks.undeadHesitated = false;
   const template = ENEMIES[enemyId];
   GS.inCombat = true;
-  GS.currentEnemy = { ...template, id: enemyId, hp: template.hp };
+  GS.currentEnemy = { ...template, id: enemyId, hp: template.hp, staggerTurns: 0 };
   printLine();
   print('COMBAT: ' + template.name, 'text-red text-bold');
   print(template.desc, 'text-white');
   print('HP: ' + template.hp + '/' + template.maxHp + ' | ATK: ' + template.attack + ' | AC: ' + enemyAC(template), 'combat-info');
   print('');
-  print("Commands: attack, use [item], cast [spell], flee", 'text-dim');
+  print('Commands: attack (punch, kick...), block, dodge, feint, tackle, use [item], flee', 'text-dim');
   printLine();
+  chooseEnemyMove(GS.currentEnemy);
+  printIntent(GS.currentEnemy);
 }
 
 function handleCombatCommand(input) {
@@ -263,16 +299,31 @@ function handleCombatCommand(input) {
       return;
     }
 
+    // The situation is half the roll: pins, staggers, openings, and set
+    // guards all move the odds - reading the telegraph pays here.
+    const mv = enemy.nextMove || {};
+    const staggered = (enemy.staggerTurns || 0) > 0;
+    let situBonus = (enemy.pinnedTurns || 0) > 0 ? 4 : 0;
+    if (staggered) situBonus += 4;
+    if (!staggered && mv.type === 'reckless') situBonus += 3;
+    if (!staggered && mv.type === 'guard') situBonus -= 4;
+    situBonus += GS.edge || 0;
+    GS.edge = 0;
+
     const roll = rng(1, 20);
-    const pinnedBonus = (enemy.pinnedTurns || 0) > 0 ? 4 : 0;
-    if (roll !== 20 && roll + playerHitBonus(info) + pinnedBonus < enemyAC(enemy)) {
-      const missLines = [
-        'Your ' + (isUnarmedVerb ? cmd : 'strike') + ' finds only the space it just left.',
-        'It shifts - your blow skates wide.',
-        'A miss, close enough to feel the heat of almost.',
-      ];
-      print('&rsaquo; ' + missLines[rng(0, missLines.length - 1)], 'you-line you-miss');
+    if (roll !== 20 && roll + playerHitBonus(info) + situBonus < enemyAC(enemy)) {
+      if (!staggered && mv.type === 'guard') {
+        print('&rsaquo; Your blow meets the parry it was waiting for. (A feint would open that stance.)', 'you-line you-miss');
+      } else {
+        const missLines = [
+          'Your ' + (isUnarmedVerb ? cmd : 'strike') + ' finds only the space it just left.',
+          'It shifts - your blow skates wide.',
+          'A miss, close enough to feel the heat of almost.',
+        ];
+        print('&rsaquo; ' + missLines[rng(0, missLines.length - 1)], 'you-line you-miss');
+      }
       gainSkillXP(info.skill, 2); // a miss still teaches the hands something
+      GS.momentum = 0;
       GS.perks.firstStrikeDone = true;
       enemyTurn();
       updatePanels();
@@ -287,7 +338,9 @@ function handleCombatCommand(input) {
     if (enemy.undead && GS.class === 'cleric') bonusDmg += 3; // radiant edge
 
     let dmg = info.base + statMod(GS.stats[info.stat]) + Math.floor(skillLv(info.skill) / 4)
-      + bonusDmg + (GS.perks.flatDamage || 0) + (GS.perks.reaverStacks || 0) + GS.tempAttackBonus + rng(0, 2);
+      + bonusDmg + (GS.perks.flatDamage || 0) + (GS.perks.reaverStacks || 0) + GS.tempAttackBonus + rng(0, 2)
+      + Math.min(3, GS.momentum);
+    if (!staggered && mv.type === 'reckless') dmg += 2;
     dmg = Math.max(1, dmg);
     GS.combatMemory[verbKey] = reps + 1;
 
@@ -299,6 +352,7 @@ function handleCombatCommand(input) {
       dmg = Math.max(1, Math.floor(dmg / 2));
       print('Shadow drinks half the force of the blow - you need warding.', 'text-amber');
     }
+    if (staggered) { dmg = Math.floor(dmg * 1.5); print('&rsaquo; It cannot answer - you strike at your leisure.', 'text-cyan'); }
     if (roll === 20) { dmg *= 2; print('&rsaquo; A perfect opening - critical hit, double damage.', 'text-cyan'); }
     if (GS.class === 'rogue' && !GS.perks.firstStrikeDone) {
       dmg *= 2;
@@ -306,6 +360,8 @@ function handleCombatCommand(input) {
     }
     GS.perks.firstStrikeDone = true;
     enemy.hp -= dmg;
+    GS.momentum++;
+    if (GS.momentum === 3) print('You have its rhythm - your blows land heavier while the streak holds.', 'text-cyan');
     if (GS.companion === 'feral_hound' && enemy.hp > 0 && rng(1, 5) === 1) {
       enemy.hp -= 3;
       print('The hound darts in low and worries at it. (+3 damage)', 'text-cyan');
@@ -385,6 +441,12 @@ function handleCombatCommand(input) {
       enemyTurn();
     }
 
+  } else if (cmd === 'block' || cmd === 'brace' || cmd === 'parry' || cmd === 'guard') {
+    doBlock(); return;
+  } else if (cmd === 'dodge' || cmd === 'duck' || cmd === 'evade' || cmd === 'sidestep') {
+    doDodge(); return;
+  } else if (cmd === 'feint') {
+    doFeint(); return;
   } else if (cmd === 'tackle' || cmd === 'grapple' || cmd === 'pin') {
     doTackle(); return;
   } else if (cmd === 'soothe' || cmd === 'calm' || cmd === 'comfort' || cmd === 'tame') {
@@ -401,24 +463,58 @@ function handleCombatCommand(input) {
   } else if (cmd === 'look' || cmd === 'l') {
     print(enemy.name + ' - HP: ' + enemy.hp + '/' + enemy.maxHp, 'combat-info');
     print('Your HP: ' + GS.hp + '/' + GS.maxHp, 'combat-info');
+    printIntent(enemy);
 
   } else {
-    print("In combat: attack, use [item], cast [spell], flee, look", 'text-dim');
+    print("In combat: attack, block, dodge, feint, tackle, use [item], cast [spell], flee, look", 'text-dim');
   }
 
   updatePanels();
 }
 
+// - Reactions: spend your turn answering the telegraph instead of hitting -
+function reactionSkill() { return weaponInfo(GS.equipped.weapon ? null : 'punch').skill; }
+
+function doBlock() {
+  if (!GS.inCombat || !GS.currentEnemy) { print('You raise your guard against the empty air. The air, wisely, backs off.', 'text-dim'); return; }
+  print('&rsaquo; You plant your feet and set your guard.', 'you-line');
+  GS.reaction = 'block';
+  gainSkillXP(reactionSkill(), 2);
+  enemyTurn();
+  updatePanels();
+}
+
+function doDodge() {
+  if (!GS.inCombat || !GS.currentEnemy) { print('You weave smartly away from nothing at all. The Keep declines to comment.', 'text-dim'); return; }
+  print('&rsaquo; You stay light on your feet, ready to move.', 'you-line');
+  GS.reaction = 'dodge';
+  gainSkillXP(reactionSkill(), 2);
+  enemyTurn();
+  updatePanels();
+}
+
+function doFeint() {
+  if (!GS.inCombat || !GS.currentEnemy) { print('You feint at the shadows. Somewhere, the shadows take notes.', 'text-dim'); return; }
+  print('&rsaquo; You sell a strike you never mean to finish.', 'you-line');
+  GS.reaction = 'feint';
+  GS.combatMemory = {}; // breaking your own pattern resets what it has learnt
+  gainSkillXP(reactionSkill(), 2);
+  enemyTurn();
+  updatePanels();
+}
+
 function enemyTurn() {
   const enemy = GS.currentEnemy;
+  if (!enemy) return;
+  const reaction = GS.reaction;
+  GS.reaction = null;
+  enemyAct(enemy, reaction);
+  if (!GS.inCombat || !GS.currentEnemy || GS.awaitingDeath || enemy.hp <= 0) return;
+  chooseEnemyMove(enemy);
+  printIntent(enemy);
+}
 
-  // Underfoot Luck: one blow in ten parts the air instead. (Halfling)
-  if (GS.race === 'halfling' && rng(1, 10) === 1) {
-    print(enemy.attackMsg, 'combat-hit');
-    print('The blow parts the air where you almost were. Underfoot luck.', 'text-cyan');
-    return;
-  }
-
+function enemyAct(enemy, reaction) {
   if (GS.class === 'grave_speaker' && enemy.undead && !GS.perks.undeadHesitated) {
     GS.perks.undeadHesitated = true;
     print('The ' + enemy.name + ' hesitates. The dead do not strike a Speaker first.', 'text-cyan');
@@ -439,17 +535,80 @@ function enemyTurn() {
     return;
   }
 
+  if ((enemy.staggerTurns || 0) > 0) {
+    enemy.staggerTurns--;
+    print('The ' + enemy.name + ' flounders, fighting to recover its footing.', 'text-amber');
+    return;
+  }
+
+  const mv = enemy.nextMove || { type: 'strike' };
+
+  if (mv.type === 'guard') {
+    if (reaction === 'feint') {
+      enemy.staggerTurns = 1;
+      print('It commits everything to the parry that never comes - and overbalances, wide open.', 'text-cyan');
+    } else {
+      print('It holds behind its guard, giving nothing away.', 'text-dim');
+    }
+    return;
+  }
+
+  // An attack is coming: strike, heavy, or reckless.
+  const heavy = mv.type === 'heavy';
+  const reckless = mv.type === 'reckless';
+
+  // Underfoot Luck: one blow in ten parts the air instead. (Halfling)
+  if (GS.race === 'halfling' && rng(1, 10) === 1) {
+    print(enemy.attackMsg, 'combat-hit');
+    print('The blow parts the air where you almost were. Underfoot luck.', 'text-cyan');
+    return;
+  }
+
+  if (reaction === 'block' && heavy) {
+    enemy.staggerTurns = 1;
+    print(enemy.attackMsg, 'combat-hit');
+    print('You take the whole weight of it on your set guard - the shock rings up your arms, and the follow-through drags it off balance.', 'text-cyan');
+    return;
+  }
+
+  if (reaction === 'dodge') {
+    const dc = heavy ? 10 : 13; // the big ones announce themselves
+    if (rng(1, 20) + statMod(GS.stats.dex) >= dc) {
+      print(enemy.attackMsg, 'combat-hit');
+      if (heavy) {
+        enemy.staggerTurns = 1;
+        print('You slip inside the arc - it hammers the stone where you stood, and the miss costs it dearly.', 'text-cyan');
+      } else {
+        GS.edge = 2;
+        print('You read it and step off the line - the blow finds nothing, and you have the angle now.', 'text-cyan');
+      }
+      return;
+    }
+    print('You guess wrong and move into it.', 'text-red');
+  }
+
   const roll = rng(1, 20);
-  if (roll !== 20 && roll + enemyHitBonus(enemy) < playerAC()) {
+  const hitMod = heavy ? -2 : (reckless ? 2 : 0);
+  if (roll !== 20 && roll + enemyHitBonus(enemy) + hitMod < playerAC()) {
     print(enemy.attackMsg, 'combat-hit');
     print('It misses - your guard holds.', 'text-dim');
     return;
   }
   let enemyDmg = Math.max(1, (enemy.attack || 3) + rng(-2, 2));
+  if (heavy) enemyDmg = Math.floor(enemyDmg * 1.8);
+  if (reckless) enemyDmg += 2;
+  if (reaction === 'block') enemyDmg = Math.max(1, Math.floor(enemyDmg / 2));
   if (roll === 20) enemyDmg = Math.floor(enemyDmg * 1.5);
   GS.hp -= enemyDmg;
-  print(enemy.attackMsg + ' (' + enemyDmg + ' damage)' + (roll === 20 ? ' It found the gap.' : ''), 'combat-hit');
+  GS.momentum = 0;
+  const suffix = reaction === 'block' ? ' Your guard takes the worst of it.' : (roll === 20 ? ' It found the gap.' : '');
+  print(enemy.attackMsg + ' (' + enemyDmg + ' damage' + (heavy ? ' - a heavy blow' : '') + ')' + suffix, 'combat-hit');
   print('', '', 300);
+
+  if (reaction === 'feint') {
+    GS.edge = 2;
+    print('It bought none of your feint - but you sold it the wrong tempo, and you have the angle now.', 'text-dim');
+  }
 
   if (enemy.poisonous && !GS.poisoned && rng(1, 3) === 1) {
     GS.poisoned = true;

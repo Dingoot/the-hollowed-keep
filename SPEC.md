@@ -32,6 +32,15 @@ _(Filled in as systems are touched. When a change involves an existing mechanic,
 - Quest state lives ONLY on GS (`questLog`, `completedQuests`) — never on NPC objects, so it survives save/load. The chapel riddle uses `GS.flags.riddleSolved`.
 - NPC room display: a room's `sight`/`npcIntro` prose plays on first visit only. Afterwards each present NPC shows a `presence` line (`postQuestPresence` once their quest is done; fallback "X is here."). NPCs with `leavesAfterQuest: true` (the thief) vanish from the room — display and interaction — once their quest completes; everyone else stays and can get `postQuestGreeting`/`postQuestTopics` (the Wounded Knight has them).
 
+### Combat intents (the fun layer)
+- Every enemy telegraphs its next move each round (amber italic line). Intent types: **strike** (normal), **heavy** (~1.8× damage, -2 to hit), **guard** (player attacks at -4 vs it; miss prints a feint hint), **reckless** (an opening: player attacks get +3 hit/+2 damage, but its attack gets +2 hit/+2 damage).
+- Reaction verbs spend your turn: **block** (halves strike/reckless; NEGATES a heavy and staggers the enemy), **dodge** (DEX check, DC 10 vs heavy / 13 otherwise; success avoids all — vs heavy also staggers, otherwise grants +2 edge), **feint** (breaks a guard → stagger; vs an attack you take the hit but gain +2 edge; also resets the enemy's adaptation memory).
+- **Stagger**: enemy loses its turn; attacks vs it get +4 hit and 1.5× damage.
+- **Momentum**: consecutive landed hits add +1 damage each (cap +3); resets when you miss or take damage. Announced at 3.
+- **Edge**: one-shot +2 to-hit from good dodges/feints.
+- Enemy move tables live in `data/enemies.js` (`moves: [{type, weight, telegraph}]`); each enemy's mix expresses its character (armour = heavy/guard wall; ghoul = reckless hunger; skeleton = drilled guard the knight tells you to feint).
+- Enemy HP retuned ~30% down across the board (rats 12, hound 22, skeleton 32, armour 40, spider 26, ghoul 40, wraith 48, shadow knight 64, Steward 115) so read fights run ~4–10 turns. Verified by simulation: spam still beats early enemies (slower, bloodier); deep enemies effectively require reading (shadow knight: 1% spam vs 72% reactive at test level).
+
 ### Combat math (d20)
 - Player attack: `d20 + 4 + stat mod (STR, or DEX for finesse weapons) + skill/3 + remnant to-hit bonus` vs enemy AC `8 + DEF/2`. Natural 20 always hits and crits (double damage). Misses grant a small amount of weapon-skill XP (2; hits grant 5), so whiffing still trains the skill.
 - Player damage: `weapon base (unarmed 2) + stat mod + skill/4 + flat bonuses + rng(0-2)`, min 1.
@@ -62,10 +71,12 @@ _(Only entries added or modified since 2026-07-08 are listed. Anything not liste
 - Continuity pass (see Continuity above): return/death greetings, unmet-name handling, description aliases for every NPC, room descs that update with events, well-rope persistence.
 - Search overhaul (see Search above): aimed searching with 104 targets across all rooms, once-per-target with again-lines, finds-based item discovery, Lore XP on written discoveries. Legacy blanket `search`/`searchItems` fields removed.
 - Dialogue overhaul (see Dialogue format & voices above): all NPC dialogue rewritten to per-character voice bibles, beat-rendered speech/action lines, self-introductions in first greetings.
+- Combat intents (see Combat intents above): telegraphs, block/dodge/feint reactions, stagger, momentum, edge; enemy HP retuned down ~30%.
 
 ## Changelog
 _(Newest on top. One dated line per change; commit messages match these lines.)_
 
+- 2026-07-09 — Combat intents: enemies telegraph their next move, block/dodge/feint answer it, staggers and momentum reward reading the fight, enemy HP cut ~30% so fights run 4-10 turns instead of attrition.
 - 2026-07-08 — Dialogue overhaul: every NPC rewritten to a distinct voice, speech and action split onto their own lines (bright quotes vs dim italics), every NPC introduces an addressable name, engine-side NPC lines converted to the same format.
 - 2026-07-08 — Search overhaul: bare search asks what to search and lists the room's targets, every target is named in room prose, items found inside what plausibly holds them, once-per-target with tailored repeat lines, lore XP for written finds, jarring under-the-table transitions narrated.
 - 2026-07-08 — Continuity pass: return greetings for every NPC, after-death lines for Porter/Wick/Skull, names shown only once learned, description aliases (talk to the merchant as "portly figure"), room descs update after kills/quests/hearths/taken items, well rope survives save/load.
