@@ -40,6 +40,31 @@ const ATTACK_FLAVOUR = {
         "The blade bites deep at the shoulder and grates on bone ({dmg} damage).",
       ],
     },
+    slash: {
+      low: ["The edge parts fur and little else - a thin red seam ({dmg} damage)."],
+      mid: [
+        "You lay open a long wound along its flank; it screams and slews away ({dmg} damage).",
+        "Your blade carves across it and comes away wet ({dmg} damage).",
+      ],
+    },
+    pierce: {
+      low: ["The point pricks it and it flinches more than it bleeds ({dmg} damage)."],
+      mid: [
+        "You drive the point between its ribs and it shudders around the steel ({dmg} damage).",
+        "The thrust sinks deep into muscle and it recoils, keening ({dmg} damage).",
+      ],
+    },
+    blunt: {
+      low: ["The blow thuds into it and it shakes it off, unimpressed ({dmg} damage)."],
+      mid: ["You crack the blow across it and something under the fur gives ({dmg} damage)."],
+    },
+    shoot: {
+      low: ["The bolt grazes its hide and buries itself in the dark beyond ({dmg} damage)."],
+      mid: [
+        "The bolt punches into its flank and stays there; it snaps at the shaft, maddened ({dmg} damage).",
+        "Your shot takes it clean through the shoulder and it stumbles ({dmg} damage).",
+      ],
+    },
     throw: {
       low: [
         "The stone bounces off its haunch - it rounds on the noise, angrier ({dmg} damage).",
@@ -63,6 +88,25 @@ const ATTACK_FLAVOUR = {
       low: ["The blow glances off bone with a sound like a dropped plate ({dmg} damage)."],
       mid: ["Steel shears through it and it comes apart a little - not enough, but a little ({dmg} damage).", "The strike knocks it a half-step out of its own rhythm ({dmg} damage)."],
     },
+    slash: {
+      low: ["The edge skates off old bone with a dry scrape ({dmg} damage)."],
+      mid: ["You shear through a rib and it comes loose, clattering ({dmg} damage)."],
+    },
+    pierce: {
+      low: ["The point slips between its bones and finds nothing to ruin ({dmg} damage)."],
+      mid: ["You wedge the point into a joint and lever until something cracks ({dmg} damage)."],
+    },
+    blunt: {
+      low: ["The blow rattles its frame and knocks it half a step out of true ({dmg} damage)."],
+      mid: [
+        "You stave in a section of it - bone gives all at once with a splintering crunch ({dmg} damage).",
+        "The crushing blow lands and pieces of it simply leave ({dmg} damage).",
+      ],
+    },
+    shoot: {
+      low: ["The bolt clatters between its ribs and out the far side, harmless ({dmg} damage)."],
+      mid: ["The bolt cracks a bone and lodges there, jarring it ({dmg} damage)."],
+    },
     throw: {
       low: ["The stone passes through where a softer target would have minded ({dmg} damage)."],
       mid: ["The stone caves in a section it was still using ({dmg} damage)."],
@@ -80,6 +124,25 @@ const ATTACK_FLAVOUR = {
     strike: {
       low: ["The blow skates across the plate, shrieking ({dmg} damage)."],
       mid: ["You wedge the strike into the gap under the arm and lever - something inside gives ({dmg} damage)."],
+    },
+    slash: {
+      low: ["The edge shrieks across the plate and leaves a bright scratch ({dmg} damage)."],
+      mid: ["You find a seam and drag the edge through it; something inside protests ({dmg} damage)."],
+    },
+    pierce: {
+      low: ["The point skids off the curve of the plate ({dmg} damage)."],
+      mid: ["You drive the point into a rivet-gap and feel it punch through ({dmg} damage)."],
+    },
+    blunt: {
+      low: ["The blow rings off the steel like a struck bell ({dmg} damage)."],
+      mid: [
+        "You dent the breastplate inward with a booming clang and the whole suit shudders ({dmg} damage).",
+        "The blunt blow caves a pauldron and the arm beneath it hitches ({dmg} damage).",
+      ],
+    },
+    shoot: {
+      low: ["The bolt spangs off the plate and away ({dmg} damage)."],
+      mid: ["The bolt finds a joint and jams it, grinding ({dmg} damage)."],
     },
     throw: {
       low: ["The stone dents nothing and offends no one ({dmg} damage)."],
@@ -116,6 +179,22 @@ const ATTACK_FLAVOUR = {
     strike: {
       low: ["The blow skates off - a scratch ({dmg} damage)."],
       mid: ["You strike true, everything behind it ({dmg} damage)."],
+    },
+    slash: {
+      low: ["Your edge opens a shallow cut ({dmg} damage)."],
+      mid: ["Your blade draws a clean red line across it ({dmg} damage)."],
+    },
+    pierce: {
+      low: ["Your point pricks home, shallow ({dmg} damage)."],
+      mid: ["You drive the point in and feel it bite deep ({dmg} damage)."],
+    },
+    blunt: {
+      low: ["Your blow thuds home without much behind it ({dmg} damage)."],
+      mid: ["You land a heavy, jarring blow ({dmg} damage)."],
+    },
+    shoot: {
+      low: ["Your shot grazes it ({dmg} damage)."],
+      mid: ["Your shot punches home ({dmg} damage)."],
     },
     throw: {
       low: ["It clips the target ({dmg} damage)."],

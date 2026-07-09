@@ -62,7 +62,10 @@ function parseCommand(raw) {
     case 'unequip': case 'remove': doUnequip(args); break;
     case 'inventory': case 'i': case 'inv': doInventory(); break;
     case 'attack': case 'fight': case 'kill': case 'hit':
-    case 'punch': case 'kick': case 'shove': case 'slap': case 'headbutt': doAttack(args); break;
+    case 'punch': case 'kick': case 'shove': case 'slap': case 'headbutt': case 'elbow':
+    case 'stab': case 'thrust': case 'slash': case 'slice': case 'cut':
+    case 'chop': case 'cleave': case 'hack': case 'bash': case 'smash':
+    case 'shoot': case 'fire': case 'loose': doAttack(args); break;
     case 'tackle': case 'grapple': doTackleCommand(args); break;
     case 'block': case 'brace': case 'parry': doBlock(); break;
     case 'dodge': case 'duck': case 'evade': doDodge(); break;

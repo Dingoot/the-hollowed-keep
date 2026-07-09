@@ -41,6 +41,85 @@ function weaponInfo(verb) {
   return { base: w.attack || 1, stat: finesse.includes(fam) ? 'dex' : 'str', skill: fam };
 }
 
+// - Attack styles: a weapon family offers named attacks, each carrying a
+// damage KIND (slash / pierce / blunt) that enemies resist or fear
+// differently. Ranged families shoot instead, and can aim (body/head/legs).
+const WEAPON_STYLES = {
+  swords:    { default: 'slash', verbs: { slash: 'slash', slice: 'slash', cut: 'slash', stab: 'pierce', thrust: 'pierce', pommel: 'blunt' } },
+  daggers:   { default: 'pierce', verbs: { stab: 'pierce', thrust: 'pierce', jab: 'pierce', slash: 'slash', slice: 'slash' } },
+  axes:      { default: 'slash', verbs: { chop: 'slash', cleave: 'slash', hack: 'slash', slash: 'slash' } },
+  maces:     { default: 'blunt', verbs: { bash: 'blunt', smash: 'blunt', crush: 'blunt' } },
+  crossbows: { default: 'pierce', ranged: true },
+  bows:      { default: 'pierce', ranged: true },
+};
+const KIND_WORD = { slash: 'blade', pierce: 'point', blunt: 'impact' };
+const UNARMED_ATTACK_VERBS = ['punch', 'kick', 'headbutt', 'shove', 'slap', 'elbow', 'knee'];
+
+function equippedStyleSet() {
+  const w = GS.equipped.weapon && ITEMS[GS.equipped.weapon];
+  if (!w) return null;
+  return WEAPON_STYLES[w.family] || null;
+}
+
+// The styles the player could name right now, for hints and help.
+function availableStyleVerbs() {
+  const set = equippedStyleSet();
+  if (!set) return ['punch', 'kick'];
+  if (set.ranged) return ['shoot', 'shoot head', 'shoot legs'];
+  return Object.keys(set.verbs || {});
+}
+
+// Turn a combat command into an attack descriptor, or { isAttack:false }.
+function resolveAttackStyle(cmd, args) {
+  const set = equippedStyleSet();
+  const ranged = set && set.ranged;
+
+  if (cmd === 'shoot' || cmd === 'fire' || cmd === 'loose' || cmd === 'aim') {
+    if (!ranged) return { isAttack: true, needsRanged: true };
+    let aim = 'body';
+    if (/\b(head|face|eyes?|skull)\b/.test(args)) aim = 'head';
+    else if (/\b(legs?|foot|feet|knees?)\b/.test(args)) aim = 'legs';
+    return { isAttack: true, ranged: true, verb: 'shoot', kind: 'pierce', group: 'shoot', aim,
+      hitMod: aim === 'head' ? -4 : 0, dmgMult: aim === 'head' ? 1.75 : aim === 'legs' ? 0.6 : 1 };
+  }
+  if (cmd === 'attack' || cmd === 'hit' || cmd === 'fight' || cmd === 'a') {
+    if (ranged) return { isAttack: true, ranged: true, verb: 'shoot', kind: 'pierce', group: 'shoot', aim: 'body', hitMod: 0, dmgMult: 1 };
+    if (set) return { isAttack: true, verb: set.default === 'blunt' ? 'strike' : set.default, kind: set.default, group: set.default };
+    return { isAttack: true, unarmed: true, verb: 'strike', kind: 'blunt', group: 'punch' };
+  }
+  if (UNARMED_ATTACK_VERBS.includes(cmd)) {
+    return { isAttack: true, unarmed: true, verb: cmd, kind: 'blunt', group: (cmd === 'kick' || cmd === 'knee') ? 'kick' : 'punch' };
+  }
+  if (set && set.verbs && set.verbs[cmd]) {
+    return { isAttack: true, verb: cmd, kind: set.verbs[cmd], group: set.verbs[cmd] };
+  }
+  return { isAttack: false };
+}
+
+// Aimed shots read differently from body shots - their own lines.
+function aimedShotLine(aim, enemy, dmg) {
+  const name = enemy.name.toLowerCase();
+  const head = [
+    'You aim high and the bolt takes it clean in the head - it rocks back hard (' + dmg + ' damage).',
+    'The shot punches through where you aimed; the ' + name + "'s head snaps aside (" + dmg + ' damage).',
+  ];
+  const legs = [
+    'The bolt takes it low, in the leg (' + dmg + ' damage).',
+    'You aim for the stride and the bolt finds it - the ' + name + ' lurches (' + dmg + ' damage).',
+  ];
+  const pool = aim === 'head' ? head : legs;
+  return pool[rng(0, pool.length - 1)];
+}
+
+// One varied line for an enemy's attack, by the move type it just used.
+function enemyAttackLine(enemy, type) {
+  const pool = enemy.attacks && enemy.attacks[type];
+  if (pool && pool.length) return pool[rng(0, pool.length - 1)];
+  const fallback = enemy.attacks && (enemy.attacks.strike || Object.values(enemy.attacks)[0]);
+  if (fallback && fallback.length) return fallback[rng(0, fallback.length - 1)];
+  return enemy.attackMsg;
+}
+
 function playerAC() {
   let ac = 10 + statMod(GS.stats.dex);
   for (const slot of ['armor', 'offhand', 'ring']) {
@@ -251,7 +330,8 @@ function startCombat(enemyId) {
   print(template.desc, 'text-white');
   print('HP: ' + template.hp + '/' + template.maxHp + ' | ATK: ' + template.attack + ' | AC: ' + enemyAC(template), 'combat-info');
   print('');
-  print('Commands: attack (punch, kick...), block, dodge, feint, tackle, use [item], flee', 'text-dim');
+  const styleHint = availableStyleVerbs().slice(0, 4).join(', ');
+  print('Commands: attack (' + styleHint + '), block, dodge, feint, use [item], flee', 'text-dim');
   printLine();
   chooseEnemyMove(GS.currentEnemy);
   printIntent(GS.currentEnemy);
@@ -263,35 +343,44 @@ function handleCombatCommand(input) {
   const args = parts.slice(1).join(' ');
   const enemy = GS.currentEnemy;
 
-  const UNARMED_VERBS = ['punch', 'kick', 'tackle', 'headbutt', 'shove', 'slap', 'elbow'];
-  const isUnarmedVerb = UNARMED_VERBS.includes(cmd);
-
   if (cmd === 'throw' || cmd === 'hurl' || cmd === 'toss') {
     doThrow(args);
     return;
   }
 
-  if (cmd === 'attack' || cmd === 'hit' || cmd === 'fight' || cmd === 'a' || isUnarmedVerb) {
-    const info = weaponInfo(isUnarmedVerb ? cmd : null);
+  const atk = resolveAttackStyle(cmd, args);
+  if (atk.isAttack) {
+    if (atk.needsRanged) { print('You have nothing to shoot with. Equip a bow or crossbow first.', 'error-msg'); return; }
+    if (atk.ranged) {
+      const ammo = ITEMS[GS.equipped.weapon].requiresAmmo;
+      if (ammo && !hasItem(ammo) && !isEquipped(ammo)) {
+        print('You are out of ' + (ITEMS[ammo] ? ITEMS[ammo].name.toLowerCase() : ammo) + '. Nothing to loose.', 'error-msg');
+        return;
+      }
+    }
+    const isUnarmedVerb = !!atk.unarmed;
+    const info = isUnarmedVerb ? weaponInfo(atk.verb) : weaponInfo(null);
+    const slipLabel = atk.ranged ? 'shot' : atk.verb;
 
     // The mob reads repetition - the same move LANDING too many times
     // running gets learnt. Misses teach it nothing, and a slip resets the
     // lesson, so adaptation nudges variety instead of locking a verb out.
+    // Different styles (slash vs stab vs punch) each track separately.
     GS.combatMemory = GS.combatMemory || {};
-    const verbKey = isUnarmedVerb ? cmd : 'strike';
+    const verbKey = atk.verb;
     for (const k of Object.keys(GS.combatMemory)) if (k !== verbKey) GS.combatMemory[k] = 0;
     const reps = GS.combatMemory[verbKey] || 0;
 
     // Devotion to a technique carves its own craft.
     if (isUnarmedVerb) {
-      const bucket = (cmd === 'kick' || cmd === 'knee') ? 'kickCount' : 'punchCount';
+      const bucket = (atk.verb === 'kick' || atk.verb === 'knee') ? 'kickCount' : 'punchCount';
       GS.perks[bucket] = (GS.perks[bucket] || 0) + 1;
       if (bucket === 'kickCount' && GS.perks.kickCount >= 8 && !GS.skills.boot_heel) gainSkillXP('boot_heel', 10);
       if (bucket === 'punchCount' && GS.perks.punchCount >= 8 && !GS.skills.pugilism) gainSkillXP('pugilism', 10);
     }
 
     if (reps >= 3 && rng(1, 100) <= Math.min(45, (reps - 2) * 15)) {
-      print('The ' + enemy.name + ' has your rhythm now - it slips the ' + (isUnarmedVerb ? cmd : 'blow') + ' entirely. Vary your attacks.', 'text-amber');
+      print('The ' + enemy.name + ' has your rhythm now - it slips the ' + slipLabel + ' entirely. Vary your attacks.', 'text-amber');
       GS.combatMemory[verbKey] = 0;
       GS.perks.firstStrikeDone = true;
       enemyTurn();
@@ -311,12 +400,14 @@ function handleCombatCommand(input) {
     GS.edge = 0;
 
     const roll = rng(1, 20);
-    if (roll !== 20 && roll + playerHitBonus(info) + situBonus < enemyAC(enemy)) {
-      if (!staggered && mv.type === 'guard') {
+    if (roll !== 20 && roll + playerHitBonus(info) + situBonus + (atk.hitMod || 0) < enemyAC(enemy)) {
+      if (atk.aim === 'head') {
+        print('&rsaquo; You aim for the head and it moves - the shot goes wide of a hard target.', 'you-line you-miss');
+      } else if (!staggered && mv.type === 'guard') {
         print('&rsaquo; Your blow meets the parry it was waiting for. (A feint would open that stance.)', 'you-line you-miss');
       } else {
         const missLines = [
-          'Your ' + (isUnarmedVerb ? cmd : 'strike') + ' finds only the space it just left.',
+          'Your ' + slipLabel + ' finds only the space it just left.',
           'It shifts - your blow skates wide.',
           'A miss, close enough to feel the heat of almost.',
         ];
@@ -341,7 +432,21 @@ function handleCombatCommand(input) {
       + bonusDmg + (GS.perks.flatDamage || 0) + (GS.perks.reaverStacks || 0) + GS.tempAttackBonus + rng(0, 2)
       + Math.min(3, GS.momentum);
     if (!staggered && mv.type === 'reckless') dmg += 2;
-    dmg = Math.max(1, dmg);
+
+    // Style vs body: aim multiplier, then the enemy's resistance to this
+    // kind of hurt. Noted once per kind per enemy, so it teaches without nagging.
+    if (atk.dmgMult) dmg *= atk.dmgMult;
+    const prof = (enemy.damageProfile && enemy.damageProfile[atk.kind]) || 1;
+    dmg *= prof;
+    dmg = Math.max(1, Math.round(dmg));
+    if (prof <= 0.7 || prof >= 1.3) {
+      enemy.kindNoted = enemy.kindNoted || {};
+      if (!enemy.kindNoted[atk.kind]) {
+        enemy.kindNoted[atk.kind] = true;
+        if (prof <= 0.7) print('The ' + KIND_WORD[atk.kind] + ' finds little purchase - this one is armoured against it.', 'text-amber');
+        else print('The ' + KIND_WORD[atk.kind] + ' bites deep - it has no answer for that.', 'text-cyan');
+      }
+    }
     GS.combatMemory[verbKey] = reps + 1;
 
     if (enemy.physicalResist && !(GS.equipped.weapon && ITEMS[GS.equipped.weapon] && ITEMS[GS.equipped.weapon].undeadBonus)) {
@@ -366,14 +471,30 @@ function handleCombatCommand(input) {
       enemy.hp -= 3;
       print('The hound darts in low and worries at it. (+3 damage)', 'text-cyan');
     }
-    const group = isUnarmedVerb ? ((cmd === 'kick' || cmd === 'knee') ? 'kick' : 'punch') : (GS.equipped.weapon ? 'strike' : 'punch');
-    print('&rsaquo; ' + attackFlavourLine(group, enemy, dmg), 'you-line');
+    const flav = (atk.aim === 'head' || atk.aim === 'legs')
+      ? aimedShotLine(atk.aim, enemy, dmg)
+      : attackFlavourLine(atk.group, enemy, dmg);
+    print('&rsaquo; ' + flav, 'you-line');
     gainSkillXP(info.skill, 5);
     maybeStageLine(enemy);
 
     if (enemy.hp <= 0) {
       endCombat(true);
       return;
+    }
+
+    // Aimed at the legs: cripple a flesh-and-blood foe once, costing it its
+    // next move. After that it shields the wound - no endless leg-lock.
+    if (atk.aim === 'legs') {
+      if (enemy.canHobble && !enemy.legWounded) {
+        enemy.legWounded = true;
+        enemy.hobbled = 1;
+        print('The bolt punches through its leg - it buckles, and whatever it meant to do next collapses under it.', 'text-cyan');
+      } else if (enemy.canHobble) {
+        print('It is already favouring that leg and shields the wound now - no second gift.', 'text-dim');
+      } else {
+        print('There is nothing there to lame - it has no legs to speak of.', 'text-dim');
+      }
     }
 
     if (enemy.regenerates && enemy.shadowBeing && !isEquipped('amulet_of_warding')) {
@@ -535,6 +656,12 @@ function enemyAct(enemy, reaction) {
     return;
   }
 
+  if ((enemy.hobbled || 0) > 0) {
+    enemy.hobbled--;
+    print('The ' + enemy.name + ' scrabbles for footing on its ruined leg - whatever it meant to do dies there.', 'text-amber');
+    return;
+  }
+
   if ((enemy.staggerTurns || 0) > 0) {
     enemy.staggerTurns--;
     print('The ' + enemy.name + ' flounders, fighting to recover its footing.', 'text-amber');
@@ -542,6 +669,7 @@ function enemyAct(enemy, reaction) {
   }
 
   const mv = enemy.nextMove || { type: 'strike' };
+  const atkLine = enemyAttackLine(enemy, mv.type);
 
   if (mv.type === 'guard') {
     if (reaction === 'feint') {
@@ -559,14 +687,14 @@ function enemyAct(enemy, reaction) {
 
   // Underfoot Luck: one blow in ten parts the air instead. (Halfling)
   if (GS.race === 'halfling' && rng(1, 10) === 1) {
-    print(enemy.attackMsg, 'combat-hit');
+    print(atkLine, 'combat-hit');
     print('The blow parts the air where you almost were. Underfoot luck.', 'text-cyan');
     return;
   }
 
   if (reaction === 'block' && heavy) {
     enemy.staggerTurns = 1;
-    print(enemy.attackMsg, 'combat-hit');
+    print(atkLine, 'combat-hit');
     print('You take the whole weight of it on your set guard - the shock rings up your arms, and the follow-through drags it off balance.', 'text-cyan');
     return;
   }
@@ -574,7 +702,7 @@ function enemyAct(enemy, reaction) {
   if (reaction === 'dodge') {
     const dc = heavy ? 10 : 13; // the big ones announce themselves
     if (rng(1, 20) + statMod(GS.stats.dex) >= dc) {
-      print(enemy.attackMsg, 'combat-hit');
+      print(atkLine, 'combat-hit');
       if (heavy) {
         enemy.staggerTurns = 1;
         print('You slip inside the arc - it hammers the stone where you stood, and the miss costs it dearly.', 'text-cyan');
@@ -590,7 +718,7 @@ function enemyAct(enemy, reaction) {
   const roll = rng(1, 20);
   const hitMod = heavy ? -2 : (reckless ? 2 : 0);
   if (roll !== 20 && roll + enemyHitBonus(enemy) + hitMod < playerAC()) {
-    print(enemy.attackMsg, 'combat-hit');
+    print(atkLine, 'combat-hit');
     print('It misses - your guard holds.', 'text-dim');
     return;
   }
@@ -602,7 +730,7 @@ function enemyAct(enemy, reaction) {
   GS.hp -= enemyDmg;
   GS.momentum = 0;
   const suffix = reaction === 'block' ? ' Your guard takes the worst of it.' : (roll === 20 ? ' It found the gap.' : '');
-  print(enemy.attackMsg + ' (' + enemyDmg + ' damage' + (heavy ? ' - a heavy blow' : '') + ')' + suffix, 'combat-hit');
+  print(atkLine + ' (' + enemyDmg + ' damage' + (heavy ? ' - a heavy blow' : '') + ')' + suffix, 'combat-hit');
   print('', '', 300);
 
   if (reaction === 'feint') {

@@ -667,6 +667,7 @@ function doHelp() {
   print('COMBAT', 'text-amber');
   print('  attack [enemy]   - Attack an enemy (punch/kick work too)', 'text-green');
   print('  block / dodge / feint - Answer what the enemy telegraphs', 'text-green');
+  print('  (weapons offer styles: swords stab/slash, crossbows shoot head/legs)', 'text-dim');
   print('  tackle [beast]   - Wrestle an animal down; soothe may follow', 'text-green');
   print('  cast [spell]     - Cast a known spell', 'text-green');
   print('  flee             - Attempt to run from combat', 'text-green');
