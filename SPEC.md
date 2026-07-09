@@ -34,10 +34,11 @@ _(Filled in as systems are touched. When a change involves an existing mechanic,
 
 ### Combat intents (the fun layer)
 - Every enemy telegraphs its next move each round (amber italic line). Intent types: **strike** (normal), **heavy** (~1.8× damage, -2 to hit), **guard** (player attacks at -4 vs it; miss prints a feint hint), **reckless** (an opening: player attacks get +3 hit/+2 damage, but its attack gets +2 hit/+2 damage).
-- Reaction verbs spend your turn: **block** (halves strike/reckless; NEGATES a heavy and staggers the enemy), **dodge** (DEX check, DC 10 vs heavy / 13 otherwise; success avoids all — vs heavy also staggers, otherwise grants +2 edge), **feint** (breaks a guard → stagger; vs an attack you take the hit but gain +2 edge; also resets the enemy's adaptation memory).
-- **Stagger**: enemy loses its turn; attacks vs it get +4 hit and 1.5× damage.
+- Reaction verbs spend your turn: **block** (halves strike/reckless; NEGATES a heavy and staggers the enemy), **dodge** (DEX check, DC 9 vs heavy / 11 otherwise; success avoids all — vs heavy also **staggers**, vs a strike/reckless loads a **counter**), **feint** (breaks a guard → stagger; vs an attack you take the hit but load a **counter**; also resets the enemy's adaptation memory).
+- **Stagger** (the reward for correctly answering the two *dangerous* telegraphs — block/dodge a heavy, feint a guard): enemy loses its turn AND your next attack can't miss and deals ×1.5. The strongest payoff.
+- **Counter** (the reward for a successful dodge of a lesser blow, or a read-through feint): your next attack can't miss and deals ×1.5, but the enemy is NOT skipped — it acts on its next telegraph. So dodging is worth a turn (you avoid damage and hit harder) without being a free stagger-loop. Consumed by your next attack.
+- Reactions cost you your attack that turn, so react→counter is *slower* than trading blows — it buys safety, not free DPS. The design lesson (taught in-fiction by Avalonne, not by tutorial text): block/dodge the **heavies**, feint the **guards**, just attack the strikes and recklessness.
 - **Momentum**: consecutive landed hits add +1 damage each (cap +3); resets when you miss or take damage. Announced at 3.
-- **Edge**: one-shot +2 to-hit from good dodges/feints.
 - Enemy move tables live in `data/enemies.js` (`moves: [{type, weight, telegraph}]`); each enemy's mix expresses its character (armour = heavy/guard wall; ghoul = reckless hunger; skeleton = drilled guard the knight tells you to feint).
 - Enemy HP retuned ~30% down across the board (rats 12, hound 22, skeleton 32, armour 40, spider 26, ghoul 40, wraith 48, shadow knight 64, Steward 115) so read fights run ~4–10 turns. Verified by simulation: spam still beats early enemies (slower, bloodier); deep enemies effectively require reading (shadow knight: 1% spam vs 72% reactive at test level).
 
@@ -83,6 +84,7 @@ _(Only entries added or modified since 2026-07-08 are listed. Anything not liste
 ## Changelog
 _(Newest on top. One dated line per change; commit messages match these lines.)_
 
+- 2026-07-09 — Dodge reward fix: a successful dodge now loads a Counter (guaranteed hit, +50% damage) instead of a near-useless +2; staggers stay the stronger reward for correctly answering heavies/guards; dodge DCs eased (9/11). Reacting still costs your attack, so it's not a free-crit loop.
 - 2026-07-09 — Attack styles: weapons offer typed attacks (stab/slash/bash, crossbows shoot head/legs), enemies resist or fear slash/pierce/blunt differently, leg shots cripple flesh once per fight, every enemy gained 2-3 varied attack lines per move type.
 - 2026-07-09 — Combat intents: enemies telegraph their next move, block/dodge/feint answer it, staggers and momentum reward reading the fight, enemy HP cut ~30% so fights run 4-10 turns instead of attrition.
 - 2026-07-08 — Dialogue overhaul: every NPC rewritten to a distinct voice, speech and action split onto their own lines (bright quotes vs dim italics), every NPC introduces an addressable name, engine-side NPC lines converted to the same format.
