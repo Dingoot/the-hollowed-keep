@@ -318,7 +318,7 @@ function startCombat(enemyId) {
   GS.currentEnemyId = enemyId;
   GS.combatMemory = {};
   GS.momentum = 0;
-  GS.edge = 0;
+  GS.counterReady = false;
   GS.reaction = null;
   GS.perks.firstStrikeDone = false;
   GS.perks.undeadHesitated = false;
@@ -396,11 +396,16 @@ function handleCombatCommand(input) {
     if (staggered) situBonus += 4;
     if (!staggered && mv.type === 'reckless') situBonus += 3;
     if (!staggered && mv.type === 'guard') situBonus -= 4;
-    situBonus += GS.edge || 0;
-    GS.edge = 0;
+
+    // A successful dodge (or a read-through feint) loads a counter: your
+    // next blow cannot miss and hits harder. Staggered foes give the same,
+    // plus they lose their turn. Both are consumed here.
+    const countering = !!GS.counterReady && !staggered;
+    GS.counterReady = false;
+    const guaranteed = staggered || countering;
 
     const roll = rng(1, 20);
-    if (roll !== 20 && roll + playerHitBonus(info) + situBonus + (atk.hitMod || 0) < enemyAC(enemy)) {
+    if (roll !== 20 && !guaranteed && roll + playerHitBonus(info) + situBonus + (atk.hitMod || 0) < enemyAC(enemy)) {
       if (atk.aim === 'head') {
         print('&rsaquo; You aim for the head and it moves - the shot goes wide of a hard target.', 'you-line you-miss');
       } else if (!staggered && mv.type === 'guard') {
@@ -458,6 +463,7 @@ function handleCombatCommand(input) {
       print('Shadow drinks half the force of the blow - you need warding.', 'text-amber');
     }
     if (staggered) { dmg = Math.floor(dmg * 1.5); print('&rsaquo; It cannot answer - you strike at your leisure.', 'text-cyan'); }
+    else if (countering) { dmg = Math.floor(dmg * 1.5); print('&rsaquo; The opening your read bought - your counter lands clean and hard.', 'text-cyan'); }
     if (roll === 20) { dmg *= 2; print('&rsaquo; A perfect opening - critical hit, double damage.', 'text-cyan'); }
     if (GS.class === 'rogue' && !GS.perks.firstStrikeDone) {
       dmg *= 2;
@@ -700,15 +706,15 @@ function enemyAct(enemy, reaction) {
   }
 
   if (reaction === 'dodge') {
-    const dc = heavy ? 10 : 13; // the big ones announce themselves
+    const dc = heavy ? 9 : 11; // the big ones announce themselves; DEX sways it
     if (rng(1, 20) + statMod(GS.stats.dex) >= dc) {
       print(atkLine, 'combat-hit');
       if (heavy) {
         enemy.staggerTurns = 1;
-        print('You slip inside the arc - it hammers the stone where you stood, and the miss costs it dearly.', 'text-cyan');
+        print('You slip inside the arc - it hammers the stone where you stood, wide open. Strike now.', 'text-cyan');
       } else {
-        GS.edge = 2;
-        print('You read it and step off the line - the blow finds nothing, and you have the angle now.', 'text-cyan');
+        GS.counterReady = true;
+        print('You slip it clean, and the whiff leaves it turned the wrong way - your next blow will find the gap.', 'text-cyan');
       }
       return;
     }
@@ -734,8 +740,8 @@ function enemyAct(enemy, reaction) {
   print('', '', 300);
 
   if (reaction === 'feint') {
-    GS.edge = 2;
-    print('It bought none of your feint - but you sold it the wrong tempo, and you have the angle now.', 'text-dim');
+    GS.counterReady = true;
+    print('It bought none of your feint - but you sold it the wrong tempo, and your next blow will find the gap.', 'text-dim');
   }
 
   if (enemy.poisonous && !GS.poisoned && rng(1, 3) === 1) {
