@@ -535,12 +535,10 @@ body {
 /* Enemy intent telegraphs: the line you read before you choose. */
 .combat-intent { color: var(--amber); font-style: italic; }
 
-/* Dialogue beats: actions recede, speech carries. */
-.line.npc-act { color: var(--text-dim); font-style: italic; padding-left: 14px; }
-.line.npc-say { color: var(--cyan); padding-left: 14px; }
-/* Legacy inline-format lines */
-.npc-act { color: var(--text-dim); font-style: italic; }
-.npc-act .npc-say { color: var(--cyan); font-style: normal; }
+/* Dialogue: compact prose paragraphs; speech is bold and bright inside them. */
+.line.npc-para { padding-left: 14px; margin-bottom: 6px; }
+.npc-act { color: var(--text); }
+.npc-say { color: var(--cyan); font-weight: 600; }
 
 /* === Playtest round 4 === */
 .you-line { color: #d9f7d9; }
