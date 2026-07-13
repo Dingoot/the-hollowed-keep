@@ -48,14 +48,6 @@ function doMove(dir) {
   GS.enteredFrom[target] = OPPOSITE_DIR[dir] || null;
   GS.currentRoom = target;
   printRoom(target);
-
-  if (targetState && targetState.enemies.length > 0 && (!targetRoom.dark || hasLight())) {
-    const enemyId = targetState.enemies[0];
-    if (!GS.kills[target + '_' + enemyId]) {
-      print('');
-      print(ENEMIES[enemyId].name + ' blocks your path!', 'text-red');
-    }
-  }
 }
 
 // === ROOM DESCRIPTION ===

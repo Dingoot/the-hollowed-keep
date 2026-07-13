@@ -36,31 +36,6 @@ parseCommand = function(raw) {
     return;
   }
 
-  if (input === 'buy' || input.startsWith('buy ')) {
-    const what = input.replace(/^buy\s*/, '');
-    if (!what) { doTrade(''); return; }
-    doBuy(what);
-    updatePanels();
-    return;
-  }
-
-  if (input === 'sell' || input.startsWith('sell ')) {
-    const what = input.replace(/^sell\s*/, '');
-    if (!what) { print('Sell what?', 'error-msg'); return; }
-    const idx = GS.inventory.findIndex(id => matchItem(id, what));
-    if (idx === -1) { print("You don't have that.", 'error-msg'); return; }
-    const room = ROOMS[GS.currentRoom];
-    if (!room.npcs || !room.npcs.includes('merchant_ghost')) { print("There's nobody to sell to here.", 'error-msg'); return; }
-    const id = GS.inventory[idx];
-    const item = ITEMS[id];
-    const value = item.value || 5;
-    GS.inventory.splice(idx, 1);
-    GS.gold += value;
-    print("'A fine piece!' Bartholomew takes the " + item.name + ". (+" + value + " gold)", 'success-msg');
-    updatePanels();
-    return;
-  }
-
   if (GS.flags.shadowLordDefeated && !GS.gameWon) {
     if (input === 'take rod' || input === 'take scepter' || input === 'grab rod' || input === 'get rod' || input === 'take toll-rod') {
       GS.gameWon = true;

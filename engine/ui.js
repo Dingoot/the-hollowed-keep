@@ -176,10 +176,12 @@ function printRoom(roomId) {
   }
 
   // The staged introduction plays once; afterwards, whoever is still
-  // around gets a line of presence that keeps up with their story.
+  // around gets a line of presence that keeps up with their story. A blank
+  // line keeps who-you-see apart from what-the-room-is.
   const sight = room.sight || room.npcIntro;
   if (!room.dark || hasLight()) {
     if (sight && !rs.visited) {
+      print('');
       streamProse(sight, 'text-amber', 500, 1000);
     } else {
       for (const nid of npcsPresent(roomId)) {
@@ -194,6 +196,7 @@ function printRoom(roomId) {
   if (threatened) {
     for (const eid of enemies) {
       const e = ENEMIES[eid];
+      print('');
       if (e.emerge) {
         if (rs.visited) print(e.emerge, 'text-white', 0);
         else streamProse(e.emerge, 'text-white', 130, 800);

@@ -51,6 +51,15 @@ function parseCommand(raw) {
 
   if (dirMap[cmd]) { doMove(dirMap[cmd]); return; }
 
+  // Turning to some other business - searching, taking, working - lets a
+  // conversation lapse quietly. Talking verbs and out-of-fiction commands
+  // (look, help, save, panels) keep it alive; walking out says goodbye in doMove.
+  const CONVO_KEEP = new Set(['talk', 'speak', 'approach', 'greet', 'ask', 'topics', 'goodbye', 'bye', 'farewell',
+    'answer', 'give', 'buy', 'sell', 'trade', 'brew', 'look', 'l', 'help', 'h', '?', 'save', 'load', 'restore',
+    'inventory', 'i', 'inv', 'map', 'm', 'stats', 'self', 'vessel', 'skills', 'skill', 'status', 'stat', 'record',
+    'quests', 'journal', 'quest', 'speed', 'textspeed', 'clear', 'cls', 'hint', 'hints']);
+  if (GS.conversationWith && !CONVO_KEEP.has(cmd)) GS.conversationWith = null;
+
   switch (cmd) {
     case 'look': case 'l': doLook(args); break;
     case 'examine': case 'x': doExamine(args); break;
@@ -104,7 +113,9 @@ function parseCommand(raw) {
     case 'plugh': print('Nothing happens. Were you expecting magic words to work? ...Wait.', 'text-dim'); break;
     case 'hint': case 'hints': doHint(); break;
     case 'flee': case 'run': doFlee(); break;
-    case 'buy': case 'trade': case 'sell': doTrade(args); break;
+    case 'trade': doTrade(args); break;
+    case 'buy': doBuy(args); break;
+    case 'sell': doSell(args); break;
     case 'brew': doBrew(); break;
     case 'give': doGive(args); break;
     case 'clear': case 'cls': outputEl().innerHTML = ''; printRoom(GS.currentRoom); break;

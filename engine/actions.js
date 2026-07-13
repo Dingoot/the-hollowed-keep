@@ -14,9 +14,14 @@ function doTake(args) {
     if (toTake.length === 0) { print('Nothing to take here.', 'text-dim'); return; }
     for (const id of toTake) {
       rs.items = rs.items.filter(i => i !== id);
-      GS.inventory.push(id);
       GS.itemsFound++;
-      print('Taken: ' + ITEMS[id].name, 'success-msg');
+      if (ITEMS[id].currency) {
+        GS.gold += ITEMS[id].value || 0;
+        print('Taken: ' + ITEMS[id].name + ' (+' + (ITEMS[id].value || 0) + ' gold, into the pouch)', 'success-msg');
+      } else {
+        GS.inventory.push(id);
+        print('Taken: ' + ITEMS[id].name, 'success-msg');
+      }
     }
     return;
   }
@@ -31,8 +36,13 @@ function doTake(args) {
   }
 
   rs.items.splice(idx, 1);
-  GS.inventory.push(id);
   GS.itemsFound++;
+  if (ITEMS[id].currency) {
+    GS.gold += ITEMS[id].value || 0;
+    print('Taken: ' + ITEMS[id].name + ' (+' + (ITEMS[id].value || 0) + ' gold, into the pouch)', 'success-msg');
+    return;
+  }
+  GS.inventory.push(id);
   print('Taken: ' + ITEMS[id].name, 'success-msg');
 
   if (id === 'ancient_tome' && !GS.spells.includes('sunder')) {
@@ -562,11 +572,29 @@ function doTrade(args) {
     }
     print('');
     print("Type 'buy [item]' to purchase, or 'sell [item]' to sell.", 'text-dim');
-    print("Sell values: Gold Coins (25g), Gemstone (50g), misc (5g)", 'text-dim');
+    print("He buys valuables at their worth (gemstones and the like); oddments fetch 5 gold.", 'text-dim');
     return;
   }
 
-  // handled by buy/sell
+  doBuy(args);
+}
+
+function doSell(args) {
+  const room = ROOMS[GS.currentRoom];
+  if (!room.npcs || !room.npcs.includes('merchant_ghost')) {
+    print("There's nobody to sell to here.", 'error-msg');
+    return;
+  }
+  if (!args) { print('Sell what?', 'error-msg'); return; }
+  const idx = GS.inventory.findIndex(id => matchItem(id, args));
+  if (idx === -1) { print("You don't have that.", 'error-msg'); return; }
+  const id = GS.inventory[idx];
+  const item = ITEMS[id];
+  if (isEquipped(id)) { print(`"Not off your back, friend." Bartholomew waves it away. "Sell me what you can spare."`, 'npc-speech'); return; }
+  const price = item.value || 5;
+  GS.inventory.splice(idx, 1);
+  GS.gold += price;
+  print(`Bartholomew turns the ` + item.name.toLowerCase() + ` over once, appraising, and names a fair number. "Done." (+` + price + ' gold)', 'npc-speech');
 }
 
 function doBuy(item) {
