@@ -33,8 +33,16 @@ _(Filled in as systems are touched. When a change involves an existing mechanic,
 - Quest renamed **"Find a Way to Heal the Knight"**, `requiresAny: [minor_healing_tome, healing_potion]` (either works; doGive extended to support `requiresAny` — any one satisfies and only that one is consumed).
 - On heal he stands, **names himself Avalonne** (Wick named him when he woke), and becomes the game's **combat teacher**: post-quest topic `combat` explains the whole telegraph/reaction system in-fiction (block/dodge the heavies, feint the guards, trade the strikes) — this is how combat is taught, NOT via in-fight tutorial text. Post-quest topics: `combat`, `avalonne`, `below`. `postQuestName` "Avalonne"; until healed he is "Wounded Knight".
 
+### Money & trade
+- Items with `currency: true` (gold coins) convert to pouch gold on pickup — never inventory clutter. `buy [item]` / `sell [item]` / `trade` are handled in the parser (doBuy/doSell/doTrade in actions.js); the old parseCommand monkey-patch interception in endings.js is gone. Selling pays `item.value` (5 for oddments); equipped items can't be sold.
+
+### Description separation rules
+- A room `desc` describes the ROOM and its fixtures/items only. Who you see is separate text: NPCs via `npcIntro`/presence lines, enemies via `emerge` + the red `!` line + the bracketed alert. Never describe a living NPC/enemy inside a room desc (the cell block and throne room used to; the Steward now has an `emerge`).
+- printRoom prints a blank line before the sight/presence section and before each enemy block, so who-you-see never runs into what-the-room-is.
+- doMove no longer prints "X blocks your path!" — the emerge + alert already carry it.
+
 ### NPC conversations
-- `talk [person]` engages that NPC (`GS.conversationWith`, saved with the game). While engaged, `ask [topic]` always goes to them — never to whoever happens to be first in the room. `topics` re-lists their topics. `goodbye`/`bye`/`farewell` ends the conversation (NPCs may have a custom `farewell` line); walking to another room, using the well rope, or entering combat ends it implicitly.
+- `talk [person]` engages that NPC (`GS.conversationWith`, saved with the game). While engaged, `ask [topic]` always goes to them — never to whoever happens to be first in the room. `topics` re-lists their topics. `goodbye`/`bye`/`farewell` ends the conversation (NPCs may have a custom `farewell` line); walking to another room, using the well rope, or entering combat ends it implicitly. Doing unrelated business (search, take, use, etc.) lets the conversation lapse QUIETLY — no farewell line later; only walking out mid-conversation prints "(You take your leave...)". Meta commands (look, help, save, panels) don't lapse it.
 - `talk` with no name: engages the only NPC present, re-greets your current partner, or asks "Talk to whom?" if several are present. `ask [person] about [topic]` switches partners. Topic matching strips articles and accepts close matches (≥3 chars).
 - Quest state lives ONLY on GS (`questLog`, `completedQuests`) — never on NPC objects, so it survives save/load. The chapel riddle uses `GS.flags.riddleSolved`.
 - NPC room display: a room's `sight`/`npcIntro` prose plays on first visit only. Afterwards each present NPC shows a `presence` line (`postQuestPresence` once their quest is done; fallback "X is here."). NPCs with `leavesAfterQuest: true` (the thief) vanish from the room — display and interaction — once their quest completes; everyone else stays and can get `postQuestGreeting`/`postQuestTopics` (Avalonne has them). `postQuestTopics` REPLACE the base topic set once the quest is done (a healed man keeps none of his pleas); gravekin topics still merge on top.
@@ -98,6 +106,7 @@ _(Only entries added or modified since 2026-07-08 are listed. Anything not liste
 ## Changelog
 _(Newest on top. One dated line per change; commit messages match these lines.)_
 
+- 2026-07-12 — Playtest oddities: gold coins go into the pouch on pickup, buy/sell unified into real parser commands (monkey-patch removed), conversations lapse quietly when you turn to other business, redundant "blocks your path" line removed, blank lines separate room desc from NPC/enemy sightings, gatehouse shaft rewritten as the portcullis opening, cell block and throne room descs stop describing their occupants (the Steward emerges instead).
 - 2026-07-09 — Dialogue appearance: beats pack into compact prose paragraphs (actions in body colour, speech bold cyan inline) instead of one dim line per sentence; conversation hint shortened to "(ask [topic], or 'goodbye' to leave)" and retired after first ask.
 - 2026-07-09 — Start screen touch-ups: load with no save stays at the boot menu, lore screen removed, creation cards take 'no' to return to selections, help condensed to essentials with 'help [subject]' topics and combat pointed at Avalonne instead of listed.
 - 2026-07-09 — Review fixes: healed Avalonne no longer begs for mending (postQuestTopics replace base topics), `topics` uses the post-quest name, a loaded counter survives attacking a staggered foe, and adaptation can't rob an earned stagger/counter.

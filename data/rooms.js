@@ -18,7 +18,7 @@ const ROOMS = {
     name: "The Gatehouse",
     region: "The Threshold",
     sight: "A tall figure stands at the portcullis chains - a gatekeeper's coat of grey wool gone greyer with mending, gloved hands at rest, and a face your eyes accept and immediately lose, like a word from the tip of the tongue. Its head turns to you at the exact moment you enter. Not before, not after. One gloved hand rests on a thick ledger, closed, beside the guttering candle. Higher on the wall, something small glints on an iron hook.",
-    desc: "A cramped stone chamber wedged between the gates and the courtyard. The ceiling is pierced by a single dark shaft, too regular to be damage, and chains as thick as your wrist climb into the murk above, holding a portcullis nobody has lowered in living memory. A rough wooden table and one stool are the only furniture; an unlit torch waits in a wall bracket by the courtyard door. Every reachable stretch of wall carries carved writing, generations deep. On an iron hook above the table, something small glints.",
+    desc: "A cramped stone chamber wedged between the gates and the courtyard. Chains as thick as your wrist rise from floor winches and vanish through a square opening in the ceiling, holding up a portcullis nobody has lowered in living memory. A rough wooden table and one stool are the only furniture; an unlit torch waits in a wall bracket by the courtyard door. Every reachable stretch of wall carries carved writing, generations deep. On an iron hook above the table, something small glints.",
     exits: { south: "outer_gate", north: "main_courtyard" },
     items: ["torch"],
     npcs: ["porter"],
@@ -378,7 +378,7 @@ const ROOMS = {
     name: "The Cell Block",
     region: "The Dungeons",
     npcIntro: "From the locked cell, sharp eyes track you between the bars, unhurried, taking inventory of everything you carry.",
-    desc: "A row of iron-barred cells, most standing open and empty. Straw bedding has composted to black earth. Names and tallies are scratched into the walls of every cell - some counting days, others counting something else. One cell in the middle is still locked, and from within comes the sound of breathing. A figure shifts in the darkness.",
+    desc: "A row of iron-barred cells, most standing open and empty. Straw bedding has composted to black earth. Names and tallies are scratched into the walls of every cell - some counting days, others counting something else. One cell in the middle is still locked, its door solid in the way only tended things are.",
     descUpdates: [
       { questDone: "free_thief", text: "A row of iron-barred cells, all standing open now. Straw bedding has composted to black earth. Names and tallies are scratched into the walls of every cell - some counting days, others counting something else. The middle cell's door hangs wide where the thief walked out of it. Whatever bargains are struck in here now, they are struck with the dark." },
     ],
@@ -522,7 +522,7 @@ const ROOMS = {
   throne_of_shadows: {
     name: "The Throne of Shadows",
     region: "The Deep",
-    desc: "The heart of the Keep. A cathedral-sized chamber of black stone, its ceiling lost in perpetual darkness. At its centre, on a dais of fused obsidian, sits a throne carved from a single piece of shadow - solid darkness given form. Seated upon it is a figure in the tatters of household finery, the Toll-Rod laid across its knees like a rule about to be enforced. Pale script scrolls where its eyes should be. It has been waiting. It has all the patience of arithmetic.",
+    desc: "The heart of the Keep. A cathedral-sized chamber of black stone, its ceiling lost in perpetual darkness. At its centre rises a dais of fused obsidian, and on the dais a throne carved from a single piece of shadow - solid darkness given form. The room is arranged the way a court is arranged: everything faces the throne, and the throne faces the door you came in by.",
     descUpdates: [
       { enemiesCleared: true, text: "The heart of the Keep. A cathedral-sized chamber of black stone, its ceiling lost in perpetual darkness. At its centre, on a dais of fused obsidian, the throne of solid shadow sits empty. The tatters of household finery lie across the seat like a shed skin, already forgetting the shape of what wore them. The arithmetic patience has gone out of the room; what remains is only architecture, waiting to be read." },
     ],

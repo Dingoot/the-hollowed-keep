@@ -45,7 +45,7 @@ const ITEMS = {
   enchanted_ring: { name: "Enchanted Ring", desc: "A ring of pale gold set with a stone that shifts colour with your heartbeat. It quickens reflexes and sharpens the mind.", type: "accessory", equippable: true, slot: "ring", defense: 2, attack: 2 },
   scepter_of_aethon: { name: "The Toll-Rod", desc: "The household's instrument of collection - a rod of twisted metal and crystal, humming with the Keep's own lent authority. To hold it is to feel every debt in the building, itemized, and to know exactly what could be taken. It wants a hand. Any hand.", type: "quest" },
   ancient_crown: { name: "Crown of Endings", desc: "A crown grown, not forged: every fragment of every self the Steward ever skimmed, fused into a circle of silver shimmer. It is heavier than it looks. It is exactly as heavy as everything it is made of.", type: "quest" },
-  gold_coins: { name: "Gold Coins", desc: "A handful of ancient gold coins stamped with a crowned door. Still valuable, if you ever leave this place.", type: "treasure", value: 25 },
+  gold_coins: { name: "Gold Coins", desc: "A handful of ancient gold coins stamped with a crowned door. Coin is coin, even here.", type: "treasure", value: 25, currency: true },
   gemstone: { name: "Crimson Gemstone", desc: "A deep red stone that seems to contain a flickering light. It pulses warmly in your hand.", type: "treasure", value: 50 },
   silver_mirror: { name: "Silver Mirror", desc: "A hand mirror of polished silver. Your reflection moves a fraction of a second after you do.", type: "tool" },
   bone_flute: { name: "Bone Flute", desc: "A flute carved from a single human bone, etched with spiraling runes. When played, it produces a haunting melody that calms restless spirits.", type: "tool" },
