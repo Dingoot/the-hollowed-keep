@@ -70,7 +70,7 @@ function raceCard(id) {
   bootPrint('  Exclusive class, someday: ' + r.exclusiveClass, 'line-dim');
   bootPrint('  "' + r.flavor + '"', 'line-amber');
   bootPrint('');
-  bootPrint("Keep this blood? ('yes', or another name/number)", 'line-bright');
+  bootPrint("Keep this blood? ('yes', or 'no' to return to the bloodlines)", 'line-bright');
 }
 
 function matchRace(input) {
@@ -118,7 +118,7 @@ function remnantCard(id) {
   if (aff.length) bootPrint('  ' + aff.join('  ·  '), 'line-white');
   if (r.perks.length) bootPrint('  Something more sleeps in it. You will find out what.', 'line-dim');
   bootPrint('');
-  bootPrint("Keep it? ('yes', or another number)", 'line-bright');
+  bootPrint("Keep it? ('yes', or 'no' to return to what was found)", 'line-bright');
 }
 
 // Pure state application - also used by tests.
@@ -175,10 +175,12 @@ function handleCreationInput(raw) {
       } else {
         showRemnantList();
       }
+    } else if (input === 'no' || input === 'n' || input === 'back' || input === 'return') {
+      startCreation();
     } else {
       const id = matchRace(input);
       if (id) { CREATION.race = id; raceCard(id); }
-      else bootPrint("  'yes' to keep this blood, or another name/number.", 'line-dim');
+      else bootPrint("  'yes' to keep this blood, 'no' to return, or another name/number.", 'line-dim');
     }
     return;
   }
@@ -206,10 +208,12 @@ function handleCreationInput(raw) {
     if (input === 'yes' || input === 'y' || input === 'keep') {
       applyRemnantToState(CREATION.remnant);
       finishCreation();
+    } else if (input === 'no' || input === 'n' || input === 'back' || input === 'return') {
+      showRemnantList();
     } else {
       const id = matchRemnant(input);
       if (id) { CREATION.remnant = id; remnantCard(id); }
-      else bootPrint("  'yes' to keep it, or another number.", 'line-dim');
+      else bootPrint("  'yes' to keep it, 'no' to return, or another number.", 'line-dim');
     }
     return;
   }

@@ -14,7 +14,6 @@ function runBootSequence() {
     { text: '', cls: '', delay: 250 },
     { text: menuPad('begin', 'pay the Toll and enter'), cls: 'line-white line-center', delay: 150 },
     { text: menuPad('load ', 'resume a delve'), cls: 'line-white line-center', delay: 120 },
-    { text: menuPad('lore ', 'what little is known'), cls: 'line-white line-center', delay: 120 },
     { text: '', cls: '', delay: 150 },
   ];
 
@@ -55,6 +54,26 @@ function runBootSequence() {
   }, totalDelay + 300);
 }
 
+function bootMsg(text, cls) {
+  const bootEl = document.getElementById('boot-text');
+  const div = document.createElement('div');
+  div.className = 'line ' + (cls || 'line-dim');
+  div.textContent = text;
+  bootEl.appendChild(div);
+  bootEl.scrollTop = bootEl.scrollHeight;
+}
+
+// A save exists and is readable - checked BEFORE leaving the boot screen,
+// so a bad 'load' never strands the player in an unmade game.
+function hasUsableSave() {
+  try {
+    const data = JSON.parse(localStorage.getItem('hollowkeep_save'));
+    return !!(data && data.gs);
+  } catch (e) {
+    return false;
+  }
+}
+
 function handleBootInput(e) {
   if (e.key !== 'Enter') return;
   const input = e.target.value.trim().toLowerCase();
@@ -68,28 +87,15 @@ function handleBootInput(e) {
   if (input === 'begin' || input === 'start' || input === 'play' || input === 'enter') {
     startCreation();
   } else if (input === 'load' || input === 'restore') {
-    startGame(true);
-  } else if (input === 'lore' || input === 'history') {
-    const bootEl = document.getElementById('boot-text');
-    const div = document.createElement('div');
-    div.className = 'line line-white';
-    div.innerHTML = '\n  The Hollowed Keep surfaces where it pleases. One moonless night it\n  stood on the moor, gates open. The desperate walk in - and at the\n  threshold the Keep takes its Toll: name, past, trade, loves.\n\n  Once, a household of Stewards collected the Toll at the gate so the\n  Keep would not collect it inside. The last Steward skimmed from the\n  take. The Keep noticed. It always notices. He sits below now,\n  hollowed into a warning, still holding the Toll-Rod.\n\n  Everything the Keep has ever taken settles downward, floor upon\n  floor. Somewhere at the bottom is everything you were.\n\n  Type \'begin\' to pay the Toll.\n';
-    bootEl.appendChild(div);
-    bootEl.scrollTop = bootEl.scrollHeight;
+    if (hasUsableSave()) {
+      startGame(true);
+    } else {
+      bootMsg("  No delve on record. The Keep keeps what it is given, and it has been given nothing. Type 'begin'.");
+    }
   } else if (input === 'help') {
-    const bootEl = document.getElementById('boot-text');
-    const div = document.createElement('div');
-    div.className = 'line line-dim';
-    div.textContent = "\n  'begin' - Start a new game\n  'load'  - Load a saved game\n  'lore'  - Read the Keep's history\n";
-    bootEl.appendChild(div);
-    bootEl.scrollTop = bootEl.scrollHeight;
+    bootMsg("\n  'begin' - Start a new game\n  'load'  - Load a saved game\n");
   } else {
-    const bootEl = document.getElementById('boot-text');
-    const div = document.createElement('div');
-    div.className = 'line line-dim';
-    div.textContent = "  Unknown command. Type 'begin' to enter the Keep.";
-    bootEl.appendChild(div);
-    bootEl.scrollTop = bootEl.scrollHeight;
+    bootMsg("  Unknown command. Type 'begin' to enter the Keep.");
   }
 }
 

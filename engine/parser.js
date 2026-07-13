@@ -98,8 +98,7 @@ function parseCommand(raw) {
     case 'quests': case 'journal': case 'quest': doQuests(); break;
     case 'save': saveGame(); break;
     case 'load': case 'restore': loadGame(); break;
-    case 'help': case 'h': case '?': doHelp(); break;
-    case 'lore': case 'history': doLore(); break;
+    case 'help': case 'h': case '?': doHelp(args); break;
     case 'carve': case 'write': doCarve(args); break;
     case 'xyzzy': print('A hollow voice says "Fool."', 'text-amber'); break;
     case 'plugh': print('Nothing happens. Were you expecting magic words to work? ...Wait.', 'text-dim'); break;

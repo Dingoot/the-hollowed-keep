@@ -167,7 +167,8 @@ function doTalk(args) {
   if (npc.topics) {
     print('');
     print('Topics: ' + Object.keys(npcTopics(npc, npcId)).join(', '), 'text-dim');
-    print("(ask [topic] to inquire - 'goodbye' when you're done)", 'text-dim');
+    // The how-to hint retires once the player has asked anything at all.
+    if (!GS.flags.usedAsk) print("(ask [topic], or 'goodbye' to leave)", 'text-dim');
   }
 
   if (npc.quest && !GS.questLog.includes(npc.quest.id)) {
@@ -217,6 +218,7 @@ function doAsk(args) {
   const key = visible[t] !== undefined ? t
     : Object.keys(visible).find(k => t.length >= 3 && (k.includes(t) || t.includes(k)));
   if (key) {
+    GS.flags.usedAsk = true;
     print('<span class="npc-name">' + npcDisplayName(npc, npcId) + '</span>:', '');
     print(visible[key], 'npc-speech');
     trackSkullTalk(npcId);

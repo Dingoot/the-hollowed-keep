@@ -3,17 +3,26 @@
 const outputEl = () => document.getElementById('output');
 const inputEl = () => document.getElementById('command-input');
 
-// NPC dialogue renders beat by beat: what is DONE on its own dim line,
-// what is SAID on its own bright quoted line. Speech is written in double
-// quotes in the data; everything outside them is action.
+// NPC dialogue renders as compact prose paragraphs, the way prose does:
+// actions in the body colour, speech bold and bright INSIDE the paragraph.
+// Speech is written in double quotes in the data; each action beat opens
+// a new paragraph and the speech that follows it stays attached.
 function printNpcBeats(text) {
   const parts = String(text).split('"');
+  const paras = [];
+  let cur = '';
   for (let i = 0; i < parts.length; i++) {
     const seg = parts[i].trim();
     if (!seg) continue;
-    if (i % 2 === 1) print('&ldquo;' + seg + '&rdquo;', 'npc-say');
-    else print(seg, 'npc-act');
+    if (i % 2 === 1) {
+      cur += (cur ? ' ' : '') + '<span class="npc-say">&ldquo;' + seg + '&rdquo;</span>';
+    } else {
+      if (cur) paras.push(cur);
+      cur = '<span class="npc-act">' + seg + '</span>';
+    }
   }
+  if (cur) paras.push(cur);
+  for (const p of paras) print(p, 'npc-para');
 }
 
 // Legacy single-quote lines: what is said stays bright; what is done fades.

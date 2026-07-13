@@ -21,7 +21,8 @@ _(Filled in as systems are touched. When a change involves an existing mechanic,
 - **Well rope**: `GS.flags.wellRopeTied` persists the courtyard↔river exits through save/load, and `examine well` acknowledges the tied rope.
 
 ### Dialogue format & voices
-- **Beat rendering**: dialogue is written with speech in DOUBLE quotes; everything outside them is action. The engine (`printNpcBeats` in ui.js) renders each beat on its own line — actions in dim italic, speech bright cyan in typographic quotes. Never mix speech and action on one line. Attributions ("he says") are avoided; write full-sentence beats. A lint checks every dialogue string has an even number of `"`.
+- **Paragraph rendering**: dialogue is written with speech in DOUBLE quotes; everything outside them is action. The engine (`printNpcBeats` in ui.js) packs beats into compact prose paragraphs — each ACTION beat opens a new paragraph and the speech that follows stays attached inline. Actions render in the body colour (no gray, no italic); speech renders bold cyan in typographic quotes. Attributions ("he says") are avoided; write full-sentence beats. A lint checks every dialogue string has an even number of `"`. Budget: aim ≤3 paragraphs for topics/returns; first-meet greetings and Avalonne's lesson may run 4–5.
+- **Conversation prompt**: one short line — "(ask [topic], or 'goodbye' to leave)" — shown only until the player first uses `ask` successfully (`GS.flags.usedAsk`); after that, just the Topics line.
 - Dialogue strings in `data/npcs.js` use backticks (template literals) so quotes need no escaping — this is the one place backtick strings are the convention.
 - **Self-introduction rule**: every NPC's first greeting introduces a name the player can address them by (Porter, Wick, Knight, Cedric/Scribe, Wren, Guardian, Alchemist, Bartholomew/Merchant, Talking Skull, Spirit).
 - **Voice bible** (keep these consistent): Porter — immaculate clerk, measured, formally kind, sorry about everything exactly once. Wick — small earnest lantern-ghost, third person, short sentences, loves fire; occasionally a sentence belonging to someone else escapes the lantern and Wick owns up to it. Knight — dry soldier, deadpan gallows humour, deals in practicalities. Cedric — pedant with a cause; documentation is the only working immortality. Wren — charm as a lockpick; everything is a negotiation, nothing personal. Guardian — liturgical, grave, kind underneath. Alchemist — delighted empiricist, no sense of danger, everything is data. Bartholomew — warm salesman patter; death was a change of premises; never audits a miracle. Skull — sardonic and lonely; every insult is an invitation to stay. Spirit — ALL CAPS bedrock; vast, deliberate, courteous; words cost it effort.
@@ -64,6 +65,12 @@ _(Filled in as systems are touched. When a change involves an existing mechanic,
 - Combat header shows the enemy's AC (the number your roll is against), not raw DEF.
 - Design intent: hitting is the norm, missing the exception. Baselines (level 1 orc + scar, verified by simulation): ~95% to hit rats, ~85% skeleton, 75% Animated Armour bare-fisted (a ~45% win — it's a brawl, not a wall; any weapon+armor makes it ~98%).
 
+### Boot screen & help
+- Boot menu offers only `begin` and `load`. The lore screen is gone (the Porter and the world carry the lore in-fiction).
+- `load` at boot validates the save (JSON-parses it, checks `.gs`) BEFORE leaving the boot screen; with no usable save it prints a refusal and stays put — never starts an unmade game.
+- Creation cards (blood and keepsake) accept `no`/`back`/`return` to go back to their selection lists; the prompts say so.
+- `help` is compact: ~10 essential commands plus pointers to `help exploring / items / people / fighting / other`. `help fighting` deliberately lists no verbs — it points to Avalonne (combat is taught in-fiction) and notes that fights list your options. Class abilities (rally/pray/invoke), crystallize, and other in-game-taught commands are not in help at all.
+
 ### Text pacing
 - All game output goes through a print queue (`engine/ui.js`). Every pause is scaled by a persistent speed setting: `instant` (0×), `brisk` (0.35×, default), `slow` (1×, the original theatrical pace). Set with the `speed` command; stored in META (localStorage), so it survives across characters.
 - Pressing Enter always flushes the queue instantly — an empty line is purely a skip; a command flushes first so its output never queues behind old text.
@@ -91,6 +98,8 @@ _(Only entries added or modified since 2026-07-08 are listed. Anything not liste
 ## Changelog
 _(Newest on top. One dated line per change; commit messages match these lines.)_
 
+- 2026-07-09 — Dialogue appearance: beats pack into compact prose paragraphs (actions in body colour, speech bold cyan inline) instead of one dim line per sentence; conversation hint shortened to "(ask [topic], or 'goodbye' to leave)" and retired after first ask.
+- 2026-07-09 — Start screen touch-ups: load with no save stays at the boot menu, lore screen removed, creation cards take 'no' to return to selections, help condensed to essentials with 'help [subject]' topics and combat pointed at Avalonne instead of listed.
 - 2026-07-09 — Review fixes: healed Avalonne no longer begs for mending (postQuestTopics replace base topics), `topics` uses the post-quest name, a loaded counter survives attacking a staggered foe, and adaptation can't rob an earned stagger/counter.
 - 2026-07-09 — Knight rework: wounded knight now bleeds out with spare urgent dialogue (no Toll-rambling), Porter gifts a Minor Healing Tome on first talk, healing him reveals his name (Avalonne) and unlocks him as the in-fiction combat teacher (ask him about combat); quest renamed and accepts tome or potion.
 - 2026-07-09 — Dodge reward fix: a successful dodge now loads a Counter (guaranteed hit, +50% damage) instead of a near-useless +2; staggers stay the stronger reward for correctly answering heavies/guards; dodge DCs eased (9/11). Reacting still costs your attack, so it's not a free-crit loop.

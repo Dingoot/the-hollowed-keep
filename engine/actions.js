@@ -512,25 +512,6 @@ function doQuests() {
   }
 }
 
-function doLore() {
-  print('=== THE HOLLOWED KEEP ===', 'text-amber');
-  print('', '');
-  print('The Hollowed Keep surfaces where it pleases. One moonless night it', 'text-white');
-  print('stood on the moor - gates open, windows dark, patient. It does not', 'text-white');
-  print('advertise. At the threshold it takes the Toll: name, past, trade,', 'text-white');
-  print('loves. The blood stays. One keepsake stays. Terms are terms.', 'text-white');
-  print('', '');
-  print('Once, a household of Stewards collected the Toll at the gate so the', 'text-white');
-  print('Keep would not collect inside. The last Steward, Malchor, skimmed', 'text-white');
-  print('from the take. The Keep noticed. It always notices. He sits below', 'text-white');
-  print('now, hollowed into a warning, still holding the Toll-Rod.', 'text-white');
-  print('', '');
-  print('Everything the Keep has ever taken settles downward, floor upon', 'text-white');
-  print('floor. Somewhere at the bottom is everything you were.', 'text-white');
-  print('', '');
-  print('Type "help" for a list of commands.', 'text-dim');
-}
-
 function doHint() {
   const hints = [];
   if (!GS.visitedRooms.includes('gatehouse')) hints.push('Head north to enter the Keep. The gatehouse may hold supplies.');
@@ -635,64 +616,84 @@ function doBrew() {
   }
 }
 
-function doHelp() {
-  print('=== COMMANDS ===', 'text-amber');
-  print('');
-  print('MOVEMENT', 'text-amber');
-  print('  north/south/east/west/up/down (or n/s/e/w/u/d)', 'text-green');
-  print('  go [direction]', 'text-green');
-  print('');
-  print('EXPLORATION', 'text-amber');
-  print('  look (l)        - Describe current room', 'text-green');
-  print('  examine (x) [thing] - Examine something closely', 'text-green');
-  print("  search [thing]   - Search something specific ('search' alone lists what invites a look)", 'text-green');
-  print('  map (m)          - Show explored areas', 'text-green');
-  print('  skills           - What the hollow holds', 'text-green');
-  print('  stats            - The vessel: blood, remnant, stats', 'text-green');
-  print('  light hearth     - Light a cold hearth (rest point · you wake here)', 'text-green');
-  print('  crystallize      - Open the Ledger of Paths (once the Keep proposes)', 'text-green');
-  print('  rally/pray/invoke - Class abilities, for those who are written', 'text-green');
-  print('  push [thing]     - Push something', 'text-green');
-  print('');
-  print('ITEMS', 'text-amber');
-  print('  take/get [item]  - Pick up an item (or "take all")', 'text-green');
-  print('  drop [item]      - Drop an item', 'text-green');
-  print('  use [item]       - Use an item', 'text-green');
-  print('  equip [item]     - Equip weapon/armour', 'text-green');
-  print('  unequip [item]   - Remove equipment', 'text-green');
-  print('  inventory (i)    - List your items', 'text-green');
-  print('  combine [items]  - Combine items together', 'text-green');
-  print('  read [item]      - Read a document or book', 'text-green');
-  print('');
-  print('INTERACTION', 'text-amber');
-  print('  talk [person]    - Start a conversation', 'text-green');
-  print("  ask [topic]      - Ask the person you're talking to", 'text-green');
-  print('  topics           - List what they will speak about', 'text-green');
-  print('  goodbye          - End the conversation', 'text-green');
-  print('  answer [text]    - Answer a question', 'text-green');
-  print('  give [item]      - Give an item to someone', 'text-green');
-  print('  trade/buy/sell   - Trade with merchants', 'text-green');
-  print('  brew             - Brew potions (with alchemist)', 'text-green');
-  print('');
-  print('COMBAT', 'text-amber');
-  print('  attack [enemy]   - Attack an enemy (punch/kick work too)', 'text-green');
-  print('  block / dodge / feint - Answer what the enemy telegraphs', 'text-green');
-  print('  (weapons offer styles: swords stab/slash, crossbows shoot head/legs)', 'text-dim');
-  print('  tackle [beast]   - Wrestle an animal down; soothe may follow', 'text-green');
-  print('  cast [spell]     - Cast a known spell', 'text-green');
-  print('  flee             - Attempt to run from combat', 'text-green');
-  print('');
-  print('OTHER', 'text-amber');
-  print('  rest             - Rest and heal (if safe)', 'text-green');
-  print('  stats            - Show character details', 'text-green');
-  print('  quests           - Show quest log', 'text-green');
-  print('  carve [message]  - Leave a message on the rune wall', 'text-green');
-  print('  lore             - Read the Keep\'s history', 'text-green');
-  print('  hint             - Consult the spirits for guidance', 'text-green');
-  print('  save / load      - Save or load your game', 'text-green');
-  print('  clear            - Clear the screen', 'text-green');
-  print('  speed            - Text pace: instant, brisk, slow (Enter skips)', 'text-green');
-  print('  help (?)         - Show this list', 'text-green');
+function doHelp(args) {
+  const topic = (args || '').trim().toLowerCase();
+
+  if (!topic) {
+    print('=== THE ESSENTIALS ===', 'text-amber');
+    print('  north / south / east / west / up / down   (or n, s, e, w, u, d)', 'text-green');
+    print('  look             - Take the room in again', 'text-green');
+    print('  search [thing]   - Go through something the room mentions', 'text-green');
+    print('  take [item]      - Pick something up', 'text-green');
+    print('  talk [person]    - Start a conversation', 'text-green');
+    print('  inventory (i)    - What you carry', 'text-green');
+    print('  equip / use [item]', 'text-green');
+    print('  rest             - Heal, when nothing is hunting you', 'text-green');
+    print('  save / load      - Keep your place', 'text-green');
+    print('');
+    print("More on a subject: 'help exploring', 'help items', 'help people', 'help fighting', 'help other'", 'text-dim');
+    print("Stuck? Try 'hint'.", 'text-dim');
+    return;
+  }
+
+  if (topic.startsWith('explor')) {
+    print('=== EXPLORING ===', 'text-amber');
+    print('  look (l)         - Describe the room;  examine (x) [thing] for a closer look', 'text-green');
+    print("  search [thing]   - Go through something ('search' alone lists what invites a look)", 'text-green');
+    print('  open / push [thing] - Doors, lids, and things that move', 'text-green');
+    print('  map (m)          - Where you have been', 'text-green');
+    print('  light hearth     - Claim a rest point; you wake there when the Keep collects', 'text-green');
+    print('  rest             - Heal (fully, beside a lit hearth)', 'text-green');
+    print('  hint             - A whisper in the walls, when stuck', 'text-green');
+    return;
+  }
+
+  if (topic.startsWith('item')) {
+    print('=== ITEMS ===', 'text-amber');
+    print('  take / drop [item]', 'text-green');
+    print('  inventory (i)    - List what you carry', 'text-green');
+    print('  equip / unequip [item] - Weapons, armour, lights', 'text-green');
+    print('  use [item]       - Potions, tools, anything with a purpose', 'text-green');
+    print('  read [item]      - Books, notes, pages', 'text-green');
+    print('  combine [items]  - Some things want joining', 'text-green');
+    print('  give [item]      - Hand something to whoever needs it', 'text-green');
+    return;
+  }
+
+  if (topic.startsWith('people') || topic.startsWith('talk')) {
+    print('=== PEOPLE ===', 'text-amber');
+    print('  talk [person]    - Start a conversation (their look works: talk merchant)', 'text-green');
+    print("  ask [topic]      - Ask the person you're talking to;  'topics' re-lists them", 'text-green');
+    print('  goodbye          - End the conversation', 'text-green');
+    print('  answer [words]   - When someone poses you a question', 'text-green');
+    print('  trade / buy / sell - With those who deal', 'text-green');
+    print('  give [item]      - Some people need things more than you do', 'text-green');
+    return;
+  }
+
+  if (topic.startsWith('fight') || topic.startsWith('combat')) {
+    print('=== FIGHTING ===', 'text-amber');
+    print('Fighting is taught in the Keep, not the manual. A soldier sits by the', 'text-white');
+    print('courtyard fountain in no state to lecture - mend him, then ask him', 'text-white');
+    print('about combat. He owes the lesson, and it keeps people alive.', 'text-white');
+    print('');
+    print('In a fight, the Keep lists what you can do. Reading what the enemy', 'text-dim');
+    print("is about to do matters more than any list. And 'flee' is always a verb.", 'text-dim');
+    return;
+  }
+
+  if (topic.startsWith('other') || topic.startsWith('system')) {
+    print('=== OTHER ===', 'text-amber');
+    print('  save / load      - Keep or restore your place', 'text-green');
+    print('  stats / skills / status - The vessel, what it has learnt, the record', 'text-green');
+    print('  quests           - What you have promised people', 'text-green');
+    print('  carve [message]  - Leave words on the rune wall for future delvers', 'text-green');
+    print('  speed            - Text pace: instant, brisk, slow (Enter skips)', 'text-green');
+    print('  clear            - Clear the screen', 'text-green');
+    return;
+  }
+
+  print("Help with what? Try: exploring, items, people, fighting, other.", 'text-dim');
 }
 
 // === OPEN / UNLOCK ===
