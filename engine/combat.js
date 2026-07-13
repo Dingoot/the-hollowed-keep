@@ -379,7 +379,10 @@ function handleCombatCommand(input) {
       if (bucket === 'punchCount' && GS.perks.punchCount >= 8 && !GS.skills.pugilism) gainSkillXP('pugilism', 10);
     }
 
-    if (reps >= 3 && rng(1, 100) <= Math.min(45, (reps - 2) * 15)) {
+    // An earned opening (stagger or counter) is never robbed by adaptation:
+    // a reeling foe can't read your rhythm.
+    const openingHeld = (enemy.staggerTurns || 0) > 0 || !!GS.counterReady;
+    if (!openingHeld && reps >= 3 && rng(1, 100) <= Math.min(45, (reps - 2) * 15)) {
       print('The ' + enemy.name + ' has your rhythm now - it slips the ' + slipLabel + ' entirely. Vary your attacks.', 'text-amber');
       GS.combatMemory[verbKey] = 0;
       GS.perks.firstStrikeDone = true;
@@ -398,10 +401,10 @@ function handleCombatCommand(input) {
     if (!staggered && mv.type === 'guard') situBonus -= 4;
 
     // A successful dodge (or a read-through feint) loads a counter: your
-    // next blow cannot miss and hits harder. Staggered foes give the same,
-    // plus they lose their turn. Both are consumed here.
+    // next blow cannot miss and hits harder. A staggered foe grants the
+    // same and loses its turn; a counter held while it reels keeps for later.
     const countering = !!GS.counterReady && !staggered;
-    GS.counterReady = false;
+    if (countering) GS.counterReady = false;
     const guaranteed = staggered || countering;
 
     const roll = rng(1, 20);

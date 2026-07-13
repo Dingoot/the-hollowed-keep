@@ -55,8 +55,11 @@ function npcDisplayName(npc, npcId) {
 function topicEntry(v) { return typeof v === 'string' ? { text: v } : (v || {}); }
 
 function npcAllTopics(npc) {
-  const all = Object.assign({}, npc.topics || {});
-  if (questDone(npc) && npc.postQuestTopics) Object.assign(all, npc.postQuestTopics);
+  // Once the quest is done, postQuestTopics REPLACE the base set - the
+  // wounded man's pleas shouldn't survive his recovery.
+  const all = (questDone(npc) && npc.postQuestTopics)
+    ? Object.assign({}, npc.postQuestTopics)
+    : Object.assign({}, npc.topics || {});
   if ((GS.race === 'gravekin' || GS.class === 'grave_speaker') && npc.gravekinTopics) Object.assign(all, npc.gravekinTopics);
   return all;
 }
@@ -111,7 +114,7 @@ function doTopics() {
   const id = conversationPartner();
   if (!id) { print("You're not in a conversation. (talk [person] to start one)", 'text-dim'); return; }
   const npc = NPCS[id];
-  print('Topics for ' + npc.name + ': ' + Object.keys(npcTopics(npc, id)).join(', '), 'text-dim');
+  print('Topics for ' + npcDisplayName(npc, id) + ': ' + Object.keys(npcTopics(npc, id)).join(', '), 'text-dim');
 }
 
 function trackSkullTalk(npcId) {
